@@ -13,7 +13,7 @@ Learn the layout before diving in. Understand the three-panel design and where e
 
 ---
 
-## Eight Core Features
+## Nine Core Features
 
 ### 1. [Adding Sources](adding-sources.md)
 How to bring content into your notebook. Supports PDFs, web links, audio, video, text, and more.
@@ -99,7 +99,18 @@ Verify AI claims by tracing them back to source material. Understand the citatio
 
 ---
 
-### 8. [API Configuration](api-configuration.md)
+### 8. [Practice Exams](practice-exams.md)
+Generate an exam from a notebook's sources, answer it in the app and get AI-graded feedback.
+
+**Quick links:**
+- Create an exam from a notebook
+- Multiple choice, multiple select, fill in the blank and open questions
+- How answers are graded (automatic vs AI)
+- Review and retake attempts
+
+---
+
+### 9. [API Configuration](api-configuration.md)
 Configure AI provider API keys directly through the Settings UI.
 
 **Quick links:**
@@ -134,6 +145,9 @@ Task: "I want to find that quote I remember"
 
 Task: "I'm exploring a concept without knowing exact words"
 → Use: Search / Vector Search (semantic similarity)
+
+Task: "I want to test what I learned from my sources"
+→ Use: Practice Exams (generate an exam, answer it, get feedback)
 
 Task: "I need to add or change my AI provider API keys"
 → Use: Manage → Models (configure providers without editing files)
