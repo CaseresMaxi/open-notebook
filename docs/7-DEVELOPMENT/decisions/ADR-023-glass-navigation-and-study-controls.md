@@ -10,6 +10,7 @@ The product needs the glass material and selection motion used in the user's Ins
 ## Decision
 
 - Use `quick-liquid` 0.1.2 with the material calibration from Instasent's iOS glass for sidebar navigation and segmented activity/view controls. Keep reading surfaces opaque. Load the engine lazily only with hardware acceleration and suitable user preferences. Solid materials cover SSR, software rendering, reduced motion/transparency and forced colors. Destroy observers and effects on unmount.
+- Keep the shell mounted in the dashboard layout across routes. Existing page shell wrappers yield to that parent through a context marker, preventing duplicate shells and preserving the glass engine, canvas and selection continuity.
 - Use shared Motion layout selections with Arc spring tokens. Retain Radix tab semantics and keyboard navigation, and the persistent chat pane/draft.
 - Keep global navigation to notebooks, profile and payments. Study activities remain inside notebooks; settings are available separately.
 - Use the free Arc sortable-data-table for application record tables and Markdown tables. A shared adapter preserves rich Markdown cell content. Source-library sorting and pagination still use the API; no duplicate data store is introduced. Responsive grid tracks must have a zero minimum so table contents cannot widen the page.

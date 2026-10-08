@@ -3,7 +3,7 @@
 import { WorkspaceBackdrop } from './WorkspaceBackdrop'
 import { BrandMark } from './BrandMark'
 
-import { useState } from 'react'
+import { createContext, useContext, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
@@ -23,7 +23,15 @@ import {
 } from '@/components/ui/dialog'
 import { useTranslation } from '@/lib/hooks/use-translation'
 
+const ShellContext = createContext(false)
+
+/** The dashboard owns a persistent shell; legacy page wrappers remain compatible. */
 export function AppShell({ children }: { children: React.ReactNode }) {
+  const insideShell = useContext(ShellContext)
+  return insideShell ? <>{children}</> : <DashboardShell>{children}</DashboardShell>
+}
+
+function DashboardShell({ children }: { children: React.ReactNode }) {
   const { t } = useTranslation()
   const pathname = usePathname()
   const [menuOpen, setMenuOpen] = useState(false)
@@ -34,7 +42,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     ['/settings', 'navigation.settings', Settings],
   ] as const
   return (
-    <div className="product-shell flex h-dvh overflow-hidden bg-background text-foreground">
+    <ShellContext.Provider value={true}><div className="product-shell flex h-dvh overflow-hidden bg-background text-foreground">
       <WorkspaceBackdrop />
       <AppSidebar />
       <main
@@ -81,6 +89,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </nav>
         </DialogContent>
       </Dialog>
-    </div>
+    </div></ShellContext.Provider>
   )
 }
