@@ -898,7 +898,7 @@ class ExamAttemptRequest(BaseModel):
         description=(
             "Answers keyed by question id: option index for multiple_choice, "
             "list of option indexes for multiple_select, "
-            "list of strings (one per blank) for fill_blank, text for open"
+            "list of strings (one per blank) for fill_blank, text or {text, images} for open"
         ),
     )
 

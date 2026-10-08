@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Open-ended exam and inline-test answers support text, uploaded/pasted/dropped images, or images alone. AI grading receives the actual answer pixels separately from question figures; submitted images persist in attempt reviews.
 - Chat can ask how to continue with persistent clarification cards. Unspecified exam requests offer separate exam configuration or an interactive test in chat; free-text choices preserve the original request.
 - Chat responses can embed interactive practice tests at the relevant point in an explanation. Students answer, receive grading and feedback, and retake tests directly in notebook/source chat; results persist with the conversation.
 - Practice exams can include useful source figures or generated illustrations. Questions share saved figures, offer enlargement and review provenance, and AI grading receives the same pixels. Image preparation is enabled by default and can be disabled.

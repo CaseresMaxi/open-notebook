@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { QuestionInput } from '@/app/(dashboard)/exams/components/QuestionInput'
 import { ExamQuestionImages } from '@/app/(dashboard)/exams/components/ExamQuestionImages'
 import { ExamResults } from '@/app/(dashboard)/exams/components/ExamResults'
+import { hasOpenAnswer } from '@/lib/utils/exam-answers'
 import type { ExamAnswers, ExamQuestion } from '@/lib/types/exams'
 
 function answered(question: ExamQuestion, answers: ExamAnswers) {
@@ -15,7 +16,7 @@ function answered(question: ExamQuestion, answers: ExamAnswers) {
   if (question.type === 'multiple_choice') return typeof value === 'number'
   if (question.type === 'multiple_select') return Array.isArray(value) && value.length > 0
   if (question.type === 'fill_blank') return Array.isArray(value) && value.length === question.blank_count && value.every(item => String(item).trim())
-  return typeof value === 'string' && !!value.trim()
+  return hasOpenAnswer(value)
 }
 
 export function InlineChatQuiz({ id }: { id: string }) {

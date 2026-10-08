@@ -15,6 +15,7 @@ from open_notebook.graphs.exam import (
     grade_with_ai,
     normalize_answer,
 )
+from open_notebook.utils.exam_answers import open_answer
 
 # ~150k tokens: beyond this the material is truncated rather than sent whole.
 MAX_MATERIAL_CHARS = 600_000
@@ -189,13 +190,24 @@ def grade_deterministic(
             return result(question.points)
         return None
 
-    if not str(answer or "").strip():
+    opened = open_answer(answer)
+    if not opened.text.strip() and not opened.images:
         return result(0.0)
     return None
 
 
 async def grade_attempt(exam: Exam | ChatQuiz, answers: Dict[str, Any]) -> ExamAttempt:
     questions = exam.get_questions()
+    # Validate the entire attempt before starting potentially billable AI calls.
+    answers = dict(answers)
+    for question in questions:
+        value = answers.get(question.id)
+        if question.type == "open" and isinstance(value, dict):
+            answers[question.id] = open_answer(value).model_dump()
+        elif question.type != "open" and isinstance(value, dict):
+            raise InvalidInputError(
+                "Image answers are supported only for open-ended questions."
+            )
     semaphore = asyncio.Semaphore(GRADING_CONCURRENCY)
 
     async def grade(question: ExamQuestion) -> QuestionResult:
@@ -206,8 +218,11 @@ async def grade_attempt(exam: Exam | ChatQuiz, answers: Dict[str, Any]) -> ExamA
         student_answer: Any = (
             _as_blank_answers(answer, len(question.blanks))
             if question.type == "fill_blank"
-            else str(answer)
+            else open_answer(answer).text
         )
+        answer_kwargs: dict[str, Any] = {}
+        if question.type == "open" and isinstance(answer, dict):
+            answer_kwargs["answer_images"] = open_answer(answer).images
         async with semaphore:
             score, feedback = await grade_with_ai(
                 question,
@@ -215,6 +230,7 @@ async def grade_attempt(exam: Exam | ChatQuiz, answers: Dict[str, Any]) -> ExamA
                 language=exam.language,
                 model_id=exam.model_id,
                 images=exam.images,
+                **answer_kwargs,
             )
         return QuestionResult(
             question_id=question.id,

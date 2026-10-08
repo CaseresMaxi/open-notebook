@@ -85,3 +85,17 @@ Answers are keyed by question id: the option index for multiple choice, a list o
 Choose a model that supports vision and tools. Disable the option to generate a text-only exam. Image preparation may add generation time and provider charges.
 
 Figures appear above the answer controls. Click a figure to enlarge it. The same saved image is available when reviewing results and is sent to the grading model for open questions and non-exact blank answers. Source links appear during review; captions and source filenames are hidden while answering to avoid giving away an answer. Existing exams continue to work without images.
+
+## Answering with images
+
+For an open-ended question, write your answer, attach/paste/drop an image of your
+work, or submit images alone. This supports handwritten solutions, diagrams,
+plots and screenshots. Up to four PNG/JPEG/WebP images per answer, 5 MB each;
+preview or remove attachments before submitting. Other question types retain
+their normal answer controls. This also works for interactive tests inside chat.
+
+The grader receives the actual answer images separately from the question figures
+and evaluates them together with your text against the reference answer and rubric.
+Choose a vision-capable grading model when submitting images. If grading fails,
+your draft stays available for retry. The submitted images appear in the saved
+attempt review and remain available when reopening the exam or conversation.

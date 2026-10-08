@@ -2,7 +2,7 @@
 
 import { Fragment, useId } from 'react'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
+import { OpenAnswerInput } from './OpenAnswerInput'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -109,13 +109,5 @@ export function QuestionInput({ question, value, onChange, disabled }: QuestionI
     )
   }
 
-  return (
-    <Textarea
-      rows={6}
-      value={typeof value === 'string' ? value : ''}
-      placeholder={t('exams.openPlaceholder')}
-      disabled={disabled}
-      onChange={(e) => onChange(e.target.value)}
-    />
-  )
+  return <OpenAnswerInput value={value} onChange={onChange} disabled={disabled} />
 }

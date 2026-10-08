@@ -9,6 +9,8 @@ import { cn } from '@/lib/utils'
 import { ExamAttempt, ExamQuestion, ExamQuestionResult } from '@/lib/types/exams'
 import type { ChatImage } from '@/lib/types/api'
 import { ExamQuestionImages } from './ExamQuestionImages'
+import { ChatImages } from '@/components/sources/ChatImages'
+import { openExamAnswer } from '@/lib/utils/exam-answers'
 import { BLANK_MARKER, blankAnswers } from './QuestionInput'
 
 function formatScore(value: number) {
@@ -35,6 +37,7 @@ function QuestionReview({
   images?: Record<string, ChatImage>
 }) {
   const { t } = useTranslation()
+  const opened = openExamAnswer(answer)
 
   return (
     <Card>
@@ -119,8 +122,9 @@ function QuestionReview({
               {t('exams.yourAnswer')}
             </p>
             <p className={cn('whitespace-pre-wrap rounded-md bg-muted p-3', !answer && 'italic text-muted-foreground')}>
-              {typeof answer === 'string' && answer.trim() ? answer : t('exams.noAnswer')}
+              {opened.text || (!opened.images.length ? t('exams.noAnswer') : '')}
             </p>
+            {!!opened.images.length && <ChatImages images={opened.images} showProvenance={false} large />}
           </div>
         )}
 

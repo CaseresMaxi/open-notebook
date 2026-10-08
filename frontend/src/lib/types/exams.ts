@@ -56,9 +56,10 @@ export interface CreateExamRequest {
 
 /**
  * multiple_choice: option index · multiple_select: option indexes ·
- * fill_blank: one string per blank · open: text
+ * fill_blank: one string per blank · open: text or text + images
  */
-export type ExamAnswer = number | number[] | string[] | string | null
+export interface OpenExamAnswer { text: string; images: ChatImage[] }
+export type ExamAnswer = number | number[] | string[] | string | OpenExamAnswer | null
 export type ExamAnswers = Record<string, ExamAnswer>
 
 export interface ExamQuestionResult {

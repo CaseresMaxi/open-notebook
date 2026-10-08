@@ -16,6 +16,7 @@ import {
   useExamAttempts,
   useSubmitExamAttempt,
 } from '@/lib/hooks/use-exams'
+import { hasOpenAnswer } from '@/lib/utils/exam-answers'
 import { useTranslation } from '@/lib/hooks/use-translation'
 import { cn } from '@/lib/utils'
 import { ExamAnswer, ExamAnswers, ExamAttempt, ExamQuestion } from '@/lib/types/exams'
@@ -27,7 +28,7 @@ function isAnswered(question: ExamQuestion, answer: ExamAnswer | undefined) {
   if (question.type === 'multiple_choice') return typeof answer === 'number'
   if (question.type === 'multiple_select') return Array.isArray(answer) && answer.length > 0
   if (question.type === 'fill_blank') return Array.isArray(answer) && answer.some((a) => String(a).trim())
-  return typeof answer === 'string' && answer.trim().length > 0
+  return hasOpenAnswer(answer)
 }
 
 export default function ExamPage() {

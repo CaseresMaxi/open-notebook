@@ -21,3 +21,13 @@ GPT-6 tool calls use LangChain's Responses transport with the configured reasoni
 ## Consequences
 
 Visual preparation adds bounded tool/model work and possibly one image-generation charge. Vision and tool support are required when enabled; users can opt out for text-only models. Pedagogical relevance and scientific image accuracy remain model-dependent. Source crops and generated assets share existing validation and size limits.
+
+
+Open answers additionally accept `{text, images}` using the existing validated
+inline-image representation (four per answer, 5 MB each). Legacy string answers
+remain supported. All answers are validated before grading; image answer objects
+are limited to open questions. The shared exam/chat-quiz service passes answer
+pixels as a separate multimodal message from question figures, with explicit
+rubric-based grading instructions. Attempts persist the validated object in their
+existing flexible answers field; no migration is required. Both runners share
+upload/paste/drop controls and render submitted figures during review.
