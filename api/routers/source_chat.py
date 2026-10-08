@@ -406,6 +406,9 @@ async def stream_source_chat_response(
                 ai_event = {
                     "type": "ai_message",
                     "images": [image.model_dump() for image in message_images(msg)],
+                    "followups": getattr(msg, "additional_kwargs", {}).get(
+                        "response_followups", []
+                    ),
                     "quizzes": getattr(msg, "additional_kwargs", {}).get(
                         "response_quizzes", []
                     ),

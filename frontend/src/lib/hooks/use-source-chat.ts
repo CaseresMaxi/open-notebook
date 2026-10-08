@@ -182,6 +182,7 @@ export function useSourceChat(sourceId: string) {
                     content: data.content || '',
                     images: data.images || [],
                     quizzes: data.quizzes || [],
+                    followups: data.followups || [],
                     timestamp: new Date().toISOString()
                   }
                   setMessages(prev => [...prev, aiMessage!])

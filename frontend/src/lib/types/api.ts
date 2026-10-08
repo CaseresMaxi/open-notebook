@@ -169,6 +169,7 @@ export interface SourceChatMessage {
   timestamp?: string
   images?: ChatImage[]
   quizzes?: string[]
+  followups?: ChatFollowup[]
 }
 
 export interface SourceChatContextIndicator {
@@ -220,6 +221,7 @@ export interface NotebookChatMessage {
   timestamp?: string
   images?: ChatImage[]
   quizzes?: string[]
+  followups?: ChatFollowup[]
 }
 
 export interface NotebookChatSessionWithMessages extends NotebookChatSession {
@@ -271,4 +273,10 @@ export interface RecentlyViewedResponse {
   id: string
   title: string
   last_viewed_at: string
+}
+
+export interface ChatFollowup {
+  kind: 'study' | 'exam' | 'question'
+  question?: string
+  options?: Array<{ label: string; message: string }>
 }

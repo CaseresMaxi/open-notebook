@@ -1,28 +1,41 @@
 'use client'
 
 import { Fragment } from 'react'
-import type { ChatImage } from '@/lib/types/api'
+import type { ChatImage, ChatFollowup } from '@/lib/types/api'
+import { ChatFollowupCard } from './ChatFollowupCard'
 import { ChatImages } from './ChatImages'
 import { InlineChatQuiz } from './InlineChatQuiz'
 import { MarkdownRenderer } from '@/components/ui/markdown-renderer'
 import { useTranslation } from '@/lib/hooks/use-translation'
 import { convertReferencesToCompactMarkdown, createCompactReferenceLinkComponent } from '@/lib/utils/source-references'
 
-export function ChatResponseContent({ content, images = [], quizzes = [], onReferenceClick }: {
+export function ChatResponseContent({ content, images = [], quizzes = [], followups = [], disabled, onReply, onCreateExam, onReferenceClick }: {
   content: string
   images?: ChatImage[]
   quizzes?: string[]
+  followups?: ChatFollowup[]
+  disabled?: boolean
+  onReply?: (message: string) => void | boolean | Promise<void | boolean>
+  onCreateExam?: () => void
   onReferenceClick: (type: string, id: string) => void
 }) {
   const { t } = useTranslation()
   const markdown = convertReferencesToCompactMarkdown(content, t('common.references'))
   const LinkComponent = createCompactReferenceLinkComponent(onReferenceClick)
-  const pieces = markdown.split(/(\[\[(?:image:\d+|quiz:[^\]]+|quiz-unavailable)\]\])/g)
+  const pieces = markdown.split(/(\[\[(?:image:\d+|followup:\d+|quiz:[^\]]+|quiz-unavailable)\]\])/g)
   const renderedImages = new Set<number>()
   const renderedQuizzes = new Set<string>()
+  const renderedFollowups = new Set<number>()
   let warningShown = false
   return <div className="space-y-3">
     {pieces.map((piece, index) => {
+      const followupMatch = piece.match(/^\[\[followup:(\d+)\]\]$/)
+      if (followupMatch) {
+        const position = Number(followupMatch[1]) - 1
+        if (!followups[position] || renderedFollowups.has(position)) return null
+        renderedFollowups.add(position)
+        return <ChatFollowupCard key={`followup-${position}`} followup={followups[position]} disabled={disabled} onReply={onReply} onCreateExam={onCreateExam} />
+      }
       if (piece === '[[quiz-unavailable]]') {
         if (warningShown) return null
         warningShown = true

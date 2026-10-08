@@ -15,6 +15,7 @@ from open_notebook.config import LANGGRAPH_CHECKPOINT_FILE
 from open_notebook.domain.notebook import Notebook
 from open_notebook.exceptions import IncompleteGenerationError, OpenNotebookError
 from open_notebook.utils import clean_thinking_content
+from open_notebook.utils.chat_followups import followup_context
 from open_notebook.utils.chat_images import chat_model_context
 from open_notebook.utils.chat_responses import (
     latest_request,
@@ -42,6 +43,7 @@ def call_model_with_messages(state: ThreadState, config: RunnableConfig) -> dict
         payload = [
             SystemMessage(content=system_prompt + quiz_instructions())
         ] + state.get("messages", [])
+        payload = followup_context(payload)
         model_id = config.get("configurable", {}).get("model_id") or state.get(
             "model_override"
         )

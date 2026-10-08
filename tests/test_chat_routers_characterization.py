@@ -148,6 +148,7 @@ async def test_get_chat_session_message_shapes(mock_get, mock_graph, mock_repo, 
         "timestamp": None,
         "images": [],
         "quizzes": [],
+        "followups": [],
     }
     assert body["messages"][1]["type"] == "ai"
     # Object without type/content falls back to "unknown" / str(msg); the id
@@ -159,6 +160,7 @@ async def test_get_chat_session_message_shapes(mock_get, mock_graph, mock_repo, 
         "timestamp": None,
         "images": [],
         "quizzes": [],
+        "followups": [],
     }
 
 
@@ -322,6 +324,7 @@ async def test_get_source_chat_session_happy_path_shapes(
         "timestamp": None,
         "images": [],
         "quizzes": [],
+        "followups": [],
     }
     assert body["messages"][1] == {
         "id": "msg_1",
@@ -330,6 +333,7 @@ async def test_get_source_chat_session_happy_path_shapes(
         "timestamp": None,
         "images": [],
         "quizzes": [],
+        "followups": [],
     }
     assert body["context_indicators"] == {
         "sources": ["source:xyz"],

@@ -31,6 +31,7 @@ class ChatMessage(BaseModel):
     timestamp: Optional[str] = Field(None, description="Message timestamp")
     images: list[ChatImage] = Field(default_factory=list)
     quizzes: list[str] = Field(default_factory=list)
+    followups: list[dict[str, Any]] = Field(default_factory=list)
 
 
 class SuccessResponse(BaseModel):
@@ -96,6 +97,9 @@ def extract_chat_messages(raw_messages: Iterable[Any]) -> List[ChatMessage]:
                 else str(msg),
                 timestamp=None,  # LangChain messages don't have timestamps by default
                 images=message_images(msg),
+                followups=getattr(msg, "additional_kwargs", {}).get(
+                    "response_followups", []
+                ),
                 quizzes=getattr(msg, "additional_kwargs", {}).get(
                     "response_quizzes", []
                 ),

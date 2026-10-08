@@ -23,3 +23,14 @@ Migration 27 defines the quiz and attempt tables and indexes. Quizzes belong to 
 Automatic practice selection depends on the model following the prompt. Visual tests require the existing visual-response option for obtaining new figures. Text tests work with ordinary chat models. The protocol and metadata remain transient model instructions and persisted application data; they are rendered as UI widgets rather than shown as implementation syntax.
 
 Explicit requests in the latest human message activate visual tools independently of the composer toggle. Exam and questionnaire requests require an interactive card; a missing quiz block triggers bounded structured conversion using the current source context. Plain exam drafts are replaced before returning them so their answer keys cannot leak.
+
+
+Continuation questions use bounded `chat-followup` JSON blocks, materialized into
+positioned markers with validated `response_followups` metadata in the existing
+chat checkpoints. Options submit plain user replies. Study-format choices have
+fixed application actions: open the existing exam configuration or send a chat
+practice request. Model-generated URLs and executable actions are not supported.
+Ambiguous exam requests require a format choice before saving a quiz. Pending
+cards are described as text when replayed to the model so free-text answers remain
+meaningful; the latest choice also preserves the original study request. No new
+database tables are needed. Older cards are disabled after continuation.

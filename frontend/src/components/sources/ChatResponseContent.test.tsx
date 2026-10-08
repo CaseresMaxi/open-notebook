@@ -35,3 +35,21 @@ it('preserves the explanation and shows one localized notice if a test cannot be
   expect(screen.getByRole('status')).toHaveTextContent('chat.quizPreparationFailed')
   expect(container.textContent).not.toContain('[[quiz-unavailable]]')
 })
+
+it('offers two study paths and sends the selected continuation', async () => {
+  const { fireEvent } = await import('@testing-library/react')
+  const onReply = vi.fn()
+  const onCreateExam = vi.fn()
+  render(<ChatResponseContent content="[[followup:1]]" followups={[{ kind: 'study' }]} onReply={onReply} onCreateExam={onCreateExam} onReferenceClick={vi.fn()} />)
+  fireEvent.click(screen.getByRole('button', { name: 'chat.separateExam' }))
+  expect(onCreateExam).toHaveBeenCalledOnce()
+  fireEvent.click(screen.getByRole('button', { name: 'chat.testInChat' }))
+  expect(onReply).toHaveBeenCalledWith('chat.inlineTestReply')
+})
+
+it('disables historical followups and hides forged markers', () => {
+  render(<ChatResponseContent content="[[followup:1]] [[followup:7]]" followups={[{ kind: 'study' }]} disabled onReply={vi.fn()} onCreateExam={vi.fn()} onReferenceClick={vi.fn()} />)
+  expect(screen.getByRole('button', { name: 'chat.testInChat' })).toBeDisabled()
+  expect(screen.getAllByRole('button')).toHaveLength(2)
+  expect(screen.queryByText('[[followup:7]]')).not.toBeInTheDocument()
+})

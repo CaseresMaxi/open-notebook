@@ -21,6 +21,7 @@ import { MessageActions } from '@/components/sources/MessageActions'
 import { useModalManager } from '@/lib/hooks/use-modal-manager'
 import { toast } from 'sonner'
 import { useTranslation } from '@/lib/hooks/use-translation'
+import { CreateExamDialog } from '@/app/(dashboard)/exams/components/CreateExamDialog'
 import { ChatImages } from './ChatImages'
 import { ChatResponseContent } from './ChatResponseContent'
 import { readChatImages, CHAT_IMAGE_TYPES } from '@/lib/utils/chat-images'
@@ -78,6 +79,7 @@ export function ChatPanel({
   notebookContextStats,
   notebookId
 }: ChatPanelProps) {
+  const [examRequest, setExamRequest] = useState<string | null>(null)
   const { t } = useTranslation()
   const [sessionManagerOpen, setSessionManagerOpen] = useState(false)
   const scrollAreaRef = useRef<HTMLDivElement>(null)
@@ -107,6 +109,7 @@ export function ChatPanel({
 
   return (
     <>
+    {examRequest !== null && <CreateExamDialog open onOpenChange={open => { if (!open) setExamRequest(null) }} initialNotebookId={notebookId} initialInstructions={examRequest || ''} initialModelId={modelOverride} />}
     <Card className="flex flex-col h-full flex-1 overflow-hidden">
       <CardHeader className="pb-3 flex-shrink-0">
         <div className="flex items-center justify-between">
@@ -163,6 +166,13 @@ export function ChatPanel({
                   message={message}
                   notebookId={notebookId}
                   onReferenceClick={handleReferenceClick}
+                  followupsDisabled={isStreaming || message.id !== messages[messages.length - 1]?.id}
+                  onReply={text => onSendMessage(text, modelOverride)}
+                  onCreateExam={() => {
+                    const position = messages.findIndex(item => item.id === message.id)
+                    const request = messages.slice(0, position).reverse().find(item => item.type === 'human')
+                    setExamRequest(request?.content || '')
+                  }}
                 />
               ))
             )}
@@ -394,18 +404,25 @@ function ChatComposer({
 interface ChatMessageProps {
   message: SourceChatMessage
   notebookId?: string
+  followupsDisabled?: boolean
+  onReply?: (message: string) => void | boolean | Promise<void | boolean>
+  onCreateExam?: () => void
   onReferenceClick: (type: string, id: string) => void
 }
 
 const ChatMessage = memo(function ChatMessage({
   message,
   notebookId,
+  followupsDisabled,
+  onReply,
+  onCreateExam,
   onReferenceClick
 }: ChatMessageProps) {
   const { t } = useTranslation()
   const exportContent = message.content
     .replace(/\[\[image:(\d+)\]\]/g, (_, number) => message.images?.[Number(number) - 1]?.name ?? '')
     .replace(/\[\[quiz:[^\]]+\]\]/g, t('chat.inlineQuiz'))
+    .replace(/\[\[followup:\d+\]\]/g, t('chat.continueQuestion'))
     .replace(/\[\[quiz-unavailable\]\]/g, t('chat.quizPreparationFailed'))
   return (
     <div
@@ -430,7 +447,7 @@ const ChatMessage = memo(function ChatMessage({
         >
           {message.type === 'ai' ? (
             <div className="space-y-3">
-              <ChatResponseContent content={message.content} images={message.images} quizzes={message.quizzes} onReferenceClick={onReferenceClick} />
+              <ChatResponseContent content={message.content} images={message.images} quizzes={message.quizzes} followups={message.followups} disabled={followupsDisabled} onReply={onReply} onCreateExam={onCreateExam} onReferenceClick={onReferenceClick} />
             </div>
           ) : (
             <div className="space-y-2">

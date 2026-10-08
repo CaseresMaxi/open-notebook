@@ -313,7 +313,7 @@ async def test_plain_exam_becomes_interactive_without_exposing_answers(monkeypat
         AIMessage(content="1. Pick an even number. Correct answer: 4"),
         "chat_session:test",
         "model:test",
-        "Haceme un examen",
+        "Haceme un examen en el chat",
         "Even numbers divide by 2",
     )
     assert result.content == "[[quiz:chat_quiz:requested]]"

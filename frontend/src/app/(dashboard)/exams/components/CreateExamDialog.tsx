@@ -32,6 +32,8 @@ interface CreateExamDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   initialNotebookId?: string
+  initialInstructions?: string
+  initialModelId?: string
 }
 
 function clampCount(value: string) {
@@ -39,7 +41,7 @@ function clampCount(value: string) {
   return Number.isNaN(n) ? 0 : Math.min(Math.max(n, 0), MAX_PER_TYPE)
 }
 
-export function CreateExamDialog({ open, onOpenChange, initialNotebookId }: CreateExamDialogProps) {
+export function CreateExamDialog({ open, onOpenChange, initialNotebookId, initialInstructions, initialModelId }: CreateExamDialogProps) {
   const { t } = useTranslation()
   const router = useRouter()
   const fieldId = useId()
@@ -69,6 +71,13 @@ export function CreateExamDialog({ open, onOpenChange, initialNotebookId }: Crea
   useEffect(() => {
     if (open && initialNotebookId) setNotebookId(initialNotebookId)
   }, [open, initialNotebookId])
+
+  useEffect(() => {
+    if (open) {
+      setInstructions(initialInstructions ?? '')
+      setModelId(initialModelId ?? DEFAULT_VALUE)
+    }
+  }, [open, initialInstructions, initialModelId])
 
   // Select every source of the chosen notebook by default.
   useEffect(() => {

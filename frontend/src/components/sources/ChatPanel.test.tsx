@@ -180,3 +180,19 @@ describe('ChatPanel composer', () => {
   })
 
 })
+
+vi.mock('@/app/(dashboard)/exams/components/CreateExamDialog', () => ({
+  CreateExamDialog: ({ initialInstructions, initialNotebookId }: { initialInstructions?: string; initialNotebookId?: string }) => <div data-testid="exam-configuration" data-notebook={initialNotebookId}>{initialInstructions}</div>,
+}))
+
+it('opens independent exam configuration carrying the original chat request', () => {
+  const onSendMessage = vi.fn()
+  render(<ChatPanel messages={[
+    { id: 'human', type: 'human', content: 'Un examen de KNN con dos preguntas' },
+    { id: 'ai', type: 'ai', content: '[[followup:1]]', followups: [{ kind: 'study' }] },
+  ]} notebookId="notebook:test" isStreaming={false} contextIndicators={null} onSendMessage={onSendMessage} />)
+  fireEvent.click(screen.getByRole('button', { name: 'chat.separateExam' }))
+  expect(screen.getByTestId('exam-configuration')).toHaveTextContent('Un examen de KNN con dos preguntas')
+  expect(screen.getByTestId('exam-configuration')).toHaveAttribute('data-notebook', 'notebook:test')
+  expect(onSendMessage).not.toHaveBeenCalled()
+})

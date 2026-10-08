@@ -14,6 +14,10 @@ from open_notebook.domain.chat_quiz import ChatQuiz
 from open_notebook.exceptions import OpenNotebookError
 from open_notebook.graphs.chat_quiz import InlineQuiz, repair_inline_quiz
 from open_notebook.graphs.exam import validate_generated_questions
+from open_notebook.utils.chat_followups import (
+    followup_instructions,
+    materialize_followups,
+)
 from open_notebook.utils.chat_images import message_images
 from open_notebook.utils.text_utils import extract_text_content
 
@@ -25,9 +29,46 @@ QUIZ_UNAVAILABLE = "[[quiz-unavailable]]"
 
 
 def latest_request(messages: list[Any]) -> str:
-    for message in reversed(messages):
+    for position in range(len(messages) - 1, -1, -1):
+        message = messages[position]
         if getattr(message, "type", None) == "human":
-            return extract_text_content(message.content)
+            request = extract_text_content(message.content)
+            previous = messages[position - 1] if position else None
+            followups = getattr(previous, "additional_kwargs", {}).get(
+                "response_followups", []
+            )
+            if followups and followups[0].get("kind") in ("study", "exam"):
+                earlier = next(
+                    (
+                        extract_text_content(item.content)
+                        for item in reversed(messages[: position - 1])
+                        if getattr(item, "type", None) == "human"
+                    ),
+                    "",
+                )
+                if re.search(
+                    r"\b(segund[ao]|second|2|chat|aquí|aqui|acá|aca|here)\b",
+                    request,
+                    re.IGNORECASE,
+                ):
+                    return (
+                        "Quiero un test interactivo en el chat. Pedido original: "
+                        + earlier
+                        + "\nPreferencia: "
+                        + request
+                    )
+                if re.search(
+                    r"\b(primer[ao]|first|1|independiente|separado|standalone|separate)\b",
+                    request,
+                    re.IGNORECASE,
+                ):
+                    return (
+                        "Quiero un examen independiente. Pedido original: "
+                        + earlier
+                        + "\nPreferencia: "
+                        + request
+                    )
+            return request
     return ""
 
 
@@ -46,7 +87,7 @@ def requested_widgets(request: str) -> tuple[bool, bool]:
     )
     quiz = bool(
         re.search(
-            r"\b(examen(?:es)?|examnes|tests?|quizzes?|cuestionarios?|autoevaluacion|practice questions)\b",
+            r"\b(examen(?:es)?|examnes|tests?|quiz(?:zes)?|cuestionarios?|autoevaluacion|practice questions)\b",
             text,
         )
     )
@@ -64,10 +105,10 @@ def requested_widgets(request: str) -> tuple[bool, bool]:
 
 
 def quiz_instructions() -> str:
-    return (
+    return followup_instructions() + (
         "\n\nINTERACTIVE PRACTICE IN RESPONSES:\n"
         "When the user asks for an exam, examen, cuestionario, test, quiz, practice questions or a self-check, render it "
-        "as an interactive test. You may also offer a short test when applying a freshly "
+        "as an interactive test AFTER the user has selected the chat format. Ask for the format first when unspecified. You may also offer a short test when applying a freshly "
         "explained concept would materially help learning; do not force a quiz into every "
         "answer or when the user wants explanation only. Place at most ONE test exactly "
         "where it belongs in your response, using a fenced block with language chat-quiz "
@@ -95,6 +136,13 @@ async def materialize_chat_response(
     request: str = "",
     context: str = "",
 ) -> Any:
+    reply = materialize_followups(reply, request, requested_widgets(request)[1])
+    if reply.additional_kwargs.get("response_followups"):
+        # A clarification is a complete turn: wait for the user before generating.
+        safe = QUIZ_BLOCK.sub("", reply.content)
+        safe = re.sub(r"```chat-quiz\b.*$", "", safe, flags=re.DOTALL | re.IGNORECASE)
+        safe = re.sub(r"\[\[quiz:[^\]]+\]\]", "", safe)
+        return reply.model_copy(update={"content": safe.strip()})
     content = re.sub(r"\[\[quiz:[^\]]+\]\]", "", reply.content)
     matches = list(QUIZ_BLOCK.finditer(content))
     remainder = QUIZ_BLOCK.sub("", content)

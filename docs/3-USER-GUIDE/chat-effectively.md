@@ -144,3 +144,17 @@ Ask for a short test, practice questions or a self-check. The assistant can also
 Tests support single choice, multiple selection, blanks and open answers. Open answers are graded by AI. When a question needs a figure, its actual saved image is shown and used during grading. Ask directly for a source crop or a generated illustration for the test; you do not need to enable the visual responses checkbox. Requests for an exam or questionnaire also create an interactive test.
 
 If the model produces a malformed test, the app tries to repair it automatically. If it cannot, your explanation and images remain available; you can ask the assistant to generate the test again.
+
+### Choosing how to continue
+
+Ask for an exam without specifying a format and the chat offers two paths:
+**Create a separate exam** opens the exam configuration with your original request
+and, in notebook chat, your current notebook. In source chat, select the notebook
+that contains the material. **Take a test in chat** continues the conversation with
+an interactive test. You can also type your preference, such as “here in chat” or
+“the second option”. A request that already says “in chat” skips this choice.
+
+The assistant can ask other short clarification questions with reply buttons when
+it needs a preference to continue. You can always answer in the composer instead.
+Questions and options persist with the conversation; only the latest response is
+active, and sending temporarily disables its buttons. Failed sends can be retried.
