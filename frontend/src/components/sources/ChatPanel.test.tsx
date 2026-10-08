@@ -42,7 +42,7 @@ describe('ChatPanel composer', () => {
     fireEvent.click(sendButton)
 
     expect(onSendMessage).toHaveBeenCalledTimes(1)
-    expect(onSendMessage).toHaveBeenCalledWith('hello world', undefined)
+    expect(onSendMessage).toHaveBeenCalledWith('hello world', undefined, [], true)
     expect(textarea.value).toBe('')
   })
 
@@ -64,7 +64,7 @@ describe('ChatPanel composer', () => {
     fireEvent.change(textarea, { target: { value: 'via cmd' } })
     fireEvent.keyDown(textarea, { key: 'Enter', metaKey: true, ctrlKey: false })
 
-    expect(onSendMessage).toHaveBeenCalledWith('via cmd', undefined)
+    expect(onSendMessage).toHaveBeenCalledWith('via cmd', undefined, [], true)
     expect(textarea.value).toBe('')
     uaSpy.mockRestore()
   })
@@ -87,7 +87,7 @@ describe('ChatPanel composer', () => {
     fireEvent.change(textarea, { target: { value: 'via ctrl' } })
     fireEvent.keyDown(textarea, { key: 'Enter', ctrlKey: true, metaKey: false })
 
-    expect(onSendMessage).toHaveBeenCalledWith('via ctrl', undefined)
+    expect(onSendMessage).toHaveBeenCalledWith('via ctrl', undefined, [], true)
     expect(textarea.value).toBe('')
     uaSpy.mockRestore()
   })
@@ -124,7 +124,7 @@ describe('ChatPanel composer', () => {
     fireEvent.change(fileInput, { target: { files: [new File(['pixels'], 'chart.png', { type: 'image/png' })] } })
     await screen.findByAltText('chart.png')
     fireEvent.click(sendButton)
-    expect(onSendMessage).toHaveBeenCalledWith('', undefined, [{ name: 'chart.png', data_url: expect.stringContaining('data:image/png;base64,') }])
+    expect(onSendMessage).toHaveBeenCalledWith('', undefined, [{ name: 'chart.png', data_url: expect.stringContaining('data:image/png;base64,') }], true)
     expect(screen.queryByAltText('chart.png')).not.toBeInTheDocument()
   })
 
@@ -163,15 +163,16 @@ describe('ChatPanel composer', () => {
       isStreaming={false} contextIndicators={null} onSendMessage={vi.fn()} />)
     expect(screen.getByAltText('saved.png')).toBeInTheDocument()
   })
-  it('sends the visual mode flag explicitly', async () => {
+  it('lets developers explicitly disable the visual mode enabled by default', async () => {
     const { onSendMessage, sendButton } = mount()
     fireEvent.click(screen.getByRole('button', { name: 'navigation.advanced' }))
+    expect(screen.getByRole('checkbox', { name: 'chat.visualResponses' })).toBeChecked()
     fireEvent.click(screen.getByRole('checkbox', { name: 'chat.visualResponses' }))
     fireEvent.click(screen.getByRole('button', { name: 'common.close' }))
     await waitFor(() => expect(getTextarea()).toBeVisible())
     fireEvent.change(getTextarea(), { target: { value: 'Show a source crop' } })
     fireEvent.click(sendButton)
-    expect(onSendMessage).toHaveBeenCalledWith('Show a source crop', undefined, [], true)
+    expect(onSendMessage).toHaveBeenCalledWith('Show a source crop', undefined, [], false)
   })
 
   it('renders generated images and source provenance in AI answers', () => {

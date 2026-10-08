@@ -180,7 +180,8 @@ def test_text_only_context_remains_available():
 
 
 @pytest.mark.parametrize("source_chat", [False, True])
-def test_both_apis_accept_image_only_turns(source_chat):
+@pytest.mark.parametrize("visual_tools", [None, False, True])
+def test_both_apis_accept_image_only_turns(source_chat, visual_tools):
     from api.main import app
     from api.routers import chat
     from api.routers import source_chat as source
@@ -188,8 +189,10 @@ def test_both_apis_accept_image_only_turns(source_chat):
     module = source if source_chat else chat
     session = SimpleNamespace(model_override=None, save=AsyncMock())
     captured = []
+    visual_flags = []
 
     def invoke(graph, state, config, user):
+        visual_flags.append(state["visual_tools"])
         captured.append(user)
         return {"messages": [user, AIMessage(content="A red image", id="reply")]}
 
@@ -223,10 +226,12 @@ def test_both_apis_accept_image_only_turns(source_chat):
                 "session_id": "chat_session:one",
                 "context": {},
                 "images": [_image()],
+                **({"visual_tools": visual_tools} if visual_tools is not None else {}),
             },
         )
     assert response.status_code == 200
     assert len(captured) == 1
+    assert visual_flags == [True if visual_tools is None else visual_tools]
     assert captured[0].content[0]["type"] == "image_url"
     if not source_chat:
         assert response.json()["messages"][0]["images"][0] == _image()

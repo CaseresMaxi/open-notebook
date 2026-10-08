@@ -106,7 +106,7 @@ export function useSourceChat(sourceId: string) {
   })
 
   // Send message with streaming
-  const sendMessage = useCallback(async (message: string, modelOverride?: string, images?: ChatImage[], visualTools = false) => {
+  const sendMessage = useCallback(async (message: string, modelOverride?: string, images?: ChatImage[], visualTools = true) => {
     let sessionId = currentSessionId
     const effectiveModel = modelOverride ?? currentSession?.model_override ?? pendingModelOverride ?? undefined
 
@@ -142,7 +142,7 @@ export function useSourceChat(sourceId: string) {
       const response = await sourceChatApi.sendMessage(sourceId, sessionId, {
         message,
         images,
-        ...(visualTools && { visual_tools: true }),
+        visual_tools: visualTools,
         model_override: effectiveModel
       })
 

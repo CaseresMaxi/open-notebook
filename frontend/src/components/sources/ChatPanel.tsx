@@ -245,7 +245,7 @@ function ChatComposer({
   const [optionsOpen, setOptionsOpen] = useState(false)
   const [input, setInput] = useState('')
   const [images, setImages] = useState<ChatImage[]>([])
-  const [visualTools, setVisualTools] = useState(false)
+  const [visualTools, setVisualTools] = useState(true)
   const [readingImages, setReadingImages] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -275,11 +275,7 @@ function ChatComposer({
         setImages([])
       }
     }
-    const result = visualTools
-      ? onSendMessage(input.trim(), modelOverride, images, true)
-      : images.length
-      ? onSendMessage(input.trim(), modelOverride, images)
-      : onSendMessage(input.trim(), modelOverride)
+    const result = onSendMessage(input.trim(), modelOverride, images, visualTools)
     if (result instanceof Promise) {
       setSubmitting(true)
       result.then(clearDraft).catch(() => {

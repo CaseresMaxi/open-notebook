@@ -355,7 +355,7 @@ async def stream_source_chat_response(
     message: str,
     model_override: Optional[str] = None,
     images: Optional[list[ChatImage]] = None,
-    visual_tools: bool = False,
+    visual_tools: bool = True,
 ) -> AsyncGenerator[str, None]:
     """Stream the source chat response as Server-Sent Events."""
     try:

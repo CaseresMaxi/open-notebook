@@ -108,7 +108,7 @@ More in [AI & Chat Issues](../6-TROUBLESHOOTING/ai-chat-issues.md).
 
 ## Images in answers
 
-Request an image or source crop directly in notebook or source chat; this activates visual tools automatically. Enable **Visual responses** below the composer to let the assistant choose relevant source figures for other messages.
+Visual responses are enabled by default in notebook and source chat. The assistant can choose useful source figures or HTML charts and diagrams for any message; it does not need to attach a figure to every answer. You can also request an image or source crop explicitly. The visual-response checkbox is available only in the developer configuration drawer.
 Choose a model that supports both vision and tool calling, such as GPT-4.1.
 
 - For source images, ask: “Explain this chart and include a crop from the PDF.”
@@ -135,7 +135,7 @@ Provider failures are explained in the answer without attaching a fabricated ima
 
 ### Images in the explanation
 
-With visual responses enabled, figures appear beside the relevant explanation instead of in a separate gallery at the end. Click an image to enlarge it; source crops retain their source and page link. Previously saved attachments remain visible.
+Figures appear beside the relevant explanation instead of in a separate gallery at the end. Click an image to enlarge it; source crops retain their source and page link. Previously saved attachments remain visible.
 
 ### Practice inside the response
 

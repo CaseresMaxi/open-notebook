@@ -15,7 +15,7 @@ The product needs the glass material and selection motion used in the user's Ins
 - Keep global navigation to notebooks, profile and payments. Study activities remain inside notebooks; settings are available separately.
 - Use the free Arc sortable-data-table for application record tables and Markdown tables. A shared adapter preserves rich Markdown cell content. Source-library sorting and pagination still use the API; no duplicate data store is introduced. Responsive grid tracks must have a zero minimum so table contents cannot widen the page.
 - Radix ScrollArea owns the chat scrollbar; its native viewport scrollbar stays hidden. Arc drawers own their body scrolling. The session drawer separates its close button from the create-session action.
-- Put context/memory and composer model/visual configuration in Arc drawers. Display these controls only when `(NODE_ENV=development or NEXT_PUBLIC_ENABLE_DEVELOPER_TOOLS=true)` **and** the URL has `developer=1`. Production defaults hide them. This is a presentation switch, not an authorization boundary. Explicit user image requests continue to activate visual tools normally.
+- Put context/memory and composer model/visual configuration in Arc drawers. Display these controls only when `(NODE_ENV=development or NEXT_PUBLIC_ENABLE_DEVELOPER_TOOLS=true)` **and** the URL has `developer=1`. Production defaults hide them. This is a presentation switch, not an authorization boundary. Visual responses are enabled by default in the composer, client hooks and shared API request model. The developer checkbox can opt out explicitly; explicit user image requests still activate visual tools.
 
 ## Operations
 

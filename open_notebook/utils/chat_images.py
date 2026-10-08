@@ -121,7 +121,7 @@ class ChatInput(BaseModel):
     message: str = ""
     images: list[ChatImage] = Field(default_factory=list, max_length=MAX_CHAT_IMAGES)
     model_override: str | None = None
-    visual_tools: bool = False
+    visual_tools: bool = True
 
     @model_validator(mode="after")
     def require_content(self) -> "ChatInput":

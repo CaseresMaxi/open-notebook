@@ -205,7 +205,7 @@ export function useNotebookChat({ notebookId, sources, notes, contextSelections 
   }, [notebookId, sources, notes, contextSelections])
 
   // Send message (synchronous, no streaming)
-  const sendMessage = useCallback(async (message: string, modelOverride?: string, images?: ChatImage[], visualTools = false) => {
+  const sendMessage = useCallback(async (message: string, modelOverride?: string, images?: ChatImage[], visualTools = true) => {
     let sessionId = currentSessionId
 
     // Auto-create session if none exists
@@ -252,7 +252,7 @@ export function useNotebookChat({ notebookId, sources, notes, contextSelections 
         session_id: sessionId,
         message,
         images,
-        ...(visualTools && { visual_tools: true }),
+        visual_tools: visualTools,
         context,
         model_override: modelOverride ?? (currentSession?.model_override ?? undefined)
       })
