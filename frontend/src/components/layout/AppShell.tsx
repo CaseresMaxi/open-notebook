@@ -1,5 +1,7 @@
 'use client'
 
+import { BrandMark } from './BrandMark'
+
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -48,12 +50,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         id="main-content"
         className="flex-1 min-w-0 flex flex-col min-h-0 overflow-hidden"
       >
-        <header className="md:hidden flex min-h-14 items-center justify-between gap-3 border-b bg-card px-4">
+        <header className="product-mobile-header md:hidden flex min-h-14 items-center justify-between gap-3 border-b bg-card px-4">
           <Link
             href="/notebooks"
             className="flex items-center gap-2 font-medium text-sm"
           >
-            <BookOpen className="size-4 text-primary" />
+            <BrandMark className="size-7" />
             {t('common.appName')}
           </Link>
           <Button

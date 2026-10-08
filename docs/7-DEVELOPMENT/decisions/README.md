@@ -59,3 +59,5 @@ What this makes easier, what it makes harder, what to watch. (bullets)
 | [ADR-020](ADR-020-focused-study-product.md) | Focused study product and free Arc UI | Accepted in personal fork |
 | [PDR-001](PDR-001-single-user-first.md) | Single-user first; don't preclude multi-user | Accepted |
 | [PDR-002](PDR-002-provider-agnostic-core.md) | Provider-agnostic core by default | Accepted |
+
+- [ADR-021: NextNootbook identity and backend](ADR-021-nextnootbook-identity.md)

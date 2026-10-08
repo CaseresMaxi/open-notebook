@@ -1,5 +1,7 @@
 'use client'
 
+import { BrandMark } from './BrandMark'
+
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
@@ -66,7 +68,7 @@ export function AppSidebar() {
             isCollapsed && 'hidden'
           )}
         >
-          <BookOpen className="size-5 shrink-0 text-primary" />
+          <BrandMark className="size-8 shrink-0" />
           {!isCollapsed && <span>{t('common.appName')}</span>}
         </Link>
         <Button

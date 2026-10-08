@@ -38,7 +38,7 @@ const splineSansMono = Spline_Sans_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Open Notebook",
+  title: "NextNootbook",
   description: "Privacy-focused research and knowledge management",
 };
 
