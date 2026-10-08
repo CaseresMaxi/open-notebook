@@ -453,9 +453,7 @@ function SourceDetailContentInner({
               placeholder={t('sources.titlePlaceholder')}
               emptyText={t('sources.untitledSource')}
             />
-            <p className="mt-1 font-mono text-xs text-muted-foreground">
-              {t('sources.id')}: {source.id}
-            </p>
+
           </div>
           <div className="flex items-center gap-2">
             {getSourceIcon()}
@@ -518,13 +516,16 @@ function SourceDetailContentInner({
       {/* Tabs Content */}
       <div className="flex-1 min-h-0 overflow-y-auto">
         <Tabs defaultValue="content" className="w-full">
-          <TabsList className="w-full sticky top-0 z-10 bg-card">
+          <details className="mb-4">
+            <summary className="text-sm text-muted-foreground cursor-pointer">{t('sources.details')}</summary>
+          <TabsList className="w-full mt-3 bg-card">
             <TabsTrigger value="content">{t('sources.content')}</TabsTrigger>
             <TabsTrigger value="insights">
               {t('common.insights')} {insights.length > 0 && `(${insights.length})`}
             </TabsTrigger>
             <TabsTrigger value="details">{t('sources.details')}</TabsTrigger>
           </TabsList>
+          </details>
 
           <TabsContent value="content" className="mt-5">
             <section>

@@ -5,7 +5,7 @@ import { useMemo, useState } from 'react'
 import { AppShell } from '@/components/layout/AppShell'
 import { NotebookList } from './components/NotebookList'
 import { Button } from '@/components/ui/button'
-import { Plus, RefreshCw } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import SegmentedControl from '@/components/arc/segmented-control/segmented-control'
 import { useNotebooks } from '@/lib/hooks/use-notebooks'
 import { CreateNotebookDialog } from '@/components/notebooks/CreateNotebookDialog'
@@ -19,7 +19,7 @@ export default function NotebooksPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const viewMode = useNotebookViewStore((state) => state.viewMode)
   const setViewMode = useNotebookViewStore((state) => state.setViewMode)
-  const { data: notebooks, isLoading, refetch } = useNotebooks(false)
+  const { data: notebooks, isLoading } = useNotebooks(false)
   const { data: archivedNotebooks } = useNotebooks(true)
 
   const normalizedQuery = searchTerm.trim().toLowerCase()
@@ -58,10 +58,9 @@ export default function NotebooksPage() {
         <div className="product-heading">
           <div>
             <h1>{t('notebooks.title')}</h1>
-            <p>{t('product.libraryDesc')}</p>
+
           </div>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-            <Button variant="ghost" size="icon" aria-label={t('common.refresh')} onClick={() => refetch()}><RefreshCw className="size-4" /></Button>
             <SegmentedControl value={viewMode} onValueChange={value => setViewMode(value as 'tile' | 'list')} label={t('notebooks.title')} options={[{ value: 'tile', label: t('notebooks.tileView') }, { value: 'list', label: t('notebooks.listView') }]} />
             <Input
               id="notebook-search"

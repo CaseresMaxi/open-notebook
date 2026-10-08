@@ -264,36 +264,7 @@ function SourceCardImpl({
               </h4>
             </div>
 
-            {/* Processing message for active statuses */}
-            {statusData?.message && (isProcessing || isFailed) && (
-              <p className="text-xs text-muted-foreground mb-2 italic">
-                {statusData.message}
-              </p>
-            )}
 
-            {/* One-line metadata row: type + meta in a single muted line */}
-            <div className="flex items-center gap-1.5 flex-wrap text-xs text-muted-foreground min-w-0">
-              <span className="inline-flex items-center gap-1">
-                <SourceTypeIcon className="h-3 w-3" />
-                {sourceType === 'link' ? t('sources.addUrl') : sourceType === 'upload' ? t('sources.uploadFile') : t('sources.enterText')}
-              </span>
-
-              {isCompleted && source.insights_count > 0 && (
-                <>
-                  <span aria-hidden>·</span>
-                  <span>{t('sources.insightsCount', { count: source.insights_count })}</span>
-                </>
-              )}
-              {source.topics && source.topics.length > 0 && isCompleted && (
-                <>
-                  <span aria-hidden>·</span>
-                  <span className="truncate">
-                    {source.topics.slice(0, 2).join(', ')}
-                    {source.topics.length > 2 && ` +${source.topics.length - 2}`}
-                  </span>
-                </>
-              )}
-            </div>
           </div>
 
           {/* Context toggle and actions */}
@@ -313,7 +284,7 @@ function SourceCardImpl({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="absolute top-1.5 right-1.5 h-7 w-7 p-0 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="h-9 w-9 p-0 text-muted-foreground"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <MoreVertical className="h-4 w-4" />

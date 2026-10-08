@@ -27,12 +27,15 @@ export default function SettingsPage() {
             </div>
 
             <div className="flex flex-wrap gap-3 mb-6"><ThemeToggle /><LanguageToggle /></div>
-            <div className="flex flex-wrap gap-4 mb-6 text-sm">
+            <details className="mt-8">
+              <summary>{t('navigation.advanced')}</summary>
+            <div className="flex flex-wrap gap-4 my-6 text-sm">
               <Link className="product-link" href="/settings/models">{t('navigation.models')}</Link>
               <Link className="product-link" href="/transformations">{t('navigation.transformations')}</Link>
               <Link className="product-link" href="/advanced">{t('navigation.advanced')}</Link>
             </div>
             <SettingsForm />
+            </details>
           </div>
         </div>
       </div>

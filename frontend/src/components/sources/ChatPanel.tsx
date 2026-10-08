@@ -5,9 +5,8 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
-import { Bot, User, Send, Loader2, FileText, Lightbulb, StickyNote, Clock, ImagePlus } from 'lucide-react'
+import { Bot, User, Send, Loader2, Clock, ImagePlus } from 'lucide-react'
 import {
   SourceChatMessage,
   SourceChatContextIndicator,
@@ -15,7 +14,6 @@ import {
   ChatImage
 } from '@/lib/types/api'
 import { ModelSelector } from './ModelSelector'
-import { ContextIndicator } from '@/components/common/ContextIndicator'
 import { SessionManager } from '@/components/sources/SessionManager'
 import { MessageActions } from '@/components/sources/MessageActions'
 import { useModalManager } from '@/lib/hooks/use-modal-manager'
@@ -65,7 +63,6 @@ export function ChatPanel({
   headerActions,
   messages,
   isStreaming,
-  contextIndicators,
   onSendMessage,
   modelOverride,
   onModelChange,
@@ -78,7 +75,6 @@ export function ChatPanel({
   loadingSessions = false,
   title,
   contextType = 'source',
-  notebookContextStats,
   notebookId
 }: ChatPanelProps) {
   const [examRequest, setExamRequest] = useState<string | null>(null)
@@ -213,43 +209,6 @@ export function ChatPanel({
           </div>
         </ScrollArea>
 
-        {/* Context Indicators */}
-        {contextIndicators && (
-          <div className="border-t px-4 py-2">
-            <div className="flex flex-wrap gap-2 text-xs">
-              {contextIndicators.sources?.length > 0 && (
-                <Badge variant="outline" className="gap-1">
-                  <FileText className="h-3 w-3" />
-                  {contextIndicators.sources.length} {t('navigation.sources')}
-                </Badge>
-              )}
-              {contextIndicators.insights?.length > 0 && (
-                <Badge variant="outline" className="gap-1">
-                  <Lightbulb className="h-3 w-3" />
-                  {contextIndicators.insights.length} {contextIndicators.insights.length === 1 ? t('common.insight') : t('common.insights')}
-                </Badge>
-              )}
-              {contextIndicators.notes?.length > 0 && (
-                <Badge variant="outline" className="gap-1">
-                  <StickyNote className="h-3 w-3" />
-                  {contextIndicators.notes.length} {contextIndicators.notes.length === 1 ? t('common.note') : t('common.notes')}
-                </Badge>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Notebook Context Indicator */}
-        {notebookContextStats && (
-          <ContextIndicator
-            sourcesInsights={notebookContextStats.sourcesInsights}
-            sourcesFull={notebookContextStats.sourcesFull}
-            notesCount={notebookContextStats.notesCount}
-            tokenCount={notebookContextStats.tokenCount}
-            charCount={notebookContextStats.charCount}
-          />
-        )}
-
         {/* Input Area */}
         <ChatComposer
           onSendMessage={onSendMessage}
@@ -339,9 +298,7 @@ function ChatComposer({
     }
   }
 
-  // Detect platform for placeholder text
-  const isMac = typeof navigator !== 'undefined' && navigator.userAgent.toUpperCase().indexOf('MAC') >= 0
-  const keyHint = isMac ? '⌘+Enter' : 'Ctrl+Enter'
+
 
   return (
     <div className="flex-shrink-0 p-4 space-y-3 border-t"
@@ -350,6 +307,8 @@ function ChatComposer({
         event.preventDefault()
         void addImages(Array.from(event.dataTransfer.files))
       }}>
+      <details className="chat-options">
+        <summary className="cursor-pointer text-xs text-muted-foreground">{t('navigation.settings')}</summary>
       {/* Model selector */}
       {onModelChange && (
         <div className="flex items-center justify-between">
@@ -362,15 +321,14 @@ function ChatComposer({
         </div>
       )}
 
-      {images.length > 0 && <ChatImages images={images} disabled={busy}
-        onRemove={index => setImages(previous => previous.filter((_, position) => position !== index))} />}
-      <p className="text-xs text-muted-foreground">{t('chat.imageHint')}</p>
-      <label className="flex items-center gap-2 text-xs text-muted-foreground">
-        <input type="checkbox" checked={visualTools} disabled={busy}
-          onChange={event => setVisualTools(event.target.checked)} />
+      <label className="flex items-center gap-2 text-sm mt-3">
+        <input type="checkbox" checked={visualTools} disabled={busy} onChange={event => setVisualTools(event.target.checked)} />
         {t('chat.visualResponses')}
       </label>
-      {visualTools && <p className="text-xs text-muted-foreground">{t('chat.visualResponsesHint')}</p>}
+      {visualTools && <p className="text-xs text-muted-foreground mt-2">{t('chat.visualResponsesHint')}</p>}
+      </details>
+      {images.length > 0 && <ChatImages images={images} disabled={busy}
+        onRemove={index => setImages(previous => previous.filter((_, position) => position !== index))} />}
       <input ref={fileInputRef} type="file" accept={CHAT_IMAGE_TYPES.join(',')} multiple
         aria-label={t('chat.attachImages')} className="hidden" disabled={busy}
         onChange={event => {
@@ -397,7 +355,7 @@ function ChatComposer({
               void addImages(files)
             }
           }}
-          placeholder={`${t('chat.sendPlaceholder')} (${t('chat.pressToSend', { key: keyHint })})`}
+          placeholder={t('chat.sendPlaceholder')}
           disabled={busy}
           className="flex-1 min-h-[40px] max-h-[100px] resize-none py-2 px-3 min-w-0"
           rows={1}
@@ -458,7 +416,7 @@ const ChatMessage = memo(function ChatMessage({
           </div>
         </div>
       )}
-      <div className="flex flex-col gap-2 max-w-[80%]">
+      <div className={message.type === 'ai' ? 'chat-answer flex flex-col gap-2 min-w-0 flex-1' : 'flex flex-col gap-2 max-w-[80%]'}>
         <div
           className={`rounded-lg px-4 py-2 border ${
             message.type === 'human'

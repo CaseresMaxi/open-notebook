@@ -8,8 +8,6 @@ import Link from 'next/link'
 import { Archive, ArchiveRestore, GraduationCap, Trash2 } from 'lucide-react'
 import { useUpdateNotebook } from '@/lib/hooks/use-notebooks'
 import { NotebookDeleteDialog } from './NotebookDeleteDialog'
-import { formatDistanceToNow } from 'date-fns'
-import { getDateLocale } from '@/lib/utils/date-locale'
 import { InlineEdit } from '@/components/common/InlineEdit'
 import { useTranslation } from '@/lib/hooks/use-translation'
 
@@ -18,8 +16,7 @@ interface NotebookHeaderProps {
 }
 
 export function NotebookHeader({ notebook }: NotebookHeaderProps) {
-  const { t, language } = useTranslation()
-  const dfLocale = getDateLocale(language)
+  const { t } = useTranslation()
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   
   const updateNotebook = useUpdateNotebook()
@@ -75,6 +72,8 @@ export function NotebookHeader({ notebook }: NotebookHeaderProps) {
                   {t('exams.createFromNotebook')}
                 </Link>
               </Button>
+              <details className="notebook-actions">
+                <summary>{t('common.edit')}</summary>
               <Button
                 variant="outline"
                 size="sm"
@@ -101,11 +100,12 @@ export function NotebookHeader({ notebook }: NotebookHeaderProps) {
                 <Trash2 className="h-4 w-4 mr-2" />
                 {t('common.delete')}
               </Button>
+              </details>
             </div>
           </div>
 
 
-          <InlineEdit
+          {notebook.description && (          <InlineEdit
             id="notebook-description"
             name="notebook-description"
             value={notebook.description || ''}
@@ -115,12 +115,9 @@ export function NotebookHeader({ notebook }: NotebookHeaderProps) {
             placeholder={t('notebooks.addDescription')}
             multiline
             emptyText={t('notebooks.addDescription')}
-          />
+          />)}
           
-          <div className="text-xs text-muted-foreground">
-            {t('common.created', { time: formatDistanceToNow(new Date(notebook.created), { addSuffix: true, locale: dfLocale }) })} • 
-            {t('common.updated', { time: formatDistanceToNow(new Date(notebook.updated), { addSuffix: true, locale: dfLocale }) })}
-          </div>
+
         </div>
       </div>
 

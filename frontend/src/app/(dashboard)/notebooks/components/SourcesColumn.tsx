@@ -47,8 +47,6 @@ export function SourcesColumn({
   isLoading,
   notebookId,
   onRefresh,
-  contextSelections,
-  onContextModeChange,
   onBulkContextModeChange,
   hasNextPage,
   isFetchingNextPage,
@@ -166,7 +164,7 @@ export function SourcesColumn({
                 {t('navigation.sources')}
               </CardTitle>
               <div className="flex flex-wrap items-center gap-2">
-                {onBulkContextModeChange && sources && sources.length > 0 && (
+                {!standalone && onBulkContextModeChange && sources && sources.length > 0 && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="sm" className="text-muted-foreground" title={t('sources.bulkContext')}>
@@ -235,11 +233,6 @@ export function SourcesColumn({
                     onRemoveFromNotebook={handleRemoveFromNotebook}
                     onRefresh={onRefresh}
                     showRemoveFromNotebook={true}
-                    contextMode={contextSelections?.[source.id]}
-                    onContextModeChange={onContextModeChange
-                      ? (mode) => onContextModeChange(source.id, mode)
-                      : undefined
-                    }
                   />
                 ))}
                 {/* Loading indicator for infinite scroll */}

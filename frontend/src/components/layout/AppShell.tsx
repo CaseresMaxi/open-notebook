@@ -19,7 +19,6 @@ import {
   Settings,
 } from 'lucide-react'
 import { AppSidebar } from './AppSidebar'
-import { SetupBanner } from './SetupBanner'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -69,7 +68,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <Menu className="size-5" />
           </Button>
         </header>
-        <SetupBanner />
+
         {children}
       </main>
       <Dialog open={menuOpen} onOpenChange={setMenuOpen}>

@@ -11,14 +11,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Plus, StickyNote, Bot, User, MoreVertical, Trash2, ListChecks, ChevronDown } from 'lucide-react'
+import { Plus, StickyNote, MoreVertical, Trash2, ListChecks, ChevronDown } from 'lucide-react'
 import { LoadingSpinner } from '@/components/common/LoadingSpinner'
 import { EmptyState } from '@/components/common/EmptyState'
-import { Badge } from '@/components/ui/badge'
 import { NoteEditorDialog } from './NoteEditorDialog'
-import { getDateLocale } from '@/lib/utils/date-locale'
-import { formatDistanceToNow } from 'date-fns'
-import { ContextToggle } from '@/components/common/ContextToggle'
 import type { NoteContextMode } from '../[id]/page'
 import type { NoteContextDefault } from '@/lib/utils/source-context'
 import { useDeleteNote } from '@/lib/hooks/use-notes'
@@ -42,11 +38,9 @@ export function NotesColumn({
   standalone = false,
   isLoading,
   notebookId,
-  contextSelections,
-  onContextModeChange,
   onBulkContextModeChange
 }: NotesColumnProps) {
-  const { t, language } = useTranslation()
+  const { t } = useTranslation()
   const [editorOpen, setEditorOpen] = useState(false)
   const [editingNote, setEditingNote] = useState<NoteResponse | undefined>()
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
@@ -100,7 +94,7 @@ export function NotesColumn({
                 {notesLabel}
               </CardTitle>
               <div className="flex items-center gap-2">
-                {onBulkContextModeChange && notes && notes.length > 0 && (
+                {!standalone && onBulkContextModeChange && notes && notes.length > 0 && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="sm" className="text-muted-foreground" title={t('sources.bulkContext')}>
@@ -147,43 +141,14 @@ export function NotesColumn({
                     onClick={() => handleOpenEditor(note)}
                   >
                     <div className="flex items-start justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        {note.note_type === 'ai' ? (
-                          <Bot className="h-4 w-4 text-teal" />
-                        ) : (
-                          <User className="h-4 w-4 text-muted-foreground" />
-                        )}
-                        <Badge variant="secondary" className="text-xs">
-                          {note.note_type === 'ai' ? t('common.aiGenerated') : t('common.human')}
-                        </Badge>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-muted-foreground">
-                          {formatDistanceToNow(new Date(note.updated), { 
-                            addSuffix: true,
-                            locale: getDateLocale(language)
-                          })}
-                        </span>
-
-                        {/* Context toggle - only show if handler provided */}
-                        {onContextModeChange && contextSelections?.[note.id] && (
-                          <div onClick={(event) => event.stopPropagation()}>
-                            <ContextToggle
-                              mode={contextSelections[note.id]}
-                              hasInsights={false}
-                              onChange={(mode) => onContextModeChange(note.id, mode)}
-                            />
-                          </div>
-                        )}
-
+                      <div className="flex items-center gap-2 ml-auto">
                         {/* Ellipsis menu for delete action */}
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                              className="h-8 w-8 p-0 "
                               onClick={(e) => e.stopPropagation()}
                             >
                               <MoreVertical className="h-4 w-4" />

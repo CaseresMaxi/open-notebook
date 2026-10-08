@@ -45,16 +45,16 @@ export default function SourceDetailPage() {
         </Button>
       </div>
 
-      <Tabs value={panel} onValueChange={setPanel} className="lg:hidden px-6 pb-4 shrink-0">
+      <Tabs value={panel} onValueChange={setPanel} className="px-6 pb-4 shrink-0">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="source">{t('sources.content')}</TabsTrigger>
           <TabsTrigger value="chat">{t('common.chat')}</TabsTrigger>
         </TabsList>
       </Tabs>
       {/* Main content: Source detail + Chat */}
-      <div className="source-detail-grid flex-1 min-h-0 grid gap-6 lg:grid-cols-[2fr_1fr] overflow-hidden px-6 pb-6">
+      <div className="source-detail-grid flex-1 min-h-0 grid gap-6 overflow-hidden px-6 pb-6">
         {/* Left column - Source detail */}
-        <div className={`min-h-0 overflow-hidden ${panel === 'source' ? 'flex' : 'hidden'} lg:flex flex-col`}>
+        <div className={`min-h-0 overflow-hidden ${panel === 'source' ? 'flex' : 'hidden'} flex-col`}>
           <SourceDetailContent
             sourceId={sourceId}
             showChatButton={false}
@@ -63,7 +63,7 @@ export default function SourceDetailPage() {
         </div>
 
         {/* Right column - Chat */}
-        <div className={`min-h-0 overflow-hidden ${panel === 'chat' ? 'flex' : 'hidden'} lg:flex flex-col`}>
+        <div className={`min-h-0 overflow-hidden ${panel === 'chat' ? 'flex' : 'hidden'} flex-col`}>
           <ChatPanel
             messages={chat.messages}
             isStreaming={chat.isStreaming}

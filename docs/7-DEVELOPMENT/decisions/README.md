@@ -61,3 +61,5 @@ What this makes easier, what it makes harder, what to watch. (bullets)
 | [PDR-002](PDR-002-provider-agnostic-core.md) | Provider-agnostic core by default | Accepted |
 
 - [ADR-021: NextNootbook identity and backend](ADR-021-nextnootbook-identity.md)
+
+- [ADR-022: Focused study interaction](ADR-022-focused-study-interaction.md)

@@ -163,6 +163,7 @@ describe('ChatPanel composer', () => {
   })
   it('sends the visual mode flag explicitly', () => {
     const { onSendMessage, sendButton } = mount()
+    fireEvent.click(screen.getByText('navigation.settings'))
     fireEvent.click(screen.getByRole('checkbox', { name: 'chat.visualResponses' }))
     fireEvent.change(getTextarea(), { target: { value: 'Show a source crop' } })
     fireEvent.click(sendButton)

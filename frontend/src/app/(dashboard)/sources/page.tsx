@@ -9,17 +9,15 @@ import { EmptyState } from '@/components/common/EmptyState'
 import { AppShell } from '@/components/layout/AppShell'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import { FileText, Trash2, ArrowDown, ArrowUp, ArrowUpDown, Plus } from 'lucide-react'
-import { formatDistanceToNow } from 'date-fns'
 import { Button } from '@/components/ui/button'
 import { useTranslation } from '@/lib/hooks/use-translation'
-import { getDateLocale } from '@/lib/utils/date-locale'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { getApiErrorKey } from '@/lib/utils/error-handler'
 import { AddSourceDialog } from '@/components/sources/AddSourceDialog'
 
 export default function SourcesPage() {
-  const { t, language } = useTranslation()
+  const { t } = useTranslation()
   const [sourceDialogOpen, setSourceDialogOpen] = useState(false)
   const failedToLoadMessage = t('sources.failedToLoad')
   const [sources, setSources] = useState<SourceListResponse[]>([])
@@ -244,11 +242,6 @@ export default function SourcesPage() {
   }
 
   // Content-type pebble — type hues live in dots, never washes
-  const getSourceTypeDotClass = (source: SourceListResponse) => {
-    if (source.asset?.url) return 'bg-type-web'
-    if (source.asset?.file_path) return 'bg-type-pdf'
-    return 'bg-type-note'
-  }
 
   const getSourceType = (source: SourceListResponse) => {
     if (source.asset?.url) return t('sources.type.link')
@@ -319,45 +312,23 @@ export default function SourcesPage() {
       <div className="flex flex-col flex-1 min-h-0 w-full max-w-none px-6 py-6">
         <div className="mb-6 flex-shrink-0">
           <div><h1>{t('sources.allSources')}</h1><p className="text-sm text-muted-foreground mt-2">{t('product.sourcesDesc')}</p></div>
-          <p className="mt-2 text-muted-foreground">
-            {t('sources.allSourcesDesc')}
-          </p>
+
         </div>
 
         <div ref={scrollContainerRef} className="flex-1 min-h-0 overflow-auto">
           <table
             ref={tableRef}
             tabIndex={0}
-            className="w-full min-w-[920px] outline-none table-fixed"
+            className="w-full outline-none table-fixed"
           >
-            <colgroup>
-              <col className="w-[120px]" />
-              <col className="w-auto" />
-              <col className="w-[140px]" />
-              <col className="w-[140px]" />
-              <col className="w-[100px]" />
-              <col className="w-[100px]" />
-              <col className="w-[100px]" />
-            </colgroup>
+            <colgroup><col className="w-16" /><col /><col className="w-16" /></colgroup>
             <thead className="sticky top-0 bg-background z-10">
               <tr className="border-b">
                 <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
-                  {renderSortableHeader('type', t('common.type'))}
+                  <span className="sr-only">{t('common.type')}</span>
                 </th>
                 <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
                   {renderSortableHeader('title', t('common.title'))}
-                </th>
-                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground hidden sm:table-cell">
-                  {renderSortableHeader('created', t('common.created_label'))}
-                </th>
-                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground hidden sm:table-cell">
-                  {renderSortableHeader('updated', t('common.updated_label'))}
-                </th>
-                <th className="h-12 px-4 text-center align-middle font-medium text-muted-foreground hidden md:table-cell">
-                  {renderSortableHeader('insights_count', t('sources.insights'), 'center')}
-                </th>
-                <th className="h-12 px-4 text-center align-middle font-medium text-muted-foreground hidden lg:table-cell">
-                  {renderSortableHeader('embedded', t('sources.embedded'), 'center')}
                 </th>
                 <th className="h-12 px-4 text-right align-middle font-medium text-muted-foreground">
                   {t('common.actions')}
@@ -378,19 +349,11 @@ export default function SourcesPage() {
                   )}
                 >
                   <td className="h-12 px-4">
-                    <div className="flex items-center gap-2">
-                      <span
-                        aria-hidden
-                        className={cn('h-2 w-2 shrink-0 rounded-full', getSourceTypeDotClass(source))}
-                      />
-                      <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                        {getSourceType(source)}
-                      </span>
-                    </div>
+                    <FileText className="size-4 text-muted-foreground" aria-label={getSourceType(source)} />
                   </td>
                   <td className="h-12 px-4">
                     <div className="flex flex-col overflow-hidden">
-                      <span className="font-medium truncate">
+                      <span className="font-medium break-words">
                         {source.title || t('sources.untitledSource')}
                       </span>
                       {source.asset?.url && (
@@ -400,37 +363,11 @@ export default function SourcesPage() {
                       )}
                     </div>
                   </td>
-                  <td className="h-12 px-4 text-muted-foreground text-sm hidden sm:table-cell">
-                    {formatDistanceToNow(new Date(source.created), { 
-                      addSuffix: true,
-                      locale: getDateLocale(language)
-                    })}
-                  </td>
-                  <td className="h-12 px-4 text-muted-foreground text-sm hidden sm:table-cell">
-                    {formatDistanceToNow(new Date(source.updated), {
-                      addSuffix: true,
-                      locale: getDateLocale(language)
-                    })}
-                  </td>
-                  <td className="h-12 px-4 text-center hidden md:table-cell">
-                    <span className="text-sm font-medium">{source.insights_count || 0}</span>
-                  </td>
-                  <td className="h-12 px-4 text-center hidden lg:table-cell">
-                    <span
-                      className={cn(
-                        "inline-flex items-center rounded-sm px-2 py-0.5 text-xs font-medium",
-                        source.embedded
-                          ? "bg-fern-tint text-fern-deep dark:text-fern"
-                          : "bg-muted text-muted-foreground"
-                      )}
-                    >
-                      {source.embedded ? t('sources.yes') : t('sources.no')}
-                    </span>
-                  </td>
                   <td className="h-12 px-4 text-right">
                     <Button
                       variant="ghost"
                       size="icon"
+                      aria-label={t('common.delete')}
                       onClick={(e) => handleDeleteClick(e, source)}
                       className="text-destructive hover:text-destructive"
                     >
@@ -441,7 +378,7 @@ export default function SourcesPage() {
               ))}
               {loadingMore && (
                 <tr>
-                  <td colSpan={7} className="h-16 text-center">
+                  <td colSpan={3} className="h-16 text-center">
                     <div className="flex items-center justify-center">
                       <LoadingSpinner />
                       <span className="ml-2 text-muted-foreground">{t('sources.loadingMore')}</span>
