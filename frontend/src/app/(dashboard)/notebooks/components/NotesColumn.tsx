@@ -92,7 +92,7 @@ export function NotesColumn({
         collapsedIcon={StickyNote}
         collapsedLabel={notesLabel}
       >
-        <Card className="h-full flex flex-col flex-1 overflow-hidden">
+        <Card className="study-materials study-notes h-full min-h-0 flex flex-col flex-1 overflow-hidden">
           <CardHeader className="pb-3 flex-shrink-0">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <CardTitle className="flex items-center gap-2 study-column-heading text-sm font-medium">

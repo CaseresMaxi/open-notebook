@@ -131,9 +131,9 @@
   box-shadow: inset 0 1px 0 var(--nn-edge), 0 16px 48px var(--nn-shadow);
 }
 .product-shell > main {
-  border-radius: 28px;
-  border: 1px solid var(--line);
-  background: color-mix(in srgb, var(--surface) 65%, transparent);
+  border-radius: 0;
+  border: 0;
+  background: transparent;
   position: relative;
 }
 .product-shell .app-sidebar a[aria-current="page"] {
@@ -146,7 +146,7 @@
 .product-shell [data-slot="card"], .product-panel {
   background: var(--surface);
   border-color: var(--line);
-  box-shadow: 0 6px 24px var(--nn-shadow);
+  box-shadow: none;
 }
 .product-heading { padding-block: 8px 16px; border-bottom: 1px solid var(--line); }
 .product-shell .product-study-grid { gap: 12px; }
@@ -171,3 +171,53 @@
   }
   .product-shell:has(> .app-sidebar) { background: var(--bg); }
 }
+
+/* One canvas, open columns and list rows rather than stacked cards. */
+.product-shell:has(> .app-sidebar) { position: relative; isolation: isolate; }
+.workspace-backdrop { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: -1; }
+.product-shell > .app-sidebar, .product-shell > main { z-index: 1; }
+.product-shell .product-study-grid { gap: 0; }
+.product-study-grid > :first-child { border-right: 1px solid var(--line); }
+.product-study-grid > :last-child { border-left: 1px solid var(--line); }
+.product-shell .study-materials, .product-shell .study-conversation {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  gap: 0;
+}
+.product-shell .study-materials [data-slot="card-header"],
+.product-shell .study-conversation [data-slot="card-header"] { padding-block: 12px; }
+.product-shell .study-sources [data-slot="card-content"] > div > [data-slot="card"] {
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  padding-block: 8px;
+  box-shadow: none;
+}
+.product-shell .study-sources [data-slot="card-content"] > div > [data-slot="card"]:hover,
+.product-shell .study-notes .card-hover:hover { background: var(--surface-recessed); }
+.product-shell .study-notes .card-hover {
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  box-shadow: none;
+}
+.product-shell .study-tools [data-slot="tabs-list"] { background: transparent; border-radius: 0; border-bottom: 1px solid var(--line); }
+.product-shell .study-tools [data-slot="tabs-trigger"] { box-shadow: none; }
+.product-shell .product-panel { background: transparent; border: 0; border-radius: 0; padding: 0; }
+.product-shell .product-panel + .product-panel { border-top: 1px solid var(--line); padding-top: 24px; }
+.product-shell .study-conversation [data-slot="scroll-area-viewport"] { background: var(--surface); }
+.product-shell .study-conversation [data-slot="card-content"] { padding-inline: 0; }
+.product-shell :is(.overflow-y-auto, .overflow-auto, [data-slot="scroll-area-viewport"]) {
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--ink-soft) transparent;
+}
+.product-shell [data-slot="scroll-area-thumb"] { background: var(--ink-soft); }
+.product-shell .overflow-y-auto { overflow-x: hidden; }
+.product-shell .study-materials [data-slot="card-content"] { scrollbar-gutter: stable; padding-bottom: 16px; }
+.product-shell[data-slot="dialog-content"] { max-height: calc(100dvh - 2rem); overscroll-behavior: contain; }
+@media (prefers-reduced-transparency: reduce), (forced-colors: active) { .workspace-backdrop { display: none; } }

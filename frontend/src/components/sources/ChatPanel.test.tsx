@@ -196,3 +196,24 @@ it('opens independent exam configuration carrying the original chat request', ()
   expect(screen.getByTestId('exam-configuration')).toHaveAttribute('data-notebook', 'notebook:test')
   expect(onSendMessage).not.toHaveBeenCalled()
 })
+
+it('preserves a reader position during replies and resumes following at the bottom', () => {
+  const props = { isStreaming: false, contextIndicators: null, onSendMessage: vi.fn() }
+  const first = { id: 'first', type: 'human' as const, content: 'question' }
+  const { container, rerender } = render(<ChatPanel {...props} messages={[first]} />)
+  const viewport = container.querySelector<HTMLElement>('[data-slot="scroll-area-viewport"]')!
+  Object.defineProperties(viewport, {
+    scrollHeight: { configurable: true, value: 1800 },
+    clientHeight: { configurable: true, value: 400 },
+  })
+  viewport.scrollTop = 120
+  fireEvent.scroll(viewport)
+  rerender(<ChatPanel {...props} messages={[first, { id: 'reply', type: 'ai', content: 'answer' }]} />)
+  expect(viewport.scrollTop).toBe(120)
+  expect(window.HTMLElement.prototype.scrollIntoView).not.toHaveBeenCalled()
+  viewport.scrollTop = 1400
+  fireEvent.scroll(viewport)
+  Object.defineProperty(viewport, 'scrollHeight', { configurable: true, value: 2000 })
+  rerender(<ChatPanel {...props} messages={[first, { id: 'reply', type: 'ai', content: 'longer answer' }]} />)
+  expect(viewport.scrollTop).toBe(2000)
+})

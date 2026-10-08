@@ -1,12 +1,15 @@
 'use client'
 
 import { useRouter, useParams } from 'next/navigation'
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
 import { useSourceChat } from '@/lib/hooks/use-source-chat'
 import { ChatPanel } from '@/components/sources/ChatPanel'
 import { useNavigation } from '@/lib/hooks/use-navigation'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { useTranslation } from '@/lib/hooks/use-translation'
+import { AppShell } from '@/components/layout/AppShell'
 import { SourceDetailContent } from '@/components/sources/SourceDetailContent'
 
 export default function SourceDetailPage() {
@@ -14,6 +17,8 @@ export default function SourceDetailPage() {
   const params = useParams()
   const sourceId = params?.id ? decodeURIComponent(params.id as string) : ''
   const navigation = useNavigation()
+  const { t } = useTranslation()
+  const [panel, setPanel] = useState('source')
 
   // Initialize source chat
   const chat = useSourceChat(sourceId)
@@ -25,7 +30,8 @@ export default function SourceDetailPage() {
   }, [navigation, router])
 
   return (
-    <div className="flex flex-col h-screen">
+    <AppShell>
+    <div className="source-workspace flex flex-col flex-1 min-h-0">
       {/* Back button */}
       <div className="pt-6 pb-4 px-6">
         <Button
@@ -39,10 +45,16 @@ export default function SourceDetailPage() {
         </Button>
       </div>
 
+      <Tabs value={panel} onValueChange={setPanel} className="lg:hidden px-6 pb-4 shrink-0">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="source">{t('sources.content')}</TabsTrigger>
+          <TabsTrigger value="chat">{t('common.chat')}</TabsTrigger>
+        </TabsList>
+      </Tabs>
       {/* Main content: Source detail + Chat */}
-      <div className="flex-1 grid gap-6 lg:grid-cols-[2fr_1fr] overflow-hidden px-6">
+      <div className="source-detail-grid flex-1 min-h-0 grid gap-6 lg:grid-cols-[2fr_1fr] overflow-hidden px-6 pb-6">
         {/* Left column - Source detail */}
-        <div className="overflow-y-auto px-4 pb-6">
+        <div className={`min-h-0 overflow-hidden ${panel === 'source' ? 'flex' : 'hidden'} lg:flex flex-col`}>
           <SourceDetailContent
             sourceId={sourceId}
             showChatButton={false}
@@ -51,7 +63,7 @@ export default function SourceDetailPage() {
         </div>
 
         {/* Right column - Chat */}
-        <div className="overflow-y-auto px-4 pb-6">
+        <div className={`min-h-0 overflow-hidden ${panel === 'chat' ? 'flex' : 'hidden'} lg:flex flex-col`}>
           <ChatPanel
             messages={chat.messages}
             isStreaming={chat.isStreaming}
@@ -70,5 +82,6 @@ export default function SourceDetailPage() {
         </div>
       </div>
     </div>
+    </AppShell>
   )
 }

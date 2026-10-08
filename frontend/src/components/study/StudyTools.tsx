@@ -27,7 +27,7 @@ export function StudyTools({
 }) {
   const { t } = useTranslation()
   return (
-    <div className="flex h-full min-h-0 flex-col gap-3">
+    <div className="study-tools flex h-full min-h-0 flex-col gap-3">
       <Tabs defaultValue="notes" className="flex flex-1 min-h-0 flex-col">
         <TabsList className="w-full grid grid-cols-2 min-h-11">
           <TabsTrigger value="notes" className="min-h-9">
@@ -50,7 +50,7 @@ export function StudyTools({
         </TabsContent>
         <TabsContent
           value="summaries"
-          className="flex-1 min-h-0 overflow-y-auto rounded-2xl border bg-card p-4"
+          className="flex-1 min-h-0 overflow-y-auto p-4"
         >
           <SummaryLibrary notebookId={notebookId} />
         </TabsContent>

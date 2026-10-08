@@ -25,7 +25,7 @@ export default function TransformationsPage() {
 
   return (
     <AppShell>
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 min-h-0 overflow-y-auto">
         <div className="p-6 space-y-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">

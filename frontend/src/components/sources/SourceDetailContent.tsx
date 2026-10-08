@@ -440,9 +440,9 @@ function SourceDetailContentInner({
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full min-h-0">
       {/* Header */}
-      <div className="pb-5 pr-10">
+      <div className="pb-5 pr-10 shrink-0">
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <InlineEdit
@@ -516,7 +516,7 @@ function SourceDetailContentInner({
       </div>
 
       {/* Tabs Content */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 min-h-0 overflow-y-auto">
         <Tabs defaultValue="content" className="w-full">
           <TabsList className="w-full sticky top-0 z-10 bg-card">
             <TabsTrigger value="content">{t('sources.content')}</TabsTrigger>

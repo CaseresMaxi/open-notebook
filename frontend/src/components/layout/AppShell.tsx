@@ -1,5 +1,6 @@
 'use client'
 
+import { WorkspaceBackdrop } from './WorkspaceBackdrop'
 import { BrandMark } from './BrandMark'
 
 import { useState } from 'react'
@@ -45,6 +46,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   ] as const
   return (
     <div className="product-shell flex h-dvh overflow-hidden bg-background text-foreground">
+      <WorkspaceBackdrop />
       <AppSidebar />
       <main
         id="main-content"

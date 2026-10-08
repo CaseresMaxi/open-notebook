@@ -16,7 +16,7 @@ export default function SettingsPage() {
 
   return (
     <AppShell>
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 min-h-0 overflow-y-auto">
         <div className="product-page">
           <div className="max-w-4xl">
             <div className="flex items-center gap-4 mb-6">

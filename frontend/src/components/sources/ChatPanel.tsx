@@ -104,15 +104,31 @@ export function ChatPanel({
     }
   }, [openModal, t])
 
-  // Auto-scroll to bottom when new messages arrive
+  // Follow the conversation only while the reader is near its end.
+  // Scroll the message viewport itself, never its outer page or dialog.
+  const followMessages = useRef(true)
+  const conversationStart = useRef<string | undefined>(undefined)
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    const viewport = scrollAreaRef.current?.querySelector<HTMLElement>('[data-slot="scroll-area-viewport"]')
+    if (!viewport) return
+    const onScroll = () => {
+      followMessages.current = viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight < 96
+    }
+    viewport.addEventListener('scroll', onScroll, { passive: true })
+    return () => viewport.removeEventListener('scroll', onScroll)
+  }, [])
+  useEffect(() => {
+    const viewport = scrollAreaRef.current?.querySelector<HTMLElement>('[data-slot="scroll-area-viewport"]')
+    const first = messages[0]?.id
+    if (first !== conversationStart.current) followMessages.current = true
+    conversationStart.current = first
+    if (viewport && followMessages.current) viewport.scrollTop = viewport.scrollHeight
   }, [messages])
 
   return (
     <>
     {examRequest !== null && <CreateExamDialog open onOpenChange={open => { if (!open) setExamRequest(null) }} initialNotebookId={notebookId} initialInstructions={examRequest || ''} initialModelId={modelOverride} />}
-    <Card className="flex flex-col h-full flex-1 overflow-hidden">
+    <Card className="study-conversation flex flex-col h-full min-h-0 flex-1 overflow-hidden">
       <CardHeader className="pb-3 flex-shrink-0">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <CardTitle className="flex items-center gap-2 study-column-heading text-sm font-medium">

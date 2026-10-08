@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- NextNootbook adds a subtle animated dot-wave backdrop adapted from the Instasent effects lab, capped at 20 fps/1.5 DPR and paused offscreen, in hidden tabs and with reduced motion.
 - Personal study product adds browser-local profile and billing preview pages, notebook note/summary libraries, source-grounded saved summaries, a conversation launcher, and free Arc UI components. Billing remains explicitly unavailable until a provider and plans are defined.
 - Notebook chat context controls show selected sources/notes and estimated history tokens, limit remembered exchanges, restart memory while keeping the transcript, or permanently clear all conversation checkpoints. Memory settings persist per chat; destructive cleanup requires confirmation.
 - Educational charts, tables, diagrams and animations now use saved HTML/CSS/SVG figures instead of raster image generation. Visuals appear inline, can be enlarged, persist across chat reloads and work in standalone/inline exam questions and grading. Generated code runs in a script-free sandbox; uploaded images and genuine source crops retain their original pixels.
@@ -29,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Development:** `architecture.md`, `testing.md`, `api-reference.md` and `code-standards.md` are rewritten from the code. A new playbook covers adding an AI provider. Dev setup lives on one page. The AGENTS files agree with the docs. Contributor conventions (Conventional Commits, CHANGELOG sections, pre-PR checks that match CI) are documented
 
 ### Fixed
+- Study layouts remove nested card frames, use open columns and source/note rows, and keep scroll regions within available height. Chat updates follow only readers near the end and never scroll the outer page. Source detail uses mobile tabs with independent content/chat viewports; dialogs fit the dynamic viewport.
 - Generated educational visuals now require inspection of the selected source representations, a source-referenced visual brief and a comparison of generated HTML with original page pixels before attachment. Adaptations, conceptual diagrams and illustrative examples show their provenance and changes; missing-original fallbacks verify source excerpts and do not claim a reconstruction.
 - Explicit image requests activate visual tools even when the composer toggle is off; ordinary requests for an exam or questionnaire produce interactive cards, with structured recovery when the model returns plain questions.
 - Malformed interactive tests are repaired using structured output instead of rejecting the entire chat response. Inline/CRLF fences are accepted; unrecoverable tests preserve the explanation and figures with a localized notice, without exposing answer keys.
