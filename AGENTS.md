@@ -47,3 +47,9 @@ Or all at once: `make start-all` (status: `make status`, stop: `make stop-all`).
 | Decision log (ADRs/PDRs) | [docs/7-DEVELOPMENT/decisions/](docs/7-DEVELOPMENT/decisions/) |
 | Contribution process (Discussions → Issues → PRs) | [docs/7-DEVELOPMENT/contributing.md](docs/7-DEVELOPMENT/contributing.md) |
 | User/operator docs (install, configure, troubleshoot) | [docs/](docs/index.md) |
+
+## Personal fork workflow
+
+Current user policy: new development belongs only to `CaseresMaxi/open-notebook`, on `feature/source-faithful-visuals`. Upstream PR #1486 is frozen at `706c2eef90c24c8a29123e344f25d20f8373f35b` (the initial exam/chat-test contribution). Do not push new commits to `feature/practice-exams` or update/create upstream PRs or Discussions without new explicit user instructions.
+
+For generated educational visuals, use the repository skill [.codex/skills/source-faithful-visuals/SKILL.md](.codex/skills/source-faithful-visuals/SKILL.md): inspect original source representations and compare their meaning with the rendered result. The runtime guide is [prompts/visuals/source_fidelity.jinja](prompts/visuals/source_fidelity.jinja).

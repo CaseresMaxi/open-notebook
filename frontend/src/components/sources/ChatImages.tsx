@@ -31,7 +31,17 @@ export function ChatImages({ images, onRemove, disabled, large = false, showProv
                   <HtmlVisualFrame visual={image} expanded />
                 </DialogContent>
               </Dialog>
-              {showProvenance && <p className="text-xs text-muted-foreground">{t('chat.generatedVisual')}</p>}
+              {showProvenance && <div className="space-y-1 text-xs text-muted-foreground">
+                <p>{t(image.basis === 'adaptation' ? 'chat.sourceAdaptation' : image.basis === 'conceptual' ? 'chat.sourceConcept' : image.basis === 'illustrative' ? 'chat.illustrativeVisual' : 'chat.generatedVisual')}</p>
+                {image.references?.map((reference, referenceIndex) => <Link key={referenceIndex} className="block text-primary underline break-words"
+                  href={`/sources/${encodeURIComponent(reference.source_id)}`}>
+                  {reference.page ? t('chat.sourceImage', { source: reference.source_title || reference.source_id, page: reference.page }) : reference.source_title || reference.source_id}
+                </Link>)}
+                {!!image.fidelity_notes?.length && <details>
+                  <summary className="cursor-pointer">{t('chat.visualChanges')}</summary>
+                  <ul className="list-disc pl-4">{image.fidelity_notes.map((note, noteIndex) => <li key={noteIndex}>{note}</li>)}</ul>
+                </details>}
+              </div>}
             </>
           ) : <Dialog>
             <DialogTrigger asChild>

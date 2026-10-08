@@ -14,6 +14,7 @@ from api.models import (
 from open_notebook.ai.models import Model
 from open_notebook.database.repository import repo_query
 from open_notebook.domain.exam import Exam, ExamAttempt
+from open_notebook.utils.chat_images import HtmlVisual
 
 router = APIRouter()
 
@@ -71,6 +72,11 @@ def _exam_response(
                     "source_id": None,
                     "source_title": None,
                     "page": None,
+                    **(
+                        {"references": [], "fidelity_notes": []}
+                        if isinstance(image, HtmlVisual)
+                        else {}
+                    ),
                 }
             )
             for image_id, image in exam.images.items()

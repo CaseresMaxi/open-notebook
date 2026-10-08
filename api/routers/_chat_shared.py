@@ -96,7 +96,7 @@ def extract_chat_messages(raw_messages: Iterable[Any]) -> List[ChatMessage]:
                 if hasattr(msg, "content")
                 else str(msg),
                 timestamp=None,  # LangChain messages don't have timestamps by default
-                images=message_images(msg),
+                images=message_images(msg, public=True),
                 followups=getattr(msg, "additional_kwargs", {}).get(
                     "response_followups", []
                 ),

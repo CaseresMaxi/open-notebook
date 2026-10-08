@@ -103,3 +103,5 @@ attempt review and remain available when reopening the exam or conversation.
 ### HTML figures
 
 Generated educational diagrams, charts and tables can appear as HTML/CSS/SVG figures in standalone exams and tests inside chat. Enlarge a figure to inspect its labels. Question generation and AI grading receive the figure's actual code and data; source crops continue to supply their original pixels. Generated figures should present the problem without showing its solution.
+
+Source inspection and fidelity checks also apply when preparing generated exam figures. Private source observations and adaptation notes are omitted from student question responses and become available in attempt review; the displayed diagram must not contain a solution or hidden answer control.

@@ -164,6 +164,9 @@ export interface ChatImage {
 
 export interface HtmlVisual {
   kind: 'html'
+  basis?: 'adaptation' | 'conceptual' | 'illustrative' | 'unverified'
+  references?: { source_id: string; source_title: string; page?: number | null; quote?: string; observation: string }[]
+  fidelity_notes?: string[]
   name: string
   html: string
   description: string

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Visualizaciones fieles a las fuentes"
+  short_description: "Inspecciona fuentes y verifica gráficos educativos"
+  default_prompt: "Usá $source-faithful-visuals para generar o revisar un gráfico fiel a mis fuentes."

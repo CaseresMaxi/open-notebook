@@ -164,3 +164,9 @@ active, and sending temporarily disables its buttons. Failed sends can be retrie
 Ask for a chart, table, diagram or animated explanation in ordinary language. These requests enable visual tools automatically. Educational figures use self-contained HTML/CSS/SVG so their labels stay readable. They appear beside the relevant paragraph, can be enlarged and remain available after reopening the conversation. CSS/SVG animations and declarative controls are supported; JavaScript and external libraries are unavailable.
 
 Photographic or artistic requests can still use raster generation, and source crops preserve the original document pixels. The selected model must support tool calling; source page inspection also requires vision.
+
+### Faithfulness to your sources
+
+Generated figures now start with the selected sources. The assistant inspects the original relevant PDF/image pages before adapting their representations, records what should be preserved and what changes, and checks the generated code against those original page pixels. Each HTML figure identifies whether it is an adaptation, a diagram of source concepts or an illustrative example, with source/page links and disclosed changes. These checks reduce errors; generated scientific content still warrants review.
+
+When an original file is unavailable, a conceptual figure can use a verified source-text excerpt. It must identify the limitation and cannot claim to reconstruct an unseen figure. To request a particular representation, name the source and page and the relationships you want explained. For example: “Adapt the Refund decision tree on page 8, preserving its branch conditions and class counts.”

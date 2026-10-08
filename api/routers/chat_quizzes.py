@@ -10,7 +10,7 @@ from api.models import ExamAttemptRequest, ExamAttemptResponse, ExamQuestionResp
 from api.routers.exams import _attempt_response, _question_response
 from open_notebook.domain.chat_quiz import ChatQuiz
 from open_notebook.domain.notebook import ChatSession
-from open_notebook.utils.chat_images import ChatVisual
+from open_notebook.utils.chat_images import ChatVisual, HtmlVisual
 
 router = APIRouter()
 
@@ -42,6 +42,11 @@ async def _response(quiz: ChatQuiz) -> ChatQuizResponse:
                     "source_id": None,
                     "source_title": None,
                     "page": None,
+                    **(
+                        {"references": [], "fidelity_notes": []}
+                        if isinstance(image, HtmlVisual)
+                        else {}
+                    ),
                 }
             )
             for key, image in quiz.images.items()

@@ -30,3 +30,12 @@ describe('HTML visual artifacts', () => {
     expect(screen.getAllByTitle('Count chart')).toHaveLength(2)
   })
 })
+
+it('shows inspected source provenance and adaptation changes with the figure', () => {
+  const adapted: HtmlVisual = { ...visual, basis: 'adaptation', references: [{ source_id: 'source:tree', source_title: 'Tree.pdf', page: 8, observation: 'Preserved Refund = Yes? and original branch counts.' }], fidelity_notes: ['Responsive layout; original split and counts preserved.'] }
+  render(<ChatResponseContent content="[[image:1]]" images={[adapted]} onReferenceClick={vi.fn()} />)
+  expect(screen.getByText('chat.sourceAdaptation')).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: 'chat.sourceImage' })).toHaveAttribute('href', '/sources/source%3Atree')
+  expect(screen.getByText('chat.visualChanges')).toBeInTheDocument()
+  expect(screen.getByText('Responsive layout; original split and counts preserved.')).toBeInTheDocument()
+})

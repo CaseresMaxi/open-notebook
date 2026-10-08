@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Development:** `architecture.md`, `testing.md`, `api-reference.md` and `code-standards.md` are rewritten from the code. A new playbook covers adding an AI provider. Dev setup lives on one page. The AGENTS files agree with the docs. Contributor conventions (Conventional Commits, CHANGELOG sections, pre-PR checks that match CI) are documented
 
 ### Fixed
+- Generated educational visuals now require inspection of the selected source representations, a source-referenced visual brief and a comparison of generated HTML with original page pixels before attachment. Adaptations, conceptual diagrams and illustrative examples show their provenance and changes; missing-original fallbacks verify source excerpts and do not claim a reconstruction.
 - Explicit image requests activate visual tools even when the composer toggle is off; ordinary requests for an exam or questionnaire produce interactive cards, with structured recovery when the model returns plain questions.
 - Malformed interactive tests are repaired using structured output instead of rejecting the entire chat response. Inline/CRLF fences are accepted; unrecoverable tests preserve the explanation and figures with a localized notice, without exposing answer keys.
 - Chat figures now render at their intended positions within an explanation instead of collecting at the bottom; unknown attachment references are rejected and historical galleries remain readable.

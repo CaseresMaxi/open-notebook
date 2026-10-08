@@ -405,7 +405,9 @@ async def stream_source_chat_response(
             if getattr(msg, "type", None) == "ai":
                 ai_event = {
                     "type": "ai_message",
-                    "images": [image.model_dump() for image in message_images(msg)],
+                    "images": [
+                        image.model_dump() for image in message_images(msg, public=True)
+                    ],
                     "followups": getattr(msg, "additional_kwargs", {}).get(
                         "response_followups", []
                     ),
