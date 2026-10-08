@@ -1,12 +1,12 @@
 import apiClient from './client'
 import type { ExamAnswers, ExamAttempt, ExamQuestion } from '@/lib/types/exams'
-import type { ChatImage } from '@/lib/types/api'
+import type { ChatVisual } from '@/lib/types/api'
 
 export interface ChatQuizDetail {
   id: string
   title: string
   questions: ExamQuestion[]
-  images: Record<string, ChatImage>
+  images: Record<string, ChatVisual>
   latest_attempt: ExamAttempt | null
   review_questions: ExamQuestion[] | null
 }

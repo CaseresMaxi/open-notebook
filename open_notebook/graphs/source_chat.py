@@ -16,7 +16,7 @@ from open_notebook.domain.notebook import Source, SourceInsight
 from open_notebook.exceptions import IncompleteGenerationError, OpenNotebookError
 from open_notebook.utils import clean_thinking_content
 from open_notebook.utils.chat_followups import followup_context
-from open_notebook.utils.chat_images import chat_model_context
+from open_notebook.utils.chat_images import chat_model_context, visual_history_context
 from open_notebook.utils.chat_responses import (
     latest_request,
     quiz_instructions,
@@ -162,7 +162,7 @@ def _call_model_with_source_context_inner(
     )
 
     # Handle async model provisioning from sync context
-    payload = followup_context(payload)
+    payload = visual_history_context(followup_context(payload))
 
     def run_in_new_loop():
         """Run the async function in a new event loop"""

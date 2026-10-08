@@ -1,7 +1,7 @@
 'use client'
 
 import { Fragment } from 'react'
-import type { ChatImage, ChatFollowup } from '@/lib/types/api'
+import type { ChatVisual, ChatFollowup } from '@/lib/types/api'
 import { ChatFollowupCard } from './ChatFollowupCard'
 import { ChatImages } from './ChatImages'
 import { InlineChatQuiz } from './InlineChatQuiz'
@@ -11,7 +11,7 @@ import { convertReferencesToCompactMarkdown, createCompactReferenceLinkComponent
 
 export function ChatResponseContent({ content, images = [], quizzes = [], followups = [], disabled, onReply, onCreateExam, onReferenceClick }: {
   content: string
-  images?: ChatImage[]
+  images?: ChatVisual[]
   quizzes?: string[]
   followups?: ChatFollowup[]
   disabled?: boolean

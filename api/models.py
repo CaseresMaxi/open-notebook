@@ -2,7 +2,7 @@ from typing import Any, Dict, List, Literal, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-from open_notebook.utils.chat_images import ChatImage
+from open_notebook.utils.chat_images import ChatVisual
 
 
 # Notebook models
@@ -887,7 +887,7 @@ class ExamResponse(BaseModel):
     attempt_count: int = 0
     best_score: Optional[float] = None
     questions: Optional[List[ExamQuestionResponse]] = None
-    images: Dict[str, ChatImage] = Field(default_factory=dict)
+    images: Dict[str, ChatVisual] = Field(default_factory=dict)
     created: str
     updated: str
 

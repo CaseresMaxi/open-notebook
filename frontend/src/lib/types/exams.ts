@@ -1,4 +1,4 @@
-import type { ChatImage } from './api'
+import type { ChatImage, ChatVisual } from './api'
 
 export type ExamQuestionType = 'multiple_choice' | 'multiple_select' | 'fill_blank' | 'open'
 export type ExamDifficulty = 'easy' | 'medium' | 'hard'
@@ -28,7 +28,7 @@ export interface Exam {
   language?: string | null
   instructions?: string | null
   source_ids: string[]
-  images?: Record<string, ChatImage>
+  images?: Record<string, ChatVisual>
   question_count: number
   max_score: number
   attempt_count: number

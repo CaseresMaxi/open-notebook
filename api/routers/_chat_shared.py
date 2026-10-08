@@ -19,7 +19,7 @@ from pydantic import BaseModel, Field
 
 from open_notebook.database.repository import ensure_record_id, repo_query
 from open_notebook.domain.notebook import ChatSession, Source
-from open_notebook.utils.chat_images import ChatImage, message_images
+from open_notebook.utils.chat_images import ChatVisual, message_images
 from open_notebook.utils.text_utils import extract_text_content
 
 
@@ -29,7 +29,7 @@ class ChatMessage(BaseModel):
     type: str = Field(..., description="Message type (human|ai)")
     content: str = Field(..., description="Message content")
     timestamp: Optional[str] = Field(None, description="Message timestamp")
-    images: list[ChatImage] = Field(default_factory=list)
+    images: list[ChatVisual] = Field(default_factory=list)
     quizzes: list[str] = Field(default_factory=list)
     followups: list[dict[str, Any]] = Field(default_factory=list)
 

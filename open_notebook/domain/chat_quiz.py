@@ -7,7 +7,7 @@ from pydantic import Field
 from open_notebook.database.repository import ensure_record_id, repo_query
 from open_notebook.domain.base import ObjectModel
 from open_notebook.domain.exam import ExamAttempt, ExamQuestion
-from open_notebook.utils.chat_images import ChatImage
+from open_notebook.utils.chat_images import ChatVisual, visual_adapter
 
 
 class ChatQuiz(ObjectModel):
@@ -16,7 +16,7 @@ class ChatQuiz(ObjectModel):
     session_id: str
     title: str
     questions: list[dict[str, Any]] = Field(default_factory=list)
-    images: dict[str, ChatImage] = Field(default_factory=dict)
+    images: dict[str, ChatVisual] = Field(default_factory=dict)
     model_id: str | None = None
     language: str | None = None
 
@@ -30,7 +30,8 @@ class ChatQuiz(ObjectModel):
     async def save(self) -> None:
         await super().save()
         self.images = {
-            key: ChatImage.model_validate(value) for key, value in self.images.items()
+            key: visual_adapter.validate_python(value)
+            for key, value in self.images.items()
         }
 
     def get_questions(self) -> list[ExamQuestion]:

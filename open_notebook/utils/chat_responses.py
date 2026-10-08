@@ -81,7 +81,7 @@ def requested_widgets(request: str) -> tuple[bool, bool]:
     )
     visual = bool(
         re.search(
-            r"\b(imagen(?:es)?|imange(?:n|es)|ilustracion(?:es)?|recortes?|figuras?|images?|illustrations?|crops?)\b",
+            r"\b(imagen(?:es)?|imange(?:n|es)|ilustracion(?:es)?|recortes?|figuras?|images?|illustrations?|crops?|graficos?|diagramas?|cuadros?|tablas?|charts?|graphs?|diagrams?|tables?|visualizaciones?|visualizations?|animaciones?|animations?|html)\b",
             text,
         )
     )

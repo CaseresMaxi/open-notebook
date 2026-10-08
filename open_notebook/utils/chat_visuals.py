@@ -19,8 +19,9 @@ from open_notebook.exceptions import (
     InvalidInputError,
     OpenNotebookError,
 )
-from open_notebook.utils.chat_images import ChatImage
+from open_notebook.utils.chat_images import ChatImage, ChatVisual, HtmlVisual
 from open_notebook.utils.error_classifier import classify_error
+from open_notebook.utils.html_visuals import requires_visual_scripts
 from open_notebook.utils.source_images import inspect_source, render_source_image
 from open_notebook.utils.text_utils import extract_text_content
 
@@ -50,7 +51,21 @@ class GenerateArgs(BaseModel):
     caption: str = Field(min_length=1, max_length=255)
 
 
-def _visual_reply(reply: Any, images: list[ChatImage]) -> Any:
+class HtmlArgs(BaseModel):
+    html: str = Field(
+        min_length=1,
+        max_length=100_000,
+        description="Self-contained HTML document with inline CSS, SVG and optional CSS/SVG animations. No external assets, links, forms, network access or libraries.",
+    )
+    caption: str = Field(min_length=1, max_length=255)
+    description: str = Field(
+        min_length=1,
+        max_length=4000,
+        description="Accessible explanation of the actual plotted data, labels and geometry; not an answer key.",
+    )
+
+
+def _visual_reply(reply: Any, images: list[ChatVisual]) -> Any:
     # Resolve only actual tool attachments. Markers are positional, never URLs.
     content = extract_text_content(reply.content)
 
@@ -114,7 +129,7 @@ async def invoke_visual_chat(
     model: Any, payload: list, source_ids: set[str], model_id: str | None
 ) -> Any:
     model = _prepare_tool_model(model)
-    images: list[ChatImage] = []
+    images: list[ChatVisual] = []
     previews: set[tuple[str, int]] = set()
     pending_previews: list[ChatImage] = []
     generations = 0
@@ -166,7 +181,26 @@ async def invoke_visual_chat(
         images.append(image)
         return f"Attached generated image {len(images)} (insert [[image:{len(images)}]] at its relevant position; quiz figure ID figure{len(images)}): {caption}. This is an illustration, not evidence extracted from a source."
 
+    async def render_html_visual(html: str, caption: str, description: str) -> str:
+        if len(images) >= 4:
+            raise InvalidInputError(
+                "Up to four visual attachments are supported per turn."
+            )
+        if requires_visual_scripts(html):
+            raise InvalidInputError(
+                "Generated JavaScript and canvas are unavailable. Rewrite this visual using HTML/CSS/SVG only. Use checkbox/radio inputs with labels and CSS selectors for pause/resume, or details/summary for disclosure; ordinary buttons and event handlers will not work. Call render_html_visual again with the corrected complete code."
+            )
+        visual = HtmlVisual(name=caption, html=html, description=description)
+        images.append(visual)
+        return f"Attached HTML visual {len(images)} (insert [[image:{len(images)}]] at its relevant position; quiz figure ID figure{len(images)}): {caption}. Generated educational visualization, not source evidence."
+
     tools = [
+        StructuredTool.from_function(
+            coroutine=render_html_visual,
+            name="render_html_visual",
+            description="Create an accurate chart, table, diagram, plot, infographic or animation using self-contained HTML/CSS/SVG. Preferred for all educational visuals, including requests worded as images. Supply the actual complete code, not a promise. Up to four attachments per turn.",
+            args_schema=HtmlArgs,
+        ),
         StructuredTool.from_function(
             coroutine=inspect_source_pages,
             name="inspect_source_pages",
@@ -188,14 +222,15 @@ async def invoke_visual_chat(
         StructuredTool.from_function(
             coroutine=generate_image,
             name="generate_image",
-            description="Generate a new illustrative image on explicit user request. Include source-grounded facts in the prompt. One generation per turn.",
+            description="Generate a raster photo or artistic illustration on explicit request. Do NOT use for diagrams, graphs, charts, tables, text-heavy figures or animations: use render_html_visual for those. One raster generation per turn.",
             args_schema=GenerateArgs,
         ),
     ]
     by_name = {tool.name: tool for tool in tools}
     instructions = (
         "Visual responses are enabled. Use tools to illustrate your answer when relevant. "
-        "When the user asks you to generate a new image or illustration, you MUST call generate_image; a description or a promise is not an image. Generate images only on explicit request. "
+        "For graphs, charts, diagrams, tables, decision trees, educational figures, text-heavy visuals and animations, ALWAYS call render_html_visual rather than generate_image, even if the user calls it an image. For explicit visual requests you MUST produce an actual attachment; prose or a promise is insufficient. Choose HTML for educational illustrations by default. Reserve generate_image for explicitly photographic or artistic raster requests. "
+        "Write complete self-contained responsive HTML with inline CSS and SVG with optional CSS/SVG animations and declarative controls; accurate source-grounded labels, data, geometry and readable text in the user's language. No JavaScript, canvas, external assets, imports, fetches, links or libraries: network and navigation are blocked. No markdown fences in the HTML argument. Add an accessible legend, use a light neutral background, scalable SVG viewBox, avoid clipping, and keep essential facts visible without interaction. Labels must remain legible in a 350px chat panel: stack panels responsively or allow scrolling rather than shrinking a wide SVG to tiny text. Optional animation must respect prefers-reduced-motion and offer pause/replay controls using checkbox/radio inputs, labels and CSS selectors. Ordinary buttons and event handlers are unavailable; use details/summary or native popover controls for other interaction. Exam figures must never display solutions, correct options, reference answers or rubrics. "
         "For source figures, inspect the PDF, preview the page, then crop the relevant region. "
         "Never invent source figures or crop coordinates without seeing the page. "
         "Tool errors mean no image was attached: explain the limitation honestly. "

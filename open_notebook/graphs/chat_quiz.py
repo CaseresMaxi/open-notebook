@@ -14,7 +14,7 @@ from open_notebook.graphs.exam import (
     _figure_blocks,
     _invoke_structured,
 )
-from open_notebook.utils.chat_images import ChatImage, chat_model_context
+from open_notebook.utils.chat_images import ChatVisual, chat_model_context
 from open_notebook.utils.error_classifier import classify_error
 
 
@@ -24,7 +24,7 @@ class InlineQuiz(GeneratedExam):
 
 
 async def repair_inline_quiz(
-    raw: str, images: dict[str, ChatImage], model_id: str | None
+    raw: str, images: dict[str, ChatVisual], model_id: str | None
 ) -> InlineQuiz:
     """Repair only the test schema/semantics using the original question material."""
     try:

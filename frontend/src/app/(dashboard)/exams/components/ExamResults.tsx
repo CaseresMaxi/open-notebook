@@ -7,7 +7,7 @@ import { Progress } from '@/components/ui/progress'
 import { useTranslation } from '@/lib/hooks/use-translation'
 import { cn } from '@/lib/utils'
 import { ExamAttempt, ExamQuestion, ExamQuestionResult } from '@/lib/types/exams'
-import type { ChatImage } from '@/lib/types/api'
+import type { ChatVisual } from '@/lib/types/api'
 import { ExamQuestionImages } from './ExamQuestionImages'
 import { ChatImages } from '@/components/sources/ChatImages'
 import { openExamAnswer } from '@/lib/utils/exam-answers'
@@ -34,7 +34,7 @@ function QuestionReview({
   result?: ExamQuestionResult
   answer: ExamAttempt['answers'][string] | undefined
   index: number
-  images?: Record<string, ChatImage>
+  images?: Record<string, ChatVisual>
 }) {
   const { t } = useTranslation()
   const opened = openExamAnswer(answer)
@@ -158,7 +158,7 @@ function QuestionReview({
 interface ExamResultsProps {
   attempt: ExamAttempt
   questions: ExamQuestion[]
-  images?: Record<string, ChatImage>
+  images?: Record<string, ChatVisual>
 }
 
 export function ExamResults({ attempt, questions, images }: ExamResultsProps) {

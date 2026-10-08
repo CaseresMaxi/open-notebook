@@ -10,7 +10,7 @@ from api.models import ExamAttemptRequest, ExamAttemptResponse, ExamQuestionResp
 from api.routers.exams import _attempt_response, _question_response
 from open_notebook.domain.chat_quiz import ChatQuiz
 from open_notebook.domain.notebook import ChatSession
-from open_notebook.utils.chat_images import ChatImage
+from open_notebook.utils.chat_images import ChatVisual
 
 router = APIRouter()
 
@@ -19,7 +19,7 @@ class ChatQuizResponse(BaseModel):
     id: str
     title: str
     questions: List[ExamQuestionResponse]
-    images: Dict[str, ChatImage] = Field(default_factory=dict)
+    images: Dict[str, ChatVisual] = Field(default_factory=dict)
     latest_attempt: Optional[ExamAttemptResponse] = None
     review_questions: Optional[List[ExamQuestionResponse]] = None
 

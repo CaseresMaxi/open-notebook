@@ -177,7 +177,6 @@ async def test_save_restores_typed_pool_after_database_refresh(figure, monkeypat
     )
     await exam.save()
     assert isinstance(exam.images["figure1"], ChatImage)
-    assert (
-        _exam_response(exam, include_questions=True).images["figure1"].data_url
-        == figure.data_url
-    )
+    restored = _exam_response(exam, include_questions=True).images["figure1"]
+    assert isinstance(restored, ChatImage)
+    assert restored.data_url == figure.data_url

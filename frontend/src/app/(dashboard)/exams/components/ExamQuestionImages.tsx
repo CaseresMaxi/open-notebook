@@ -1,13 +1,13 @@
 'use client'
 
-import type { ChatImage } from '@/lib/types/api'
+import type { ChatVisual } from '@/lib/types/api'
 import type { ExamQuestion } from '@/lib/types/exams'
 import { ChatImages } from '@/components/sources/ChatImages'
 import { useTranslation } from '@/lib/hooks/use-translation'
 
 export function ExamQuestionImages({ question, images = {}, review = false }: {
   question: ExamQuestion
-  images?: Record<string, ChatImage>
+  images?: Record<string, ChatVisual>
   review?: boolean
 }) {
   const { t } = useTranslation()

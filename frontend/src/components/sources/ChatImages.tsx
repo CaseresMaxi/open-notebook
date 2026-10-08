@@ -2,16 +2,17 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import type { ChatImage } from '@/lib/types/api'
+import type { ChatVisual } from '@/lib/types/api'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { HtmlVisualFrame } from './HtmlVisualFrame'
 import { X } from 'lucide-react'
 import { useTranslation } from '@/lib/hooks/use-translation'
 
 export function ChatImages({ images, onRemove, disabled, large = false, showProvenance = true }: {
   large?: boolean
   showProvenance?: boolean
-  images: ChatImage[]
+  images: ChatVisual[]
   onRemove?: (index: number) => void
   disabled?: boolean
 }) {
@@ -19,8 +20,20 @@ export function ChatImages({ images, onRemove, disabled, large = false, showProv
   return (
     <div className="flex flex-wrap gap-2">
       {images.map((image, index) => (
-        <div key={`${index}-${image.name}`} className={`relative rounded-md border bg-muted p-1 ${large ? "w-full max-w-2xl" : ""}`}>
-          <Dialog>
+        <div key={`${index}-${image.name}`} className={`relative rounded-md border bg-muted p-1 ${large || image.kind === 'html' ? "w-full max-w-2xl" : ""}`}>
+          {image.kind === 'html' ? (
+            <>
+              <HtmlVisualFrame visual={image} />
+              <Dialog>
+                <DialogTrigger asChild><Button type="button" variant="outline" size="sm">{t('chat.expandVisual')}</Button></DialogTrigger>
+                <DialogContent className="max-w-5xl">
+                  <DialogTitle className="text-sm">{image.name}</DialogTitle>
+                  <HtmlVisualFrame visual={image} expanded />
+                </DialogContent>
+              </Dialog>
+              {showProvenance && <p className="text-xs text-muted-foreground">{t('chat.generatedVisual')}</p>}
+            </>
+          ) : <Dialog>
             <DialogTrigger asChild>
               <button type="button" className="block w-full rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                 <Image src={image.data_url} alt={image.name} width={large ? 640 : 128} height={large ? 360 : 96}
@@ -32,7 +45,7 @@ export function ChatImages({ images, onRemove, disabled, large = false, showProv
               <Image src={image.data_url} alt={image.name} width={1200} height={900}
                 unoptimized className="max-h-[75vh] w-full object-contain" />
             </DialogContent>
-          </Dialog>
+          </Dialog>}
           {showProvenance && image.kind === 'generated' && <p className={`text-xs text-muted-foreground ${large ? "" : "max-w-32"}`}>{t('chat.generatedImage')}</p>}
           {showProvenance && image.kind === 'source' && image.source_id && (
             <Link className={`block text-xs text-primary underline break-words ${large ? "" : "max-w-32"}`}

@@ -99,3 +99,7 @@ and evaluates them together with your text against the reference answer and rubr
 Choose a vision-capable grading model when submitting images. If grading fails,
 your draft stays available for retry. The submitted images appear in the saved
 attempt review and remain available when reopening the exam or conversation.
+
+### HTML figures
+
+Generated educational diagrams, charts and tables can appear as HTML/CSS/SVG figures in standalone exams and tests inside chat. Enlarge a figure to inspect its labels. Question generation and AI grading receive the figure's actual code and data; source crops continue to supply their original pixels. Generated figures should present the problem without showing its solution.

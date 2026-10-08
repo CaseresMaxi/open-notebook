@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 from open_notebook.database.repository import ensure_record_id, repo_query
 from open_notebook.domain.base import ObjectModel
 from open_notebook.exceptions import DatabaseOperationError
-from open_notebook.utils.chat_images import ChatImage
+from open_notebook.utils.chat_images import ChatVisual, visual_adapter
 
 QuestionType = Literal["multiple_choice", "multiple_select", "fill_blank", "open"]
 
@@ -55,7 +55,7 @@ class Exam(ObjectModel):
     instructions: Optional[str] = None
     source_ids: List[str] = Field(default_factory=list)
     questions: List[Dict[str, Any]] = Field(default_factory=list)
-    images: Dict[str, ChatImage] = Field(default_factory=dict)
+    images: Dict[str, ChatVisual] = Field(default_factory=dict)
     model_id: Optional[str] = None
 
     def _prepare_save_data(self) -> Dict[str, Any]:
@@ -70,7 +70,8 @@ class Exam(ObjectModel):
         # ObjectModel refreshes dictionaries from the DB without reconstructing
         # nested models inside containers. Restore typed figures after saving.
         self.images = {
-            key: ChatImage.model_validate(image) for key, image in self.images.items()
+            key: visual_adapter.validate_python(image)
+            for key, image in self.images.items()
         }
 
     def get_questions(self) -> List[ExamQuestion]:

@@ -158,3 +158,9 @@ The assistant can ask other short clarification questions with reply buttons whe
 it needs a preference to continue. You can always answer in the composer instead.
 Questions and options persist with the conversation; only the latest response is
 active, and sending temporarily disables its buttons. Failed sends can be retried.
+
+### Generated charts and diagrams
+
+Ask for a chart, table, diagram or animated explanation in ordinary language. These requests enable visual tools automatically. Educational figures use self-contained HTML/CSS/SVG so their labels stay readable. They appear beside the relevant paragraph, can be enlarged and remain available after reopening the conversation. CSS/SVG animations and declarative controls are supported; JavaScript and external libraries are unavailable.
+
+Photographic or artistic requests can still use raster generation, and source crops preserve the original document pixels. The selected model must support tool calling; source page inspection also requires vision.

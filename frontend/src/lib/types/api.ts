@@ -162,12 +162,21 @@ export interface ChatImage {
   page?: number | null
 }
 
+export interface HtmlVisual {
+  kind: 'html'
+  name: string
+  html: string
+  description: string
+}
+
+export type ChatVisual = ChatImage | HtmlVisual
+
 export interface SourceChatMessage {
   id: string
   type: 'human' | 'ai'
   content: string
   timestamp?: string
-  images?: ChatImage[]
+  images?: ChatVisual[]
   quizzes?: string[]
   followups?: ChatFollowup[]
 }
@@ -219,7 +228,7 @@ export interface NotebookChatMessage {
   type: 'human' | 'ai'
   content: string
   timestamp?: string
-  images?: ChatImage[]
+  images?: ChatVisual[]
   quizzes?: string[]
   followups?: ChatFollowup[]
 }
