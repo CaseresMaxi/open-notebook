@@ -97,7 +97,7 @@ export default function ExamPage() {
                   {t('exams.backToExams')}
                 </Link>
               </Button>
-              <h1 className="font-display text-2xl font-bold tracking-tight">{exam.title}</h1>
+              <h1 className="font-display text-2xl font-medium tracking-tight">{exam.title}</h1>
               <div className="flex flex-wrap gap-2">
                 <Badge variant="secondary">{t('exams.questionCount', { n: exam.question_count })}</Badge>
                 <Badge variant="outline">{t(`exams.difficulties.${exam.difficulty}`)}</Badge>

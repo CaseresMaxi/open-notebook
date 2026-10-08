@@ -111,3 +111,51 @@ class TestNoteUpdate:
         assert response.status_code == 200
         data = response.json()
         assert data["command_id"] is None
+
+
+class TestStudySummaryLists:
+    def test_summary_list_loads_content_and_excludes_other_ai_notes(self, client):
+        from types import SimpleNamespace
+
+        marker = "<!-- open-notebook:study-summary:v1 -->"
+        saved_summary = SimpleNamespace(
+            id="note:summary",
+            title="Summary",
+            content=marker + "\nActual summary",
+            note_type="ai",
+            created="2026-10-08",
+            updated="2026-10-08",
+        )
+        other_ai_note = SimpleNamespace(
+            id="note:ordinary",
+            title="AI answer",
+            content="Ordinary saved chat answer",
+            note_type="ai",
+            created="2026-10-08",
+            updated="2026-10-08",
+        )
+        notebook = AsyncMock()
+        notebook.get_notes.return_value = [saved_summary, other_ai_note]
+        with patch(
+            "open_notebook.domain.notebook.Notebook.get",
+            new=AsyncMock(return_value=notebook),
+        ):
+            response = client.get(
+                "/api/notes",
+                params={"notebook_id": "notebook:one", "summaries_only": True},
+            )
+        assert response.status_code == 200
+        notebook.get_notes.assert_awaited_once_with(include_content=True)
+        assert [item["id"] for item in response.json()] == ["note:summary"]
+        assert response.json()[0]["content"].startswith(marker)
+
+    def test_normal_list_keeps_the_lightweight_projection(self, client):
+        notebook = AsyncMock()
+        notebook.get_notes.return_value = []
+        with patch(
+            "open_notebook.domain.notebook.Notebook.get",
+            new=AsyncMock(return_value=notebook),
+        ):
+            response = client.get("/api/notes", params={"notebook_id": "notebook:one"})
+        assert response.status_code == 200
+        notebook.get_notes.assert_awaited_once_with()

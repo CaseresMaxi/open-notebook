@@ -2,7 +2,7 @@ import apiClient from './client'
 import { NoteResponse, CreateNoteRequest, UpdateNoteRequest } from '@/lib/types/api'
 
 export const notesApi = {
-  list: async (params?: { notebook_id?: string }) => {
+  list: async (params?: { notebook_id?: string; summaries_only?: boolean }) => {
     const response = await apiClient.get<NoteResponse[]>('/notes', { params })
     return response.data
   },

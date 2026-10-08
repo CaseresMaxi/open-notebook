@@ -1,6 +1,20 @@
 import '@testing-library/jest-dom'
 import { vi } from 'vitest'
 
+// Node 26 exposes an unavailable localStorage without --localstorage-file.
+// Browser tests need their own storage, independent of that host getter.
+if (!window.localStorage) {
+  const values = new Map<string, string>()
+  Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: {
+    get length() { return values.size },
+    clear: () => values.clear(),
+    getItem: (key: string) => values.get(String(key)) ?? null,
+    key: (index: number) => [...values.keys()][index] ?? null,
+    removeItem: (key: string) => values.delete(String(key)),
+    setItem: (key: string, value: string) => { values.set(String(key), String(value)) },
+  } })
+}
+
 // Mock next/navigation
 vi.mock('next/navigation', () => ({
   useRouter: () => ({

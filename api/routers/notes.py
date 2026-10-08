@@ -17,6 +17,7 @@ router = APIRouter()
 @router.get("/notes", response_model=List[NoteResponse])
 async def get_notes(
     notebook_id: Optional[str] = Query(None, description="Filter by notebook ID"),
+    summaries_only: bool = Query(False, description="Return saved study summaries"),
 ):
     """Get all notes with optional notebook filtering."""
     try:
@@ -25,10 +26,22 @@ async def get_notes(
             from open_notebook.domain.notebook import Notebook
 
             notebook = await Notebook.get(notebook_id)
-            notes = await notebook.get_notes()
+            notes = (
+                await notebook.get_notes(include_content=True)
+                if summaries_only
+                else await notebook.get_notes()
+            )
         else:
             # Get all notes
             notes = await Note.get_all(order_by="updated desc")
+
+        if summaries_only:
+            notes = [
+                note
+                for note in notes
+                if note.content
+                and note.content.startswith("<!-- open-notebook:study-summary:v1 -->")
+            ]
 
         return [
             NoteResponse(

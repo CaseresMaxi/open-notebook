@@ -43,10 +43,10 @@ function ExamsPageContent() {
   return (
     <AppShell>
       <div className="flex-1 overflow-y-auto">
-        <div className="p-6 space-y-6">
+        <div className="product-page">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <h1 className="font-display text-2xl font-bold tracking-tight">{t('exams.title')}</h1>
+              <h1 className="font-display text-2xl font-medium tracking-tight">{t('exams.title')}</h1>
               <p className="text-muted-foreground mt-1 max-w-3xl">{t('exams.desc')}</p>
             </div>
             <Button onClick={() => setCreateOpen(true)}>

@@ -1,10 +1,14 @@
 import type { Metadata } from "next";
 import {
+  Geist,
+  Inter,
   Bricolage_Grotesque,
   Instrument_Sans,
   Spline_Sans_Mono,
 } from "next/font/google";
+import "@/components/arc/foundation.css";
 import "./globals.css";
+import "./product.css";
 import "katex/dist/katex.min.css";
 import { Toaster } from "@/components/ui/sonner";
 import { QueryProvider } from "@/components/providers/QueryProvider";
@@ -13,6 +17,9 @@ import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import { ConnectionGuard } from "@/components/common/ConnectionGuard";
 import { themeScript } from "@/lib/theme-script";
 import { I18nProvider } from "@/components/providers/I18nProvider";
+
+const geist = Geist({ subsets: ["latin"], variable: "--font-geist" });
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 const instrumentSans = Instrument_Sans({
   subsets: ["latin"],
@@ -46,7 +53,7 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body
-        className={`${instrumentSans.variable} ${bricolageGrotesque.variable} ${splineSansMono.variable} font-sans`}
+        className={`${geist.variable} ${inter.variable} ${instrumentSans.variable} ${bricolageGrotesque.variable} ${splineSansMono.variable} font-sans`}
       >
         <ErrorBoundary>
           <ThemeProvider>

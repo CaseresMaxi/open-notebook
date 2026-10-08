@@ -1,5 +1,6 @@
 'use client'
 
+import { isStudySummary, summaryContent, SUMMARY_MARKER } from '@/lib/utils/study-summary'
 import { Controller, useForm, useWatch } from 'react-hook-form'
 import { useEffect, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
@@ -77,7 +78,7 @@ export function NoteEditorDialog({ open, onOpenChange, notebookId, note }: NoteE
 
     const source = fetchedNote ?? note
     const title = source?.title ?? ''
-    const content = source?.content ?? ''
+    const content = summaryContent(source?.content ?? '')
 
     reset({ title, content })
   }, [open, note, fetchedNote, reset])
@@ -98,7 +99,7 @@ export function NoteEditorDialog({ open, onOpenChange, notebookId, note }: NoteE
         id: noteIdWithPrefix,
         data: {
           title: data.title || undefined,
-          content: data.content,
+          content: isStudySummary(fetchedNote ?? note) ? `${SUMMARY_MARKER}\n\n${data.content}` : data.content,
         },
       })
       // Only invalidate notebook-specific queries if we have a notebookId

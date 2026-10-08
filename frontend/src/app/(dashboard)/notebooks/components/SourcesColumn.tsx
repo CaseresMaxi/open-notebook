@@ -26,6 +26,7 @@ import { useNotebookColumnsStore } from '@/lib/stores/notebook-columns-store'
 import { useTranslation } from '@/lib/hooks/use-translation'
 
 interface SourcesColumnProps {
+  standalone?: boolean
   sources?: SourceListResponse[]
   isLoading: boolean
   notebookId: string
@@ -42,6 +43,7 @@ interface SourcesColumnProps {
 
 export function SourcesColumn({
   sources,
+  standalone = false,
   isLoading,
   notebookId,
   onRefresh,
@@ -151,19 +153,19 @@ export function SourcesColumn({
   return (
     <>
       <CollapsibleColumn
-        isCollapsed={sourcesCollapsed}
+        isCollapsed={!standalone && sourcesCollapsed}
         onToggle={toggleSources}
         collapsedIcon={FileText}
         collapsedLabel={t('navigation.sources')}
       >
         <Card className="h-full flex flex-col flex-1 overflow-hidden">
           <CardHeader className="pb-3 flex-shrink-0">
-            <div className="flex items-center justify-between gap-2">
-              <CardTitle className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.13em] text-muted-foreground">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <CardTitle className="flex items-center gap-2 study-column-heading text-sm font-medium">
                 <span aria-hidden className="h-3.5 w-[3px] rounded-full bg-sage" />
                 {t('navigation.sources')}
               </CardTitle>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 {onBulkContextModeChange && sources && sources.length > 0 && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -204,7 +206,7 @@ export function SourcesColumn({
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-                {collapseButton}
+                {!standalone && collapseButton}
               </div>
             </div>
           </CardHeader>

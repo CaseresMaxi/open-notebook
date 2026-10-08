@@ -1,0 +1,68 @@
+/* The personal study product theme. The upstream design reference stays separate. */
+.product-shell {
+  --bg: var(--neutral-2);
+  --bg-deep: var(--neutral-1);
+  --surface: var(--neutral-0);
+  --surface-raised: var(--neutral-0);
+  --surface-recessed: var(--neutral-2);
+  --surface-sunken: var(--neutral-3);
+  --ink: var(--neutral-11);
+  --ink-soft: var(--neutral-8);
+  --line: var(--neutral-4);
+  --text-secondary: var(--ink-soft);
+  --text-muted: var(--ink-soft);
+  --surface-muted: var(--surface-recessed);
+  --radius-control: 12px;
+  --radius-panel: 16px;
+  --radius-surface: 20px;
+  --font-body: var(--font-inter), sans-serif;
+  --font-display: var(--font-geist), sans-serif;
+  --font-sans: var(--font-inter), sans-serif;
+  --font-bricolage: var(--font-geist);
+  font-family: var(--font-body);
+  min-width: 0;
+}
+.dark .product-shell {
+  --bg: var(--neutral-11);
+  --bg-deep: var(--neutral-11);
+  --surface: var(--neutral-10);
+  --surface-raised: var(--neutral-9);
+  --surface-recessed: var(--neutral-10);
+  --surface-sunken: var(--neutral-9);
+  --ink: var(--neutral-1);
+  --ink-soft: var(--neutral-5);
+  --line: var(--neutral-9);
+}
+.arc-control { --accent: var(--primary); --accent-strong: var(--primary-hover); --accent-foreground: var(--primary-foreground); }
+.product-shell [data-slot="card"] { border-radius: var(--radius-panel); }
+.product-shell [data-slot="input"], .product-shell [data-slot="textarea"] { border-radius: var(--radius-control); }
+.product-shell h1 { font-size: var(--text-3xl); font-weight: 500; letter-spacing: var(--tracking-display); }
+.product-shell h2, .product-shell [data-slot="card-title"] { font-weight: 500; }
+.product-page { width: 100%; max-width: 1400px; margin-inline: auto; padding: 32px; display: grid; gap: 24px; }
+.product-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.product-heading p { margin-top: 8px; color: var(--muted-foreground); max-width: 680px; }
+.product-panel { border: 1px solid var(--border); border-radius: var(--radius-panel); background: var(--card); padding: 24px; min-width: 0; }
+.product-form { max-width: 720px; display: grid; gap: 24px; }
+.product-form h2 { font-size: var(--text-lg); margin-bottom: 16px; }
+.product-fields { display: grid; gap: 24px; }
+.product-inline-status { color: var(--text-secondary); font-size: var(--text-sm); min-height: 24px; }
+.product-link { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; color: var(--primary); font-weight: 500; }
+.product-study-grid { display: grid; grid-template-columns: minmax(220px, .8fr) minmax(360px, 1.5fr) minmax(230px, .85fr); gap: 16px; height: 100%; min-height: 0; }
+.product-study-grid > * { min-width: 0; min-height: 0; }
+.product-shell .study-heading { display: flex; flex-wrap: wrap; align-items: start; justify-content: space-between; gap: 16px; }
+.product-shell .study-heading > :first-child { min-width: 0; }
+.product-shell .study-heading [data-slot="button"] { min-height: 44px; }
+.product-shell .study-heading-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.product-shell .study-column-heading { font-size: var(--text-sm); text-transform: none; letter-spacing: normal; color: var(--foreground); }
+@media (max-width: 767px) { .product-page { padding: 16px; } .product-panel { padding: 16px; } .product-shell h1 { font-size: var(--text-2xl); } }
+@media (prefers-reduced-motion: reduce) { .product-shell *, .product-shell *::before, .product-shell *::after { scroll-behavior: auto !important; transition-duration: 0s !important; animation-duration: 0s !important; } }
+.product-shell [data-slot="card-header"] { padding-inline: 16px; }
+.product-shell [data-slot="card-content"] { padding-inline: 16px; }
+.product-shell [data-slot="tabs-list"] { border-radius: 12px; padding: 4px; }
+.product-shell [data-slot="tabs-trigger"] { border-radius: 8px; }
+.product-shell [data-slot="select-trigger"] { border-radius: 12px; min-height: 44px; }
+.product-shell [data-slot="dialog-content"] { border-radius: var(--radius-panel); }
+
+.product-shell[data-slot="dialog-content"] { border-radius: var(--radius-panel); }
+.product-shell h1 { font-family: var(--font-display); }
+@media (pointer: coarse) { .product-shell [data-slot="button"], .product-shell [data-slot="tabs-trigger"] { min-height: 44px; } }

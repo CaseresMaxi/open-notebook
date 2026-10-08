@@ -1,20 +1,23 @@
-import { render, screen, within } from '@testing-library/react'
+import { render, screen, within, fireEvent, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { NoteEditorDialog } from './NoteEditorDialog'
+import { SUMMARY_MARKER, isStudySummary } from '@/lib/utils/study-summary'
 import { useNote } from '@/lib/hooks/use-notes'
 
 // useTranslation is mocked globally in setup.ts (t returns the key string)
 
+const { updateNoteMock } = vi.hoisted(() => ({ updateNoteMock: vi.fn() }))
+
 vi.mock('@/lib/hooks/use-notes', () => ({
   useNote: vi.fn(),
   useCreateNote: () => ({ isPending: false, mutateAsync: vi.fn() }),
-  useUpdateNote: () => ({ isPending: false, mutateAsync: vi.fn() }),
+  useUpdateNote: () => ({ isPending: false, mutateAsync: updateNoteMock }),
 }))
 
 vi.mock('@/components/ui/markdown-editor', () => ({
-  MarkdownEditor: ({ value }: { value: string }) => (
-    <textarea data-testid="markdown-editor" defaultValue={value} />
+  MarkdownEditor: ({ value, onChange }: { value: string; onChange: (value: string) => void }) => (
+    <textarea data-testid="markdown-editor" value={value || ''} onChange={event => onChange(event.target.value)} />
   ),
 }))
 
@@ -114,4 +117,17 @@ describe('NoteEditorDialog', () => {
     expect(screen.getByText('sources.saveNote')).toBeInTheDocument()
     expect(screen.queryByTestId('content-unavailable')).not.toBeInTheDocument()
   })
+})
+
+it('hides summary metadata in the editor and preserves it when the user saves', async () => {
+  mockUseNote.mockReturnValue(asResult({ data: { id: 'note-1', title: 'Summary', content: `${SUMMARY_MARKER}\n\nSource-grounded summary`, note_type: 'ai', created: '2026-01-01', updated: '2026-01-01' }, isLoading: false, isError: false }))
+  renderDialog({ notebookId: 'notebook:one' })
+  const editor = screen.getByTestId('markdown-editor')
+  expect(editor).toHaveValue('Source-grounded summary')
+  fireEvent.change(editor, { target: { value: 'Edited summary with original source' } })
+  fireEvent.click(screen.getByText('sources.saveNote'))
+  await waitFor(() => expect(updateNoteMock).toHaveBeenCalled())
+  const saved = updateNoteMock.mock.calls[0][0].data
+  expect(isStudySummary(saved)).toBe(true)
+  expect(saved.content).toContain('Edited summary with original source')
 })

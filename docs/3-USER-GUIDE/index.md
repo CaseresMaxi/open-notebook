@@ -36,6 +36,7 @@ What each feature needs:
 | [Working with Notes](working-with-notes.md) | Writing notes and saving AI answers |
 | [Search and Ask](search.md) | Text and vector search, and Ask across your knowledge base |
 | [Creating Podcasts](creating-podcasts.md) | Generating episodes, episode and speaker profiles |
+| [Personal Study Product](personal-study-product.md) | Personal fork navigation, saved summaries, profile and billing preview |
 | [Practice Exams](practice-exams.md) | Generate quizzes from notebook sources, take them, and get graded |
 
 ---

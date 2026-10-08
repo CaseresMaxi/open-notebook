@@ -1,7 +1,10 @@
+"use client"
+
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
 
+import { Button as ArcButton, type ButtonProps as ArcButtonProps } from "@/components/arc/button/button"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
@@ -45,6 +48,15 @@ function Button({
   VariantProps<typeof buttonVariants> & {
     asChild?: boolean
   }) {
+  if (!asChild && variant !== 'link') {
+    return <ArcButton
+      data-slot="button"
+      variant={variant === 'destructive' ? 'danger' : variant === 'ghost' ? 'ghost' : variant === 'outline' || variant === 'secondary' ? 'secondary' : 'primary'}
+      size={size === 'sm' ? 'sm' : size === 'lg' ? 'lg' : 'md'}
+      className={cn('arc-control', size === 'icon' && 'size-11 p-0', className)}
+      {...props as ArcButtonProps}
+    />
+  }
   const Comp = asChild ? Slot : "button"
 
   return (

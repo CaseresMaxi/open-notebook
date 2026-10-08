@@ -12,7 +12,7 @@ interface ThemeState {
   getEffectiveTheme: () => 'light' | 'dark'
 }
 
-const themeStorage = createJSONStorage<Pick<ThemeState, 'theme'>>(() => localStorage)
+const themeStorage = createJSONStorage<Pick<ThemeState, 'theme'>>(() => window.localStorage)
 
 export const useThemeStore = create<ThemeState>()(
   persist(

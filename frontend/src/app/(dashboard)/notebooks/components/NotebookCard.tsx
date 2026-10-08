@@ -1,6 +1,6 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { NotebookResponse } from '@/lib/types/api'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -25,7 +25,6 @@ interface NotebookCardProps {
 export function NotebookCard({ notebook }: NotebookCardProps) {
   const { t, language } = useTranslation()
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
-  const router = useRouter()
   const updateNotebook = useUpdateNotebook()
 
   const handleArchiveToggle = (e: React.MouseEvent) => {
@@ -36,23 +35,16 @@ export function NotebookCard({ notebook }: NotebookCardProps) {
     })
   }
 
-  const handleCardClick = () => {
-    router.push(`/notebooks/${encodeURIComponent(notebook.id)}`)
-  }
-
   return (
     <>
       <Card 
-        className="group card-hover"
-        onClick={handleCardClick}
-        style={{ cursor: 'pointer' }}
+        className="group card-hover relative"
       >
           <CardHeader className="pb-3">
             <div className="flex items-start justify-between">
               <div className="flex-1 min-w-0">
-                <span aria-hidden className="mb-2 block h-2 w-2 rounded-[3px] bg-teal" />
                 <CardTitle className="text-base truncate">
-                  {notebook.name}
+                  <Link href={`/notebooks/${encodeURIComponent(notebook.id)}`} className="after:absolute after:inset-0 after:rounded-2xl" title={notebook.name}>{notebook.name}</Link>
                 </CardTitle>
                 {notebook.archived && (
                   <Badge variant="secondary" className="mt-1">
@@ -66,7 +58,8 @@ export function NotebookCard({ notebook }: NotebookCardProps) {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="relative z-10"
+                    aria-label={t('product.notebookActions')}
                     onClick={(e) => e.stopPropagation()}
                   >
                     <MoreHorizontal className="h-4 w-4" />

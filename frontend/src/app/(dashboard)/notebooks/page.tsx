@@ -4,9 +4,9 @@ import { useMemo, useState } from 'react'
 
 import { AppShell } from '@/components/layout/AppShell'
 import { NotebookList } from './components/NotebookList'
-import { RecentlyViewed } from './components/RecentlyViewed'
 import { Button } from '@/components/ui/button'
-import { Plus, RefreshCw, LayoutGrid, List } from 'lucide-react'
+import { Plus, RefreshCw } from 'lucide-react'
+import SegmentedControl from '@/components/arc/segmented-control/segmented-control'
 import { useNotebooks } from '@/lib/hooks/use-notebooks'
 import { CreateNotebookDialog } from '@/components/notebooks/CreateNotebookDialog'
 import { Input } from '@/components/ui/input'
@@ -54,37 +54,15 @@ export default function NotebooksPage() {
   return (
     <AppShell>
       <div className="flex-1 overflow-y-auto">
-        <div className="p-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <h1 className="font-display text-2xl font-bold tracking-tight">{t('notebooks.title')}</h1>
-            <Button variant="outline" size="sm" onClick={() => refetch()}>
-              <RefreshCw className="h-4 w-4" />
-            </Button>
+        <div className="product-page">
+        <div className="product-heading">
+          <div>
+            <h1>{t('notebooks.title')}</h1>
+            <p>{t('product.libraryDesc')}</p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-            <div className="flex items-center rounded-md border p-0.5">
-              <Button
-                variant={viewMode === 'tile' ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('tile')}
-                aria-label={t('notebooks.tileView')}
-                aria-pressed={viewMode === 'tile'}
-                title={t('notebooks.tileView')}
-              >
-                <LayoutGrid className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={viewMode === 'list' ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('list')}
-                aria-label={t('notebooks.listView')}
-                aria-pressed={viewMode === 'list'}
-                title={t('notebooks.listView')}
-              >
-                <List className="h-4 w-4" />
-              </Button>
-            </div>
+            <Button variant="ghost" size="icon" aria-label={t('common.refresh')} onClick={() => refetch()}><RefreshCw className="size-4" /></Button>
+            <SegmentedControl value={viewMode} onValueChange={value => setViewMode(value as 'tile' | 'list')} label={t('notebooks.title')} options={[{ value: 'tile', label: t('notebooks.tileView') }, { value: 'list', label: t('notebooks.listView') }]} />
             <Input
               id="notebook-search"
               name="notebook-search"
@@ -93,7 +71,7 @@ export default function NotebooksPage() {
               placeholder={t('notebooks.searchPlaceholder')}
               autoComplete="off"
               aria-label={t('common.accessibility.searchNotebooks') || "Search notebooks"}
-              className="w-full sm:w-64"
+              className="w-full sm:w-64 min-h-11"
             />
             <Button onClick={() => setCreateDialogOpen(true)}>
               <Plus className="h-4 w-4 mr-2" />
@@ -103,7 +81,6 @@ export default function NotebooksPage() {
         </div>
         
         <div className="space-y-8">
-          <RecentlyViewed />
 
           <NotebookList 
             notebooks={filteredActive} 

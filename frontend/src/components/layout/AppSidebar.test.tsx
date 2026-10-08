@@ -1,85 +1,39 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { render, screen, fireEvent } from '@testing-library/react'
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { usePathname } from 'next/navigation'
 import { AppSidebar } from './AppSidebar'
 import { useSidebarStore } from '@/lib/stores/sidebar-store'
 
-// Mock Tooltip components to avoid Radix UI async issues in tests
-vi.mock('@/components/ui/tooltip', () => ({
-  TooltipProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-  Tooltip: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-  TooltipTrigger: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-  TooltipContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-}))
-
+vi.mock('@/lib/hooks/use-profile', () => ({ useProfile: () => ({ name: '', email: '', bio: '' }) }))
 describe('AppSidebar', () => {
-  afterEach(() => {
-    vi.mocked(usePathname).mockReturnValue('')
-  })
-
-  it('highlights only Models (not Settings) on the Models page', () => {
-    vi.mocked(usePathname).mockReturnValue('/settings/models')
-
+  afterEach(() => { vi.mocked(usePathname).mockReturnValue(''); vi.mocked(useSidebarStore).mockReturnValue({ isCollapsed: false, toggleCollapse: vi.fn() } as ReturnType<typeof useSidebarStore>) })
+  it('shows the study functions and account pages', () => {
     const { container } = render(<AppSidebar />)
-
-    const modelsButton = container.querySelector('a[href="/settings/models"] button')
-    const settingsButton = container.querySelector('a[href="/settings"] button')
-
-    expect(modelsButton?.className).toContain('font-semibold')
-    expect(settingsButton?.className).toContain('font-medium')
-    expect(settingsButton?.className).not.toContain('font-semibold')
+    for (const href of ['/notebooks', '/sources', '/notes', '/summaries', '/exams', '/chat', '/profile', '/payments']) expect(container.querySelector(`a[href="${href}"]`)).toBeInTheDocument()
+    for (const href of ['/podcasts', '/transformations', '/advanced', '/settings/models']) expect(container.querySelector(`a[href="${href}"]`)).toBeNull()
   })
-
-  it('renders correctly when expanded', () => {
+  it('marks only the notebook link as active on a notebook page', () => {
+    vi.mocked(usePathname).mockReturnValue('/notebooks/notebook:123')
+    const { container } = render(<AppSidebar />)
+    expect(container.querySelectorAll('[aria-current="page"]')).toHaveLength(1)
+    expect(container.querySelector('[aria-current="page"]')).toHaveAttribute('href', '/notebooks')
+  })
+  it('renders the application name and logout action', () => {
     render(<AppSidebar />)
-
-    // With mocked t() returning keys, check for translation key strings
-    expect(screen.getByText('common.appName')).toBeDefined()
-    expect(screen.getByText('navigation.sources')).toBeDefined()
-    expect(screen.getByText('navigation.notebooks')).toBeDefined()
+    expect(screen.getByText('common.appName')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'common.signOut' })).toBeInTheDocument()
   })
-
-  it('uses consistent spacing for expanded footer actions', () => {
-    render(<AppSidebar />)
-
-    const themeButton = screen.getByText('common.theme').closest('button')
-    const languageButton = screen.getByText('common.language').closest('button')
-    const signOutButton = screen.getByRole('button', { name: 'common.signOut' })
-
-    expect(themeButton?.className.split(/\s+/)).toContain('px-3')
-
-    for (const button of [themeButton, languageButton, signOutButton]) {
-      expect(button?.className.split(/\s+/)).toContain('gap-2')
-    }
-
-    expect(themeButton?.querySelector(':scope > span.relative.size-4')).not.toBeNull()
-    expect(signOutButton.className.split(/\s+/)).not.toContain('gap-3')
-  })
-
-  it('toggles collapse state when clicking handle', () => {
+  it('toggles the navigation width', () => {
     const toggleCollapse = vi.fn()
-    vi.mocked(useSidebarStore).mockReturnValue({
-      isCollapsed: false,
-      toggleCollapse,
-    } as any)
-
+    vi.mocked(useSidebarStore).mockReturnValue({ isCollapsed: false, toggleCollapse } as ReturnType<typeof useSidebarStore>)
     render(<AppSidebar />)
-
     fireEvent.click(screen.getByTestId('sidebar-toggle'))
-
-    expect(toggleCollapse).toHaveBeenCalled()
+    expect(toggleCollapse).toHaveBeenCalledOnce()
   })
-
-  it('shows collapsed view when isCollapsed is true', () => {
-    vi.mocked(useSidebarStore).mockReturnValue({
-      isCollapsed: true,
-      toggleCollapse: vi.fn(),
-    } as any)
-
+  it('keeps accessible labels when collapsed', () => {
+    vi.mocked(useSidebarStore).mockReturnValue({ isCollapsed: true, toggleCollapse: vi.fn() } as ReturnType<typeof useSidebarStore>)
     render(<AppSidebar />)
-
-    // In collapsed mode, app name shouldn't be visible (as text)
-    expect(screen.queryByText('common.appName')).toBeNull()
+    expect(screen.queryByText('common.appName')).not.toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'product.summaries' })).toBeInTheDocument()
   })
 })

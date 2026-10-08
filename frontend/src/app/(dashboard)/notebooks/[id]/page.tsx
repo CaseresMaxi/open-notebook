@@ -6,17 +6,16 @@ import { AppShell } from '@/components/layout/AppShell'
 import { NotebookHeader } from '../components/NotebookHeader'
 import { SourcesColumn } from '../components/SourcesColumn'
 import { NotesColumn } from '../components/NotesColumn'
+import { StudyTools } from '@/components/study/StudyTools'
+import { SummaryLibrary } from '@/components/study/SummaryLibrary'
 import { ChatColumn } from '../components/ChatColumn'
 import { useNotebook } from '@/lib/hooks/use-notebooks'
 import { useNotebookSources } from '@/lib/hooks/use-sources'
 import { useNotes } from '@/lib/hooks/use-notes'
 import { LoadingSpinner } from '@/components/common/LoadingSpinner'
-import { useNotebookColumnsStore } from '@/lib/stores/notebook-columns-store'
-import { useIsDesktop } from '@/lib/hooks/use-media-query'
+import { useMediaQuery } from '@/lib/hooks/use-media-query'
 import { useTranslation } from '@/lib/hooks/use-translation'
-import { cn } from '@/lib/utils'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { FileText, StickyNote, MessageSquare } from 'lucide-react'
 import {
   applyBulkSourceContext,
   applyBulkNoteContext,
@@ -51,13 +50,13 @@ export default function NotebookPage() {
   const { data: notes, isLoading: notesLoading } = useNotes(notebookId)
 
   // Get collapse states for dynamic layout
-  const { sourcesCollapsed, notesCollapsed } = useNotebookColumnsStore()
+
 
   // Detect desktop to avoid double-mounting ChatColumn
-  const isDesktop = useIsDesktop()
+  const isDesktop = useMediaQuery('(min-width: 1280px)')
 
   // Mobile tab state (Sources, Notes, or Chat)
-  const [mobileActiveTab, setMobileActiveTab] = useState<'sources' | 'notes' | 'chat'>('chat')
+  const [mobileActiveTab, setMobileActiveTab] = useState<'sources' | 'notes' | 'summaries' | 'chat'>('chat')
 
   // Context selection state
   const [contextSelections, setContextSelections] = useState<ContextSelections>({
@@ -151,133 +150,48 @@ export default function NotebookPage() {
     )
   }
 
-  return (
-    <AppShell>
-      <div className="flex flex-col flex-1 min-h-0">
-        <div className="flex-shrink-0 p-6 pb-0">
-          <NotebookHeader notebook={notebook} />
-        </div>
-
-        <div className="flex-1 p-6 pt-6 overflow-x-auto flex flex-col">
-          {/* Mobile: Tabbed interface - only render on mobile to avoid double-mounting */}
-          {!isDesktop && (
-            <>
-              <div className="lg:hidden mb-4">
-                <Tabs value={mobileActiveTab} onValueChange={(value) => setMobileActiveTab(value as 'sources' | 'notes' | 'chat')}>
-                  <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="sources" className="gap-2">
-                      <FileText className="h-4 w-4" />
-                      {t('navigation.sources')}
-                    </TabsTrigger>
-                    <TabsTrigger value="notes" className="gap-2">
-                      <StickyNote className="h-4 w-4" />
-                      {t('common.notes')}
-                    </TabsTrigger>
-                    <TabsTrigger value="chat" className="gap-2">
-                      <MessageSquare className="h-4 w-4" />
-                      {t('common.chat')}
-                    </TabsTrigger>
-                  </TabsList>
-                </Tabs>
-              </div>
-
-              {/* Mobile: Show only active tab */}
-              <div className="flex-1 overflow-hidden lg:hidden">
-                {mobileActiveTab === 'sources' && (
-                  <SourcesColumn
-                    sources={sources}
-                    isLoading={sourcesLoading}
-                    notebookId={notebookId}
-                    notebookName={notebook?.name}
-                    onRefresh={refetchSources}
-                    contextSelections={contextSelections.sources}
-                    onContextModeChange={handleSourceContextModeChange}
-                    onBulkContextModeChange={handleBulkSourceContext}
-                    hasNextPage={hasNextPage}
-                    isFetchingNextPage={isFetchingNextPage}
-                    fetchNextPage={fetchNextPage}
-                  />
-                )}
-                {mobileActiveTab === 'notes' && (
-                  <NotesColumn
-                    notes={notes}
-                    isLoading={notesLoading}
-                    notebookId={notebookId}
-                    contextSelections={contextSelections.notes}
-                    onContextModeChange={handleNoteContextModeChange}
-                    onBulkContextModeChange={handleBulkNoteContext}
-                  />
-                )}
-                {mobileActiveTab === 'chat' && (
-                  <ChatColumn
-                    notebookId={notebookId}
-                    contextSelections={contextSelections}
-                    onSourceContextChange={handleSourceContextModeChange}
-                    onNoteContextChange={handleNoteContextModeChange}
-                    onExcludeMaterials={() => { handleBulkSourceContext('exclude'); handleBulkNoteContext('exclude') }}
-                    sources={sources}
-                    sourcesLoading={sourcesLoading}
-                  />
-                )}
-              </div>
-            </>
-          )}
-
-          {/* Desktop: Collapsible columns layout */}
-          <div className={cn(
-            'hidden lg:flex h-full min-h-0 gap-6 transition-all duration-150',
-            'flex-row'
-          )}>
-            {/* Sources Column */}
-            <div className={cn(
-              'transition-all duration-150',
-              sourcesCollapsed ? 'w-12 flex-shrink-0' : 'flex-none basis-1/3'
-            )}>
-              <SourcesColumn
-                sources={sources}
-                isLoading={sourcesLoading}
-                notebookId={notebookId}
-                notebookName={notebook?.name}
-                onRefresh={refetchSources}
-                contextSelections={contextSelections.sources}
-                onContextModeChange={handleSourceContextModeChange}
-                onBulkContextModeChange={handleBulkSourceContext}
-                hasNextPage={hasNextPage}
-                isFetchingNextPage={isFetchingNextPage}
-                fetchNextPage={fetchNextPage}
-              />
-            </div>
-
-            {/* Notes Column */}
-            <div className={cn(
-              'transition-all duration-150',
-              notesCollapsed ? 'w-12 flex-shrink-0' : 'flex-none basis-1/3'
-            )}>
-              <NotesColumn
-                notes={notes}
-                isLoading={notesLoading}
-                notebookId={notebookId}
-                contextSelections={contextSelections.notes}
-                onContextModeChange={handleNoteContextModeChange}
-                onBulkContextModeChange={handleBulkNoteContext}
-              />
-            </div>
-
-            {/* Chat Column - always expanded, takes remaining space */}
-            <div className="transition-all duration-150 flex-1 min-w-0 lg:pr-6 lg:-mr-6">
-              <ChatColumn
-                notebookId={notebookId}
-                contextSelections={contextSelections}
-                onSourceContextChange={handleSourceContextModeChange}
-                onNoteContextChange={handleNoteContextModeChange}
-                onExcludeMaterials={() => { handleBulkSourceContext('exclude'); handleBulkNoteContext('exclude') }}
-                sources={sources}
-                sourcesLoading={sourcesLoading}
-              />
-            </div>
+  const sourcesPanel = <SourcesColumn
+    sources={sources} isLoading={sourcesLoading} notebookId={notebookId} notebookName={notebook.name}
+    onRefresh={refetchSources} contextSelections={contextSelections.sources}
+    onContextModeChange={handleSourceContextModeChange} onBulkContextModeChange={handleBulkSourceContext}
+    hasNextPage={hasNextPage} isFetchingNextPage={isFetchingNextPage} fetchNextPage={fetchNextPage}
+    standalone
+  />
+  const chatPanel = <ChatColumn
+    notebookId={notebookId} contextSelections={contextSelections}
+    onSourceContextChange={handleSourceContextModeChange} onNoteContextChange={handleNoteContextModeChange}
+    onExcludeMaterials={() => { handleBulkSourceContext('exclude'); handleBulkNoteContext('exclude') }}
+    sources={sources} sourcesLoading={sourcesLoading}
+  />
+  return <AppShell>
+    <div className="flex flex-col flex-1 min-h-0">
+      <div className="shrink-0 px-4 pt-4 md:px-6 md:pt-6"><NotebookHeader notebook={notebook} /></div>
+      <div className="flex-1 min-h-0 p-4 md:p-6 flex flex-col">
+        {isDesktop ? <div className="product-study-grid">
+          <div>{sourcesPanel}</div>
+          <div>{chatPanel}</div>
+          <StudyTools notebookId={notebookId} notes={notes} isLoading={notesLoading}
+            contextSelections={contextSelections.notes} onContextModeChange={handleNoteContextModeChange}
+            onBulkContextModeChange={handleBulkNoteContext} />
+        </div> : <>
+          <Tabs value={mobileActiveTab} onValueChange={value => setMobileActiveTab(value as typeof mobileActiveTab)} className="mb-4 shrink-0">
+            <TabsList className="grid w-full grid-cols-4 min-h-11">
+              <TabsTrigger value="sources" className="min-h-9">{t('navigation.sources')}</TabsTrigger>
+              <TabsTrigger value="chat" className="min-h-9">{t('common.chat')}</TabsTrigger>
+              <TabsTrigger value="notes" className="min-h-9">{t('common.notes')}</TabsTrigger>
+              <TabsTrigger value="summaries" className="min-h-9">{t('product.summaries')}</TabsTrigger>
+            </TabsList>
+          </Tabs>
+          <div className="flex-1 min-h-0 overflow-hidden">
+            {mobileActiveTab === 'sources' && sourcesPanel}
+            {mobileActiveTab === 'chat' && chatPanel}
+            {mobileActiveTab === 'notes' && <NotesColumn notes={notes} isLoading={notesLoading} notebookId={notebookId}
+              contextSelections={contextSelections.notes} onContextModeChange={handleNoteContextModeChange}
+              onBulkContextModeChange={handleBulkNoteContext} standalone />}
+            {mobileActiveTab === 'summaries' && <div className="h-full overflow-y-auto product-panel"><SummaryLibrary key={notebookId} notebookId={notebookId} /></div>}
           </div>
-        </div>
+        </>}
       </div>
-    </AppShell>
-  )
+    </div>
+  </AppShell>
 }

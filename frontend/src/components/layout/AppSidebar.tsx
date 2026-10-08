@@ -1,397 +1,185 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-
+import {
+  BookOpen,
+  FileText,
+  StickyNote,
+  AlignLeft,
+  GraduationCap,
+  MessageSquare,
+  UserRound,
+  CreditCard,
+  Settings,
+  LogOut,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Plus,
+} from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
+import { Avatar } from '@/components/arc/avatar/avatar'
 import { useAuth } from '@/lib/hooks/use-auth'
 import { useSidebarStore } from '@/lib/stores/sidebar-store'
 import { useCreateDialogs } from '@/lib/hooks/use-create-dialogs'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { ThemeToggle } from '@/components/common/ThemeToggle'
-import { LanguageToggle } from '@/components/common/LanguageToggle'
-import type { TFunction } from 'i18next'
 import { useTranslation } from '@/lib/hooks/use-translation'
-import { Separator } from '@/components/ui/separator'
-import {
-  Book,
-  Search,
-  Mic,
-  Bot,
-  Shuffle,
-  Settings,
-  LogOut,
-  ChevronLeft,
-  Menu,
-  FileText,
-  Plus,
-  Wrench,
-  Command,
-  GraduationCap,
-} from 'lucide-react'
-
-const getNavigation = (t: TFunction) => [
-  {
-    title: t('navigation.collect'),
-    items: [
-      { name: t('navigation.sources'), href: '/sources', icon: FileText, iconClass: 'text-sage' },
-    ],
-  },
-  {
-    title: t('navigation.process'),
-    items: [
-      { name: t('navigation.notebooks'), href: '/notebooks', icon: Book, iconClass: 'text-teal' },
-      { name: t('navigation.askAndSearch'), href: '/search', icon: Search, iconClass: undefined },
-    ],
-  },
-  {
-    title: t('navigation.create'),
-    items: [
-      { name: t('navigation.podcasts'), href: '/podcasts', icon: Mic, iconClass: 'text-mauve' },
-      { name: t('navigation.exams'), href: '/exams', icon: GraduationCap, iconClass: 'text-teal' },
-    ],
-  },
-  {
-    title: t('navigation.manage'),
-    items: [
-      { name: t('navigation.models'), href: '/settings/models', icon: Bot, iconClass: undefined },
-      { name: t('navigation.transformations'), href: '/transformations', icon: Shuffle, iconClass: undefined },
-      { name: t('navigation.settings'), href: '/settings', icon: Settings, iconClass: undefined },
-      { name: t('navigation.advanced'), href: '/advanced', icon: Wrench, iconClass: undefined },
-    ],
-  },
-] as const
-
-// The tri-hue mark recomposed in the owned palette: fern / gold / teal.
-function LogoPebbles({ className }: { className?: string }) {
-  return (
-    <span className={cn('flex items-center gap-[3px]', className)} aria-hidden="true">
-      <span className="size-[9px] rounded-[3px] bg-fern" />
-      <span className="size-[9px] rounded-[3px] bg-gold" />
-      <span className="size-[9px] rounded-[3px] bg-teal" />
-    </span>
-  )
-}
-
-type CreateTarget = 'source' | 'notebook' | 'podcast'
+import { useProfile } from '@/lib/hooks/use-profile'
 
 export function AppSidebar() {
   const { t } = useTranslation()
-  const navigation = getNavigation(t)
   const pathname = usePathname()
   const { logout } = useAuth()
   const { isCollapsed, toggleCollapse } = useSidebarStore()
-  const { openSourceDialog, openNotebookDialog, openPodcastDialog } = useCreateDialogs()
-
-  // The active item is the longest href that prefixes the current path.
-  // Longest-wins keeps `/settings` from also highlighting on `/settings/models`
-  // (the Models page is a URL child of the Settings page but a distinct item).
-  const activeHref = navigation
-    .map((section) => section.items)
-    .flat()
-    .filter((item) => pathname === item.href || pathname?.startsWith(`${item.href}/`))
-    .sort((a, b) => b.href.length - a.href.length)[0]?.href
-
-  const [createMenuOpen, setCreateMenuOpen] = useState(false)
-  const [isMac, setIsMac] = useState(true) // Default to Mac for SSR
-
-  // Detect platform for keyboard shortcut display
-  useEffect(() => {
-    setIsMac(navigator.platform.toLowerCase().includes('mac'))
-  }, [])
-
-  const handleCreateSelection = (target: CreateTarget) => {
-    setCreateMenuOpen(false)
-
-    if (target === 'source') {
-      openSourceDialog()
-    } else if (target === 'notebook') {
-      openNotebookDialog()
-    } else if (target === 'podcast') {
-      openPodcastDialog()
-    }
-  }
-
+  const { openNotebookDialog } = useCreateDialogs()
+  const profile = useProfile()
+  const items = [
+    { label: t('navigation.notebooks'), href: '/notebooks', icon: BookOpen },
+    { label: t('navigation.sources'), href: '/sources', icon: FileText },
+    { label: t('common.notes'), href: '/notes', icon: StickyNote },
+    { label: t('product.summaries'), href: '/summaries', icon: AlignLeft },
+    { label: t('navigation.exams'), href: '/exams', icon: GraduationCap },
+    { label: t('common.chat'), href: '/chat', icon: MessageSquare },
+  ]
+  const accountItems = [
+    { label: t('product.profile'), href: '/profile', icon: UserRound },
+    { label: t('product.payments'), href: '/payments', icon: CreditCard },
+  ]
   return (
-    <TooltipProvider delayDuration={0}>
+    <aside
+      className={cn(
+        'app-sidebar hidden md:flex shrink-0 h-full flex-col border-r py-4',
+        isCollapsed ? 'w-20 px-3' : 'w-60 px-4'
+      )}
+    >
       <div
         className={cn(
-          'app-sidebar flex h-full flex-col bg-sidebar border-sidebar-border border-r transition-all duration-300',
-          isCollapsed ? 'w-16' : 'w-64'
+          'flex min-h-12 items-center gap-2 mb-6',
+          isCollapsed ? 'justify-center' : 'justify-between'
         )}
       >
-        <div
+        <Link
+          href="/notebooks"
+          aria-label={t('common.appName')}
           className={cn(
-            'flex h-16 items-center group',
-            isCollapsed ? 'justify-center px-2' : 'justify-between px-4'
+            'flex min-w-0 items-center gap-2 text-sm font-medium',
+            isCollapsed && 'hidden'
           )}
+        >
+          <BookOpen className="size-5 shrink-0 text-primary" />
+          {!isCollapsed && <span>{t('common.appName')}</span>}
+        </Link>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label={t('product.toggleNavigation')}
+          onClick={toggleCollapse}
+          data-testid="sidebar-toggle"
         >
           {isCollapsed ? (
-            <div className="relative flex items-center justify-center w-full">
-              <LogoPebbles className="flex-col gap-[3px] transition-opacity group-hover:opacity-0" />
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={toggleCollapse}
-                className="absolute text-sidebar-foreground hover:bg-sidebar-accent opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                <Menu className="h-4 w-4" />
-              </Button>
-            </div>
+            <PanelLeftOpen className="size-4" />
           ) : (
-            <>
-              <div className="flex items-center gap-2.5">
-                <LogoPebbles />
-                <span className="font-display text-[15px] font-bold tracking-tight text-sidebar-foreground">
-                  {t('common.appName')}
-                </span>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={toggleCollapse}
-                className="text-sidebar-foreground hover:bg-sidebar-accent"
-                data-testid="sidebar-toggle"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-            </>
+            <PanelLeftClose className="size-4" />
           )}
-        </div>
-
-        <nav
-          className={cn(
-            'flex-1 space-y-1 py-4',
-            isCollapsed ? 'px-2' : 'px-3'
-          )}
-        >
-          <div
+        </Button>
+      </div>
+      <Button
+        variant="outline"
+        onClick={openNotebookDialog}
+        aria-label={t('notebooks.newNotebook')}
+        className="mb-6"
+      >
+        <Plus className="size-4" />
+        {!isCollapsed && t('notebooks.newNotebook')}
+      </Button>
+      <nav
+        aria-label={t('product.studyNavigation')}
+        className="flex-1 space-y-1 overflow-y-auto"
+      >
+        {items.map(({ label, href, icon: Icon }) => (
+          <Link
+            key={href}
+            href={href}
+            title={isCollapsed ? label : undefined}
+            aria-label={isCollapsed ? label : undefined}
+            aria-current={
+              pathname === href || pathname?.startsWith(`${href}/`)
+                ? 'page'
+                : undefined
+            }
             className={cn(
-              'mb-4',
-              isCollapsed ? 'px-0' : 'px-3'
+              'flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm text-muted-foreground hover:bg-accent hover:text-foreground',
+              isCollapsed && 'justify-center',
+              (pathname === href || pathname?.startsWith(`${href}/`)) &&
+                'bg-card text-foreground font-medium border border-border'
             )}
           >
-            <DropdownMenu open={createMenuOpen} onOpenChange={setCreateMenuOpen}>
-              {isCollapsed ? (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        onClick={() => setCreateMenuOpen(true)}
-                        variant="default"
-                        size="sm"
-                        className="w-full justify-center px-2 font-display font-bold"
-                        aria-label={t('common.create')}
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                  </TooltipTrigger>
-                   <TooltipContent side="right">{t('common.create')}</TooltipContent>
-                </Tooltip>
-              ) : (
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    onClick={() => setCreateMenuOpen(true)}
-                    variant="default"
-                    size="sm"
-                    className="w-full justify-start font-display font-bold"
-                   >
-                    <Plus className="h-4 w-4 mr-2" />
-                    {t('common.create')}
-                  </Button>
-                </DropdownMenuTrigger>
-              )}
-
-              <DropdownMenuContent
-                align={isCollapsed ? 'end' : 'start'}
-                side={isCollapsed ? 'right' : 'bottom'}
-                className="w-48"
-              >
-                <DropdownMenuItem
-                  onSelect={(event) => {
-                    event.preventDefault()
-                    handleCreateSelection('source')
-                  }}
-                  className="gap-2"
-                >
-                   <FileText className="h-4 w-4" />
-                  {t('common.source')}
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onSelect={(event) => {
-                    event.preventDefault()
-                    handleCreateSelection('notebook')
-                  }}
-                  className="gap-2"
-                >
-                   <Book className="h-4 w-4" />
-                  {t('common.notebook')}
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onSelect={(event) => {
-                    event.preventDefault()
-                    handleCreateSelection('podcast')
-                  }}
-                  className="gap-2"
-                >
-                   <Mic className="h-4 w-4" />
-                  {t('common.podcast')}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-
-          {navigation.map((section, index) => (
-            <div key={section.title}>
-              {index > 0 && (
-                <Separator className="my-3" />
-              )}
-              <div className="space-y-1">
-                {!isCollapsed && (
-                  <h3 className="mb-1.5 px-3 text-[10.5px] font-bold uppercase tracking-[0.14em] text-sidebar-foreground/40">
-                    {section.title}
-                  </h3>
-                )}
-
-                {section.items.map((item) => {
-                  const isActive = item.href === activeHref
-                  const button = (
-                    <Button
-                      variant="ghost"
-                      className={cn(
-                        'w-full gap-2.5 text-[13px] font-medium text-sidebar-foreground/80 sidebar-menu-item relative',
-                        isActive &&
-                          'bg-popover font-semibold text-sidebar-foreground ring-1 ring-inset ring-border before:absolute before:-left-1.5 before:top-[7px] before:bottom-[7px] before:w-[3px] before:rounded-[2px] before:bg-fern',
-                        isCollapsed ? 'justify-center px-2' : 'justify-start'
-                      )}
-                    >
-                      <item.icon className={cn('h-4 w-4 opacity-85', item.iconClass)} />
-                      {!isCollapsed && <span>{item.name}</span>}
-                    </Button>
-                  )
-
-                  if (isCollapsed) {
-                    return (
-                      <Tooltip key={item.name}>
-                        <TooltipTrigger asChild>
-                          <Link href={item.href}>
-                            {button}
-                          </Link>
-                        </TooltipTrigger>
-                        <TooltipContent side="right">{item.name}</TooltipContent>
-                      </Tooltip>
-                    )
-                  }
-
-                  return (
-                    <Link key={item.name} href={item.href}>
-                      {button}
-                    </Link>
-                  )
-                })}
-              </div>
-            </div>
-          ))}
-        </nav>
-
-        <div
+            <Icon className="size-4 shrink-0" />
+            {!isCollapsed && label}
+          </Link>
+        ))}
+      </nav>
+      <div className="border-t pt-4 mt-4 space-y-1">
+        {accountItems.map(({ label, href, icon: Icon }) => (
+          <Link
+            key={href}
+            href={href}
+            aria-label={isCollapsed ? label : undefined}
+            title={isCollapsed ? label : undefined}
+            aria-current={pathname === href ? 'page' : undefined}
+            className={cn(
+              'flex min-h-11 items-center gap-3 px-3 rounded-xl text-sm hover:bg-accent',
+              isCollapsed && 'justify-center',
+              pathname === href && 'bg-card font-medium'
+            )}
+          >
+            <Icon className="size-4 shrink-0" />
+            {!isCollapsed && label}
+          </Link>
+        ))}
+        <Link
+          href="/settings"
+          aria-label={isCollapsed ? t('navigation.settings') : undefined}
           className={cn(
-            'border-t border-sidebar-border p-3 space-y-2',
-            isCollapsed && 'px-2'
+            'flex min-h-11 items-center gap-3 px-3 rounded-xl text-sm text-muted-foreground hover:bg-accent',
+            isCollapsed && 'justify-center'
           )}
         >
-          {/* Command Palette hint */}
+          <Settings className="size-4 shrink-0" />
+          {!isCollapsed && t('navigation.settings')}
+        </Link>
+        <div
+          className={cn(
+            'flex items-center gap-3 pt-4 mt-2 border-t min-w-0',
+            isCollapsed && 'flex-col'
+          )}
+        >
+          <Link href="/profile" aria-label={t('product.profile')}>
+            <Avatar
+              name={profile.name || t('product.localProfile')}
+              size="sm"
+            />
+          </Link>
           {!isCollapsed && (
-            <div className="px-3 py-1.5 text-xs text-sidebar-foreground/60">
-              <div className="flex items-center justify-between">
-                 <span className="flex items-center gap-1.5">
-                  <Command className="h-3 w-3" />
-                  {t('common.quickActions')}
-                </span>
-                <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
-                  {isMac ? <span className="text-xs">⌘</span> : <span>Ctrl+</span>}K
-                </kbd>
-              </div>
-               <p className="mt-1 text-[10px] text-sidebar-foreground/40">
-                {t('common.quickActionsDesc')}
+            <div className="flex-1 min-w-0">
+              <p className="truncate text-sm font-medium">
+                {profile.name || t('product.localProfile')}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {t('product.personalWorkspace')}
               </p>
             </div>
           )}
-
-           <div
-            className={cn(
-              'flex flex-col gap-2',
-              isCollapsed ? 'items-center' : 'items-stretch'
-            )}
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={logout}
+            aria-label={t('common.signOut')}
           >
-            {isCollapsed ? (
-              <>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div>
-                      <ThemeToggle iconOnly />
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent side="right">{t('common.theme')}</TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div>
-                      <LanguageToggle iconOnly />
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent side="right">{t('common.language')}</TooltipContent>
-                </Tooltip>
-              </>
-            ) : (
-              <>
-                <ThemeToggle />
-                <LanguageToggle />
-              </>
-            )}
-          </div>
-
-          {isCollapsed ? (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="w-full justify-center sidebar-menu-item"
-                  onClick={logout}
-                  aria-label={t('common.signOut')}
-                >
-                  <LogOut className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-               <TooltipContent side="right">{t('common.signOut')}</TooltipContent>
-            </Tooltip>
-          ) : (
-            <Button
-              variant="outline"
-              className="w-full justify-start gap-2 sidebar-menu-item"
-              onClick={logout}
-              aria-label={t('common.signOut')}
-             >
-              <LogOut className="h-4 w-4" />
-              {t('common.signOut')}
-            </Button>
-          )}
+            <LogOut className="size-4" />
+          </Button>
         </div>
       </div>
-    </TooltipProvider>
+    </aside>
   )
 }

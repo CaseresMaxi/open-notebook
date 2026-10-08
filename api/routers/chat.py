@@ -23,13 +23,13 @@ from open_notebook.exceptions import (
 )
 from open_notebook.graphs.chat import graph as chat_graph
 from open_notebook.utils import token_count
+from open_notebook.utils.chat_followups import followup_context
 from open_notebook.utils.chat_images import (
     ChatInput,
     build_user_message,
     chat_model_context,
     visual_history_context,
 )
-from open_notebook.utils.chat_followups import followup_context
 from open_notebook.utils.context_builder import build_notebook_context
 from open_notebook.utils.graph_utils import (
     get_session_message_count,

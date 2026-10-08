@@ -6,10 +6,10 @@ import { useTranslation } from '@/lib/hooks/use-translation'
 import { getApiErrorKey } from '@/lib/utils/error-handler'
 import { CreateNoteRequest, UpdateNoteRequest } from '@/lib/types/api'
 
-export function useNotes(notebookId?: string) {
+export function useNotes(notebookId?: string, options?: { summariesOnly?: boolean }) {
   return useQuery({
-    queryKey: QUERY_KEYS.notes(notebookId),
-    queryFn: () => notesApi.list({ notebook_id: notebookId }),
+    queryKey: options?.summariesOnly ? [...QUERY_KEYS.notes(notebookId), 'summaries'] : QUERY_KEYS.notes(notebookId),
+    queryFn: () => notesApi.list({ notebook_id: notebookId, ...(options?.summariesOnly ? { summaries_only: true } : {}) }),
     enabled: !!notebookId,
   })
 }

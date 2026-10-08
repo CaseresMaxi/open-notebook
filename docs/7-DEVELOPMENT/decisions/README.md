@@ -56,5 +56,6 @@ What this makes easier, what it makes harder, what to watch. (bullets)
 | [ADR-013](ADR-013-objectmodel-get-error-contract.md) | ObjectModel.get raises NotFoundError only for a missing record | Accepted |
 | [ADR-018](ADR-018-html-visual-artifacts.md) | Declarative HTML visual artifacts in chat and exams | Accepted in personal fork |
 | [ADR-019](ADR-019-notebook-chat-context.md) | Notebook chat context controls | Accepted in personal fork |
+| [ADR-020](ADR-020-focused-study-product.md) | Focused study product and free Arc UI | Accepted in personal fork |
 | [PDR-001](PDR-001-single-user-first.md) | Single-user first; don't preclude multi-user | Accepted |
 | [PDR-002](PDR-002-provider-agnostic-core.md) | Provider-agnostic core by default | Accepted |

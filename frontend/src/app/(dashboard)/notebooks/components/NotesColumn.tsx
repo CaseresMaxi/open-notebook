@@ -1,5 +1,6 @@
 'use client'
 
+import { summaryContent } from '@/lib/utils/study-summary'
 import { useState, useMemo } from 'react'
 import { NoteResponse } from '@/lib/types/api'
 import { Button } from '@/components/ui/button'
@@ -27,6 +28,7 @@ import { useNotebookColumnsStore } from '@/lib/stores/notebook-columns-store'
 import { useTranslation } from '@/lib/hooks/use-translation'
 
 interface NotesColumnProps {
+  standalone?: boolean
   notes?: NoteResponse[]
   isLoading: boolean
   notebookId: string
@@ -37,6 +39,7 @@ interface NotesColumnProps {
 
 export function NotesColumn({
   notes,
+  standalone = false,
   isLoading,
   notebookId,
   contextSelections,
@@ -84,15 +87,15 @@ export function NotesColumn({
   return (
     <>
       <CollapsibleColumn
-        isCollapsed={notesCollapsed}
+        isCollapsed={!standalone && notesCollapsed}
         onToggle={toggleNotes}
         collapsedIcon={StickyNote}
         collapsedLabel={notesLabel}
       >
         <Card className="h-full flex flex-col flex-1 overflow-hidden">
           <CardHeader className="pb-3 flex-shrink-0">
-            <div className="flex items-center justify-between gap-2">
-              <CardTitle className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.13em] text-muted-foreground">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <CardTitle className="flex items-center gap-2 study-column-heading text-sm font-medium">
                 <span aria-hidden className="h-3.5 w-[3px] rounded-full bg-gold" />
                 {notesLabel}
               </CardTitle>
@@ -115,11 +118,11 @@ export function NotesColumn({
                     </DropdownMenuContent>
                   </DropdownMenu>
                 )}
-                <Button size="sm" onClick={() => handleOpenEditor()}>
+                <Button variant="outline" size="sm" onClick={() => handleOpenEditor()}>
                   <Plus className="h-4 w-4 mr-2" />
                   {t('common.writeNote')}
                 </Button>
-                {collapseButton}
+                {!standalone && collapseButton}
               </div>
             </div>
           </CardHeader>
@@ -208,7 +211,7 @@ export function NotesColumn({
 
                     {note.content && (
                       <p className="text-sm text-muted-foreground line-clamp-3 break-all">
-                        {note.content}
+                        {summaryContent(note.content)}
                       </p>
                     )}
                   </div>

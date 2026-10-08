@@ -51,24 +51,24 @@ export function NotebookHeader({ notebook }: NotebookHeaderProps) {
 
   return (
     <>
-      <div className="border-b pb-6">
+      <div className="border-b pb-4">
         <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3 flex-1">
+          <div className="study-heading">
+            <div className="flex items-center gap-3 flex-1 min-w-0">
               <InlineEdit
                 id="notebook-name"
                 name="notebook-name"
                 value={notebook.name}
                 onSave={handleUpdateName}
-                className="font-display text-2xl font-bold tracking-tight"
-                inputClassName="font-display text-2xl font-bold tracking-tight"
+                className="font-display text-2xl font-medium tracking-tight"
+                inputClassName="font-display text-2xl font-medium tracking-tight"
                 placeholder={t('notebooks.namePlaceholder')}
               />
               {notebook.archived && (
                 <Badge variant="secondary">{t('notebooks.archived')}</Badge>
               )}
             </div>
-            <div className="flex gap-2">
+            <div className="study-heading-actions">
               <Button asChild variant="outline" size="sm">
                 <Link href={`/exams?notebook=${encodeURIComponent(notebook.id)}&new=1`}>
                   <GraduationCap className="h-4 w-4 mr-2" />
@@ -104,8 +104,6 @@ export function NotebookHeader({ notebook }: NotebookHeaderProps) {
             </div>
           </div>
 
-          {/* Signature: one short flat fern underline — one hue, no show */}
-          <div aria-hidden className="h-[3px] w-14 rounded-[1px] bg-fern" />
 
           <InlineEdit
             id="notebook-description"
