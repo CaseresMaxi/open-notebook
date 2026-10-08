@@ -2,6 +2,10 @@ import type { TranslationShape } from '../en-US';
 
 export const ptBR = {
   product: {
+    "sortBy": "Ordenar por {{column}}",
+    "ascending": "Crescente",
+    "descending": "Decrescente",
+
     "notebookActions": "Notebook actions",
     "loadMoreSources": "Load more sources",
     "generatingSummary": "Generating summary…",
@@ -73,7 +77,6 @@ export const ptBR = {
     "retry": "Try again",
     "summaryStatus": "Generating a summary from the selected source…",
     "study": "Study",
-    "sourcesDesc": "Your reference library. Add documents, links or text to use in your notebooks."
 },
 
   common: {
@@ -123,7 +126,6 @@ export const ptBR = {
     writeNote: "Escrever Nota",
     batchMode: "Modo em Lote",
     optional: "Opcional",
-    type: "Tipo",
     title: "Título",
     created: "Criado {{time}}",
     updated: "Atualizado {{time}}",
@@ -354,19 +356,13 @@ export const ptBR = {
     statusCompletedDesc: "Processado com sucesso",
     statusFailedDesc: "Processamento falhou",
     failedToLoad: "Falha ao carregar fontes",
-    allSourcesDesc: "Veja todas as suas fontes aqui. Você pode adicionar novas fontes ou gerenciar as existentes.",
-    allSources: "Todas as Fontes",
     insights: "Insights",
     no: "Não",
-    loadingMore: "Carregando mais...",
     noSourcesYet: "Nenhuma fonte ainda",
-    allSourcesDescShort: "Veja todas as suas fontes aqui.",
     cannotSaveNoteNoNotebook: "Não é possível salvar nota: ID do caderno não disponível",
     createFirstSource: "Adicione sua primeira fonte para começar a construir sua base de conhecimento.",
     deleteSourceConfirm: "Tem certeza que deseja excluir esta fonte?",
     deleteConfirm: "Tem certeza que deseja excluir isto?",
-    deleteConfirmWithTitle: "Tem certeza que deseja excluir \"{{title}}\"?",
-    deleteSuccess: "Fonte excluída com sucesso. Nota: Para excluir o arquivo do armazenamento, você deve habilitar a opção \"excluir arquivo\" na página de configurações.",
     failedToDelete: "Falha ao excluir fonte",
     sourceQueued: "Fonte Enfileirada",
     sourceQueuedDesc: "Fonte enviada para processamento em segundo plano. Você pode monitorar o progresso na lista de fontes.",
@@ -395,9 +391,6 @@ export const ptBR = {
     content: "Conteúdo",
     metadata: "Metadados",
     type: {
-      link: "Link",
-      file: "Arquivo",
-      text: "Texto",
     },
     topics: "Tópicos",
     embedded: "Incorporado",

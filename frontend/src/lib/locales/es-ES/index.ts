@@ -2,6 +2,10 @@ import type { TranslationShape } from '../en-US';
 
 export const esES = {
   product: {
+    "sortBy": "Ordenar por {{column}}",
+    "ascending": "Ascendente",
+    "descending": "Descendente",
+
     "notebookActions": "Acciones del cuaderno",
     "loadMoreSources": "Cargar más fuentes",
     "generatingSummary": "Generando resumen…",
@@ -73,7 +77,6 @@ export const esES = {
     "retry": "Intentar de nuevo",
     "summaryStatus": "Generando un resumen de la fuente seleccionada…",
     "study": "Estudiar",
-    "sourcesDesc": "Tu biblioteca de referencia. Agregá documentos, enlaces o texto para usarlos en tus cuadernos."
 },
 
   common: {
@@ -123,7 +126,6 @@ export const esES = {
     writeNote: "Escribir nota",
     batchMode: "Modo por lotes",
     optional: "Opcional",
-    type: "Tipo",
     title: "Título",
     created: "Creado {{time}}",
     updated: "Actualizado {{time}}",
@@ -354,19 +356,13 @@ export const esES = {
     statusCompletedDesc: "Procesado exitosamente",
     statusFailedDesc: "El procesamiento falló",
     failedToLoad: "Error al cargar las fuentes",
-    allSourcesDesc: "Ve todas tus fuentes aquí. Puedes agregar nuevas fuentes o gestionar las existentes.",
-    allSources: "Todas las fuentes",
     insights: "Análisis",
     no: "No",
-    loadingMore: "Cargando más...",
     noSourcesYet: "Aún no hay fuentes",
-    allSourcesDescShort: "Ve todas tus fuentes aquí.",
     cannotSaveNoteNoNotebook: "No se puede guardar la nota: ID de cuaderno no disponible",
     createFirstSource: "Agrega tu primera fuente para comenzar a construir tu base de conocimiento.",
     deleteSourceConfirm: "¿Estás seguro de que quieres eliminar esta fuente?",
     deleteConfirm: "¿Estás seguro de que quieres eliminar esto?",
-    deleteConfirmWithTitle: "¿Estás seguro de que quieres eliminar \"{{title}}\"?",
-    deleteSuccess: "Fuente eliminada exitosamente. Nota: Para eliminar el archivo del almacenamiento, debes habilitar la opción \"eliminar archivo\" en la página de configuración.",
     failedToDelete: "Error al eliminar la fuente",
     sourceQueued: "Fuente en cola",
     sourceQueuedDesc: "Fuente enviada para procesamiento en segundo plano. Puedes monitorear el progreso en la lista de fuentes.",
@@ -395,9 +391,6 @@ export const esES = {
     content: "Contenido",
     metadata: "Metadatos",
     type: {
-      link: "Enlace",
-      file: "Archivo",
-      text: "Texto",
     },
     topics: "Temas",
     embedded: "Embebido",

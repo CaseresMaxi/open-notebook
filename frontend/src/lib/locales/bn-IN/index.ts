@@ -2,6 +2,10 @@ import type { TranslationShape } from '../en-US';
 
 export const bnIN = {
   product: {
+    "sortBy": "{{column}} অনুযায়ী সাজান",
+    "ascending": "ঊর্ধ্বক্রম",
+    "descending": "অধঃক্রম",
+
     "notebookActions": "Notebook actions",
     "loadMoreSources": "Load more sources",
     "generatingSummary": "Generating summary…",
@@ -73,7 +77,6 @@ export const bnIN = {
     "retry": "Try again",
     "summaryStatus": "Generating a summary from the selected source…",
     "study": "Study",
-    "sourcesDesc": "Your reference library. Add documents, links or text to use in your notebooks."
 },
 
   common: {
@@ -123,7 +126,6 @@ export const bnIN = {
     writeNote: "নোট লিখুন",
     batchMode: "ব্যাচ মোড",
     optional: "ঐচ্ছিক",
-    type: "ধরন",
     title: "শিরোনাম",
     created: "তৈরি করা হয়েছে {{time}}",
     updated: "আপডেট করা হয়েছে {{time}}",
@@ -354,19 +356,13 @@ export const bnIN = {
     statusCompletedDesc: "সফলভাবে প্রক্রিয়াকরণ করা হয়েছে",
     statusFailedDesc: "প্রক্রিয়াকরণ ব্যর্থ",
     failedToLoad: "উৎস লোড করতে ব্যর্থ",
-    allSourcesDesc: "এখানে আপনার সব উৎস দেখুন। আপনি নতুন উৎস যোগ করতে বা বিদ্যমান উৎস পরিচালনা করতে পারেন।",
-    allSources: "সব উৎস",
     insights: "অন্তর্দৃষ্টি",
     no: "না",
-    loadingMore: "আরো লোড হচ্ছে...",
     noSourcesYet: "এখনও কোন উৎস নেই",
-    allSourcesDescShort: "এখানে আপনার সব উৎস দেখুন।",
     cannotSaveNoteNoNotebook: "নোট সংরক্ষণ করতে পারা যায়নি: নোটবুক ID উপলব্ধ নয়",
     createFirstSource: "আপনার জ্ঞানভান্ডার তৈরি শুরু করতে আপনার প্রথম উৎস যোগ করুন।",
     deleteSourceConfirm: "আপনি কি নিশ্চিত এই উৎসটি মুছে ফেলতে চান?",
     deleteConfirm: "আপনি কি নিশ্চিত এটি মুছে ফেলতে চান?",
-    deleteConfirmWithTitle: "আপনি কি নিশ্চিত \"{{title}}\" মুছে ফেলতে চান?",
-    deleteSuccess: "উৎস সফলভাবে মুছে ফেলা হয়েছে। নোট: স্টোরেজ থেকে ফাইল মুছে ফেলতে, আপনাকে অবশ্যই সেটিংস পেজে \"ফাইল মুছে ফেলুন\" অপশনটি সক্ষম করতে হবে।",
     failedToDelete: "উৎস মুছে ফেলতে ব্যর্থ",
     sourceQueued: "উৎস কিউ করা হয়েছে",
     sourceQueuedDesc: "ব্যাকগ্রাউন্ড প্রক্রিয়াকরণের জন্য উৎস জমা দেওয়া হয়েছে। আপনি উৎসের তালিকায় অগ্রগতি পর্যবেক্ষণ করতে পারেন।",
@@ -395,9 +391,6 @@ export const bnIN = {
     content: "কন্টেন্ট",
     metadata: "মেটাডেটা",
     type: {
-      link: "লিংক",
-      file: "ফাইল",
-      text: "টেক্সট",
     },
     topics: "বিষয়বস্তু",
     embedded: "এমবেড করা",

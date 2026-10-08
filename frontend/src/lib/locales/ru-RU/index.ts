@@ -2,6 +2,10 @@ import type { TranslationShape } from '../en-US';
 
 export const ruRU = {
   product: {
+    "sortBy": "Сортировать по {{column}}",
+    "ascending": "По возрастанию",
+    "descending": "По убыванию",
+
     "notebookActions": "Notebook actions",
     "loadMoreSources": "Load more sources",
     "generatingSummary": "Generating summary…",
@@ -73,7 +77,6 @@ export const ruRU = {
     "retry": "Try again",
     "summaryStatus": "Generating a summary from the selected source…",
     "study": "Study",
-    "sourcesDesc": "Your reference library. Add documents, links or text to use in your notebooks."
 },
 
   common: {
@@ -123,7 +126,6 @@ export const ruRU = {
     writeNote: "Написать заметку",
     batchMode: "Пакетный режим",
     optional: "Необязательно",
-    type: "Тип",
     title: "Название",
     created: "Создано {{time}}",
     updated: "Обновлено {{time}}",
@@ -354,19 +356,13 @@ export const ruRU = {
     statusCompletedDesc: "Успешно обработано",
     statusFailedDesc: "Обработка не удалась",
     failedToLoad: "Не удалось загрузить источники",
-    allSourcesDesc: "Просмотр всех источников. Вы можете добавлять новые или управлять существующими.",
-    allSources: "Все источники",
     insights: "Инсайты",
     no: "Нет",
-    loadingMore: "Загрузка...",
     noSourcesYet: "Пока нет источников",
-    allSourcesDescShort: "Просмотр всех ваших источников.",
     cannotSaveNoteNoNotebook: "Невозможно сохранить заметку: ID блокнота недоступен",
     createFirstSource: "Добавьте первый источник, чтобы начать создание базы знаний.",
     deleteSourceConfirm: "Вы уверены, что хотите удалить этот источник?",
     deleteConfirm: "Вы уверены, что хотите удалить это?",
-    deleteConfirmWithTitle: "Вы уверены, что хотите удалить «{{title}}»?",
-    deleteSuccess: "Источник успешно удалён. Примечание: Чтобы удалить файл из хранилища, необходимо включить опцию «Удалить файл» в настройках.",
     failedToDelete: "Не удалось удалить источник",
     sourceQueued: "Источник в очереди",
     sourceQueuedDesc: "Источник отправлен на фоновую обработку. Отслеживайте прогресс в списке источников.",
@@ -395,9 +391,6 @@ export const ruRU = {
     content: "Содержимое",
     metadata: "Метаданные",
     type: {
-      link: "Ссылка",
-      file: "Файл",
-      text: "Текст",
     },
     topics: "Темы",
     embedded: "С эмбеддингом",

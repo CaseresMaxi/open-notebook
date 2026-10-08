@@ -2,6 +2,8 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { ChatPanel } from './ChatPanel'
 
+vi.mock('@/lib/hooks/use-development-tools', () => ({ useDevelopmentTools: () => true }))
+
 // useTranslation is mocked globally in setup.ts (t returns the key string)
 
 vi.mock('@/lib/hooks/use-modal-manager', () => ({
@@ -161,10 +163,12 @@ describe('ChatPanel composer', () => {
       isStreaming={false} contextIndicators={null} onSendMessage={vi.fn()} />)
     expect(screen.getByAltText('saved.png')).toBeInTheDocument()
   })
-  it('sends the visual mode flag explicitly', () => {
+  it('sends the visual mode flag explicitly', async () => {
     const { onSendMessage, sendButton } = mount()
-    fireEvent.click(screen.getByText('navigation.settings'))
+    fireEvent.click(screen.getByRole('button', { name: 'navigation.advanced' }))
     fireEvent.click(screen.getByRole('checkbox', { name: 'chat.visualResponses' }))
+    fireEvent.click(screen.getByRole('button', { name: 'common.close' }))
+    await waitFor(() => expect(getTextarea()).toBeVisible())
     fireEvent.change(getTextarea(), { target: { value: 'Show a source crop' } })
     fireEvent.click(sendButton)
     expect(onSendMessage).toHaveBeenCalledWith('Show a source crop', undefined, [], true)

@@ -9,11 +9,6 @@ import { usePathname } from 'next/navigation'
 import {
   BookOpen,
   Menu,
-  FileText,
-  StickyNote,
-  AlignLeft,
-  GraduationCap,
-  MessageSquare,
   UserRound,
   CreditCard,
   Settings,
@@ -34,11 +29,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const links = [
     ['/notebooks', 'navigation.notebooks', BookOpen],
-    ['/sources', 'navigation.sources', FileText],
-    ['/notes', 'common.notes', StickyNote],
-    ['/summaries', 'product.summaries', AlignLeft],
-    ['/exams', 'navigation.exams', GraduationCap],
-    ['/chat', 'common.chat', MessageSquare],
     ['/profile', 'product.profile', UserRound],
     ['/payments', 'product.payments', CreditCard],
     ['/settings', 'navigation.settings', Settings],

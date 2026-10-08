@@ -38,7 +38,7 @@
 .product-shell [data-slot="input"], .product-shell [data-slot="textarea"] { border-radius: var(--radius-control); }
 .product-shell h1 { font-size: var(--text-3xl); font-weight: 500; letter-spacing: var(--tracking-display); }
 .product-shell h2, .product-shell [data-slot="card-title"] { font-weight: 500; }
-.product-page { width: 100%; max-width: 1400px; margin-inline: auto; padding: 32px; display: grid; gap: 24px; }
+.product-page { grid-template-columns: minmax(0, 1fr); min-width: 0; width: 100%; max-width: 1400px; margin-inline: auto; padding: 32px; display: grid; gap: 24px; }
 .product-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
 .product-heading p { margin-top: 8px; color: var(--muted-foreground); max-width: 680px; }
 .product-panel { border: 1px solid var(--border); border-radius: var(--radius-panel); background: var(--card); padding: 24px; min-width: 0; }
@@ -251,3 +251,29 @@
 .product-shell .chat-answer > div:first-child { background: transparent; border: 0; border-radius: 0; padding-inline: 0; }
 .product-shell .chat-answer [data-chat-quiz] { border: 0; border-top: 1px solid var(--line); border-radius: 0; box-shadow: none; background: transparent; }
 .product-shell .chat-answer [data-chat-quiz] [data-slot="card"] { border: 0; border-radius: 0; box-shadow: none; background: transparent; }
+/* Liquid chrome shares Instasent's engine; reading areas never acquire a lens. */
+.liquid-surface { position: relative; background: var(--nn-glass); box-shadow: inset 0 0 0 1px var(--nn-edge); }
+.liquid-surface[data-glass="liquid"] { background: transparent; }
+.liquid-surface > .ql-content { position: relative; z-index: 10; }
+.product-shell .app-sidebar a[aria-current="page"] { border: 0; background: transparent; color: var(--foreground); }
+.nav-selection { position: absolute; inset: 0; z-index: -1; border-radius: 12px; background: var(--nn-glass); box-shadow: inset 0 0 0 1px var(--nn-edge), 0 2px 8px var(--nn-shadow); }
+.glass-segments { display: inline-flex; max-width: 100%; --surface-muted: transparent; --surface: var(--nn-glass); --border: var(--nn-edge); }
+.study-view-switch { display: flex; justify-content: center; }
+/* Radix already owns a visual scrollbar. Never enable the browser's second one. */
+.product-shell [data-slot="scroll-area-viewport"] { scrollbar-width: none !important; }
+.product-shell [data-slot="scroll-area-viewport"]::-webkit-scrollbar { display: none !important; }
+.product-shell > .app-sidebar { background: transparent; border: 0; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; }
+.glass-tabs { display: inline-flex; max-width: 100%; }
+.product-shell .glass-tabs [data-slot="tabs-list"] { background: transparent; border: 0; border-radius: 18px; margin: 0; padding: 4px; gap: 2px; width: auto; max-width: 100%; }
+.product-shell .glass-tabs [data-slot="tabs-trigger"] { position: relative; isolation: isolate; border: 0; margin: 0; min-height: 44px; padding: 0 16px; border-radius: 12px; }
+@media (max-width: 420px) { .product-shell .glass-tabs [data-slot="tabs-trigger"] { padding-inline: 10px; } }
+.product-shell .session-list [data-slot="card-header"], .product-shell .session-list [data-slot="card-content"] { padding-inline: 0; }
+
+.product-data-table { min-width: 0; max-width: 100%; }
+.product-data-table table { min-width: 0; }
+
+/* Instasent uses a flat film instead of quick-liquid's default tint gradient. */
+.liquid-surface { --glass-film: rgba(240, 240, 240, .545); }
+.dark .liquid-surface { --glass-film: rgba(150, 150, 150, .125); }
+.liquid-surface > .ql-tint { background: var(--glass-film) !important; }
+.product-shell .session-list { background: transparent; border: 0; border-radius: 0; box-shadow: none; padding: 0; gap: 16px; }

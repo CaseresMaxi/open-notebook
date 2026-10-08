@@ -1,5 +1,9 @@
 export const enUS = {
   product: {
+    "sortBy": "Sort by {{column}}",
+    "ascending": "Ascending",
+    "descending": "Descending",
+
     "notebookActions": "Notebook actions",
     "loadMoreSources": "Load more sources",
     "generatingSummary": "Generating summary…",
@@ -71,7 +75,6 @@ export const enUS = {
     "retry": "Try again",
     "summaryStatus": "Generating a summary from the selected source…",
     "study": "Study",
-    "sourcesDesc": "Your reference library. Add documents, links or text to use in your notebooks."
 },
 
   common: {
@@ -121,7 +124,6 @@ export const enUS = {
     writeNote: "Write Note",
     batchMode: "Batch Mode",
     optional: "Optional",
-    type: "Type",
     title: "Title",
     created: "Created {{time}}",
     updated: "Updated {{time}}",
@@ -352,19 +354,13 @@ export const enUS = {
     statusCompletedDesc: "Successfully processed",
     statusFailedDesc: "Processing failed",
     failedToLoad: "Failed to load sources",
-    allSourcesDesc: "View all your sources here. You can add new sources or manage existing ones.",
-    allSources: "All Sources",
     insights: "Insights",
     no: "No",
-    loadingMore: "Loading more...",
     noSourcesYet: "No sources yet",
-    allSourcesDescShort: "View all your sources here.",
     cannotSaveNoteNoNotebook: "Cannot save note: notebook ID not available",
     createFirstSource: "Add your first source to start building your knowledge base.",
     deleteSourceConfirm: "Are you sure you want to delete this source?",
     deleteConfirm: "Are you sure you want to delete this?",
-    deleteConfirmWithTitle: "Are you sure you want to delete \"{{title}}\"?",
-    deleteSuccess: "Source deleted successfully. Note: To delete the file from storage, you must enable checking the \"delete file\" option in the settings page.",
     failedToDelete: "Failed to delete source",
     sourceQueued: "Source Queued",
     sourceQueuedDesc: "Source submitted for background processing. You can monitor progress in the sources list.",
@@ -393,9 +389,6 @@ export const enUS = {
     content: "Content",
     metadata: "Metadata",
     type: {
-      link: "Link",
-      file: "File",
-      text: "Text",
     },
     topics: "Topics",
     embedded: "Embedded",

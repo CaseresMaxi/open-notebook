@@ -4,7 +4,6 @@ import { useState, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { Badge } from '@/components/ui/badge'
 import {
   MessageSquare,
@@ -32,6 +31,7 @@ import { BaseChatSession } from '@/lib/types/api'
 import { useModels } from '@/lib/hooks/use-models'
 
 interface SessionManagerProps {
+  embedded?: boolean
   sessions: BaseChatSession[]
   currentSessionId: string | null
   onCreateSession: (title: string) => void
@@ -42,6 +42,7 @@ interface SessionManagerProps {
 }
 
 export function SessionManager({
+  embedded = false,
   sessions,
   currentSessionId,
   onCreateSession,
@@ -103,24 +104,25 @@ export function SessionManager({
 
   return (
     <>
-      <Card className="h-full flex flex-col">
+      <Card className="session-list flex flex-col border-0 shadow-none bg-transparent">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center justify-between">
-            <span className="flex items-center gap-2">
+            {!embedded && <span className="flex items-center gap-2">
               <MessageSquare className="h-5 w-5" />
               {t('chat.sessions')}
-            </span>
+            </span>}
             <Button
               size="sm"
               variant="outline"
+              aria-label={t('common.create')}
               onClick={() => setIsCreating(true)}
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-4 w-4" />{t('common.create')}
             </Button>
           </CardTitle>
         </CardHeader>
         <CardContent className="flex-1 p-0 min-h-0">
-          <ScrollArea className="h-full px-4">
+          <div className="px-4">
             {isCreating && (
               <div className="p-3 border rounded-lg mb-3">
                 <Input
@@ -245,7 +247,7 @@ export function SessionManager({
                 ))}
               </div>
             )}
-          </ScrollArea>
+          </div>
         </CardContent>
       </Card>
 

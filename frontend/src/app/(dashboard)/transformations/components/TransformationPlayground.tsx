@@ -1,5 +1,7 @@
 'use client'
 
+import { MarkdownDataTable } from '@/components/ui/study-data-table'
+
 import { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -131,11 +133,7 @@ export function TransformationPlayground({ transformations, selectedTransformati
                         remarkPlugins={[remarkGfm, remarkMath]}
                         rehypePlugins={[[rehypeKatex, KATEX_OPTIONS]]}
                         components={{
-                          table: ({ children }) => (
-                            <div className="my-4 overflow-x-auto">
-                              <table className="min-w-full border-collapse border border-border">{children}</table>
-                            </div>
-                          ),
+                          table: ({ children }) => <MarkdownDataTable>{children}</MarkdownDataTable>,
                           thead: ({ children }) => <thead className="bg-muted">{children}</thead>,
                           tbody: ({ children }) => <tbody>{children}</tbody>,
                           tr: ({ children }) => <tr className="border-b border-border">{children}</tr>,

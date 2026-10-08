@@ -5,6 +5,10 @@ import type { TranslationShape } from '../en-US';
 
 export const deDE = {
   product: {
+    "sortBy": "Nach {{column}} sortieren",
+    "ascending": "Aufsteigend",
+    "descending": "Absteigend",
+
     "notebookActions": "Notebook actions",
     "loadMoreSources": "Load more sources",
     "generatingSummary": "Generating summary…",
@@ -76,7 +80,6 @@ export const deDE = {
     "retry": "Try again",
     "summaryStatus": "Generating a summary from the selected source…",
     "study": "Study",
-    "sourcesDesc": "Your reference library. Add documents, links or text to use in your notebooks."
 },
 
   common: {
@@ -126,7 +129,6 @@ export const deDE = {
     writeNote: "Notiz schreiben",
     batchMode: "Stapelmodus",
     optional: "Optional",
-    type: "Typ",
     title: "Titel",
     created: "Erstellt {{time}}",
     updated: "Aktualisiert {{time}}",
@@ -357,19 +359,13 @@ export const deDE = {
     statusCompletedDesc: "Erfolgreich verarbeitet",
     statusFailedDesc: "Verarbeitung fehlgeschlagen",
     failedToLoad: "Quellen konnten nicht geladen werden",
-    allSourcesDesc: "Hier findest du alle deine Quellen. Du kannst neue Quellen hinzufügen oder vorhandene verwalten.",
-    allSources: "Alle Quellen",
     insights: "Erkenntnisse",
     no: "Nein",
-    loadingMore: "Weitere werden geladen...",
     noSourcesYet: "Noch keine Quellen vorhanden",
-    allSourcesDescShort: "Hier findest du alle deine Quellen.",
     cannotSaveNoteNoNotebook: "Notiz kann nicht gespeichert werden: Notebook-ID nicht verfügbar",
     createFirstSource: "Füge deine erste Quelle hinzu, um deine Wissensbasis aufzubauen.",
     deleteSourceConfirm: "Möchtest du diese Quelle wirklich löschen?",
     deleteConfirm: "Möchtest du das wirklich löschen?",
-    deleteConfirmWithTitle: "Möchtest du „{{title}}“ wirklich löschen?",
-    deleteSuccess: "Quelle erfolgreich gelöscht. Hinweis: Um die Datei auch aus dem Speicher zu löschen, musst du in den Einstellungen die Option „Datei löschen“ aktivieren.",
     failedToDelete: "Quelle konnte nicht gelöscht werden",
     sourceQueued: "Quelle eingereiht",
     sourceQueuedDesc: "Quelle wurde zur Hintergrundverarbeitung eingereicht. Den Fortschritt kannst du in der Quellenliste verfolgen.",
@@ -398,9 +394,6 @@ export const deDE = {
     content: "Inhalt",
     metadata: "Metadaten",
     type: {
-      link: "Link",
-      file: "Datei",
-      text: "Text",
     },
     topics: "Themen",
     embedded: "Eingebettet",

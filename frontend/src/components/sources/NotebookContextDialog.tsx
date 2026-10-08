@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { SlidersHorizontal } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog'
+import { Drawer as Dialog, DrawerContent, DrawerTrigger as DialogTrigger } from '@/components/arc/drawer/drawer'
 import { AlertDialog, AlertDialogContent, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from '@/components/ui/alert-dialog'
 import { useTranslation } from '@/lib/hooks/use-translation'
 import type { ChatMemory } from '@/lib/api/chat'
@@ -33,9 +33,7 @@ export function NotebookContextDialog(props: Props) {
   return <>
     <Dialog>
       <DialogTrigger asChild><Button variant="ghost" size="sm" disabled={props.busy} aria-label={t('chat.manageContext')}><SlidersHorizontal className="h-4 w-4" /><span className="text-xs">{t('chat.manageContext')}</span></Button></DialogTrigger>
-      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-xl">
-        <DialogTitle>{t('chat.manageContext')}</DialogTitle>
-        <DialogDescription>{t('chat.contextHelp')}</DialogDescription>
+      <DrawerContent closeLabel={t('common.close')} className="product-shell" title={t('chat.manageContext')} description={t('chat.contextHelp')}>
         <section className="space-y-3">
           <h3 className="font-medium">{t('chat.conversationMemory')}</h3>
           {!props.hasSession ? <p className="text-sm text-muted-foreground">{t('chat.createToStart')}</p> : props.loading ? <p role="status">{t('common.loading')}</p> : props.error ? <p role="alert">{t('chat.contextLoadFailed')}</p> : <p className="text-sm text-muted-foreground">{t('chat.memoryStats', { active: props.memory?.active_messages ?? 0, total: props.memory?.total_messages ?? 0, tokens: props.memory?.history_tokens ?? 0 })}</p>}
@@ -69,7 +67,7 @@ export function NotebookContextDialog(props: Props) {
             </select>
           </label>)}
         </section>
-      </DialogContent>
+      </DrawerContent>
     </Dialog>
     <AlertDialog open={confirmation !== null} onOpenChange={open => { if (!open) setConfirmation(null) }}>
       <AlertDialogContent>

@@ -2,6 +2,10 @@ import type { TranslationShape } from '../en-US';
 
 export const zhCN = {
   product: {
+    "sortBy": "按{{column}}排序",
+    "ascending": "升序",
+    "descending": "降序",
+
     "notebookActions": "Notebook actions",
     "loadMoreSources": "Load more sources",
     "generatingSummary": "Generating summary…",
@@ -73,7 +77,6 @@ export const zhCN = {
     "retry": "Try again",
     "summaryStatus": "Generating a summary from the selected source…",
     "study": "Study",
-    "sourcesDesc": "Your reference library. Add documents, links or text to use in your notebooks."
 },
 
   common: {
@@ -123,7 +126,6 @@ export const zhCN = {
     writeNote: "撰写笔记",
     batchMode: "批量模式",
     optional: "可选",
-    type: "类型",
     title: "标题",
     created: "创建于 {{time}}",
     updated: "更新于 {{time}}",
@@ -354,19 +356,13 @@ export const zhCN = {
     statusCompletedDesc: "处理成功",
     statusFailedDesc: "处理失败",
     failedToLoad: "加载来源失败",
-    allSourcesDesc: "在此查看所有来源。您可以添加新来源或管理现有来源。",
-    allSources: "所有来源",
     insights: "见解",
     no: "否",
-    loadingMore: "正在加载更多...",
     noSourcesYet: "暂无来源",
-    allSourcesDescShort: "在此查看所有来源。",
     cannotSaveNoteNoNotebook: "无法保存笔记：缺少笔记本 ID",
     createFirstSource: "添加您的第一个来源开始构建知识库。",
     deleteSourceConfirm: "确定要删除此来源吗？",
     deleteConfirm: "确定要删除吗？",
-    deleteConfirmWithTitle: "确定要删除 \"{{title}}\" 吗？",
-    deleteSuccess: "来源删除成功。注意：要从存储中删除文件，必须在设置页面中启用“删除文件”选项。",
     failedToDelete: "删除来源失败",
     sourceQueued: "来源已加入队列",
     sourceQueuedDesc: "来源已提交进行后台处理。您可以在来源列表中监控进度。",
@@ -395,9 +391,6 @@ export const zhCN = {
     content: "内容",
     metadata: "元数据",
     type: {
-      link: "链接",
-      file: "文件",
-      text: "文本",
     },
     topics: "主题",
     embedded: "已嵌入向量",

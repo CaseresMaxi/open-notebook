@@ -2,6 +2,10 @@ import type { TranslationShape } from '../en-US';
 
 export const plPL = {
   product: {
+    "sortBy": "Sortuj według {{column}}",
+    "ascending": "Rosnąco",
+    "descending": "Malejąco",
+
     "notebookActions": "Notebook actions",
     "loadMoreSources": "Load more sources",
     "generatingSummary": "Generating summary…",
@@ -73,7 +77,6 @@ export const plPL = {
     "retry": "Try again",
     "summaryStatus": "Generating a summary from the selected source…",
     "study": "Study",
-    "sourcesDesc": "Your reference library. Add documents, links or text to use in your notebooks."
 },
 
   common: {
@@ -123,7 +126,6 @@ export const plPL = {
     writeNote: "Napisz notatkę",
     batchMode: "Tryb wsadowy",
     optional: "Opcjonalne",
-    type: "Typ",
     title: "Tytuł",
     created: "Utworzono {{time}}",
     updated: "Zaktualizowano {{time}}",
@@ -354,19 +356,13 @@ export const plPL = {
     statusCompletedDesc: "Przetworzono pomyślnie",
     statusFailedDesc: "Przetwarzanie nie powiodło się",
     failedToLoad: "Nie udało się załadować źródeł",
-    allSourcesDesc: "Tutaj zobaczysz wszystkie swoje źródła. Możesz dodawać nowe lub zarządzać istniejącymi.",
-    allSources: "Wszystkie źródła",
     insights: "Wglądy",
     no: "Nie",
-    loadingMore: "Ładowanie kolejnych...",
     noSourcesYet: "Brak źródeł",
-    allSourcesDescShort: "Tutaj zobaczysz wszystkie swoje źródła.",
     cannotSaveNoteNoNotebook: "Nie można zapisać notatki: brak dostępnego identyfikatora notatnika",
     createFirstSource: "Dodaj pierwsze źródło, aby zacząć budować bazę wiedzy.",
     deleteSourceConfirm: "Czy na pewno chcesz usunąć to źródło?",
     deleteConfirm: "Czy na pewno chcesz to usunąć?",
-    deleteConfirmWithTitle: "Czy na pewno chcesz usunąć „{{title}}”?",
-    deleteSuccess: "Źródło usunięte pomyślnie. Uwaga: aby usunąć plik z magazynu, musisz włączyć opcję „usuń plik” na stronie ustawień.",
     failedToDelete: "Nie udało się usunąć źródła",
     sourceQueued: "Źródło w kolejce",
     sourceQueuedDesc: "Źródło przekazano do przetwarzania w tle. Postęp możesz śledzić na liście źródeł.",
@@ -395,9 +391,6 @@ export const plPL = {
     content: "Treść",
     metadata: "Metadane",
     type: {
-      link: "Link",
-      file: "Plik",
-      text: "Tekst",
     },
     topics: "Tematy",
     embedded: "Osadzone",

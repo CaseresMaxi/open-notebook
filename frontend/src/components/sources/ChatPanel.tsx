@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
+import { Drawer, DrawerContent, DrawerTrigger } from '@/components/arc/drawer/drawer'
+import { useDevelopmentTools } from '@/lib/hooks/use-development-tools'
 import { Bot, User, Send, Loader2, Clock, ImagePlus } from 'lucide-react'
 import {
   SourceChatMessage,
@@ -77,6 +78,7 @@ export function ChatPanel({
   contextType = 'source',
   notebookId
 }: ChatPanelProps) {
+  const developerTools = useDevelopmentTools()
   const [examRequest, setExamRequest] = useState<string | null>(null)
   const { t } = useTranslation()
   const [sessionManagerOpen, setSessionManagerOpen] = useState(false)
@@ -132,10 +134,10 @@ export function ChatPanel({
             {title || (contextType === 'source' ? t('chat.chatWith', { name: t('navigation.sources') }) : t('chat.chatWith', { name: t('common.notebook') }))}
           </CardTitle>
           <div className="ml-auto flex shrink-0 items-center gap-1">
-          {headerActions}
+          {developerTools && headerActions}
           {onSelectSession && onCreateSession && onDeleteSession && (
-            <Dialog open={sessionManagerOpen} onOpenChange={setSessionManagerOpen}>
-              <Button
+            <Drawer open={sessionManagerOpen} onOpenChange={setSessionManagerOpen}>
+              <DrawerTrigger asChild><Button
                 variant="ghost"
                 size="sm"
                 className="gap-2 text-muted-foreground"
@@ -144,10 +146,9 @@ export function ChatPanel({
               >
                 <Clock className="h-4 w-4" />
                 <span className="text-xs">{t('chat.sessions')}</span>
-              </Button>
-              <DialogContent className="sm:max-w-[420px] p-0 overflow-hidden">
-                <DialogTitle className="sr-only">{t('chat.sessionsTitle')}</DialogTitle>
-                <SessionManager
+              </Button></DrawerTrigger>
+              <DrawerContent closeLabel={t('common.close')} className="product-shell" title={t('chat.sessionsTitle')}>
+                <SessionManager embedded
                   sessions={sessions}
                   currentSessionId={currentSessionId ?? null}
                   onCreateSession={(title) => onCreateSession?.(title)}
@@ -159,8 +160,8 @@ export function ChatPanel({
                   onDeleteSession={(sessionId) => onDeleteSession?.(sessionId)}
                   loadingSessions={loadingSessions}
                 />
-              </DialogContent>
-            </Dialog>
+              </DrawerContent>
+            </Drawer>
           )}
           </div>
         </div>
@@ -239,7 +240,9 @@ function ChatComposer({
   onModelChange
 }: ChatComposerProps) {
   const { t } = useTranslation()
+  const developerTools = useDevelopmentTools()
   const chatInputId = useId()
+  const [optionsOpen, setOptionsOpen] = useState(false)
   const [input, setInput] = useState('')
   const [images, setImages] = useState<ChatImage[]>([])
   const [visualTools, setVisualTools] = useState(false)
@@ -307,8 +310,9 @@ function ChatComposer({
         event.preventDefault()
         void addImages(Array.from(event.dataTransfer.files))
       }}>
-      <details className="chat-options">
-        <summary className="cursor-pointer text-xs text-muted-foreground">{t('navigation.settings')}</summary>
+      {developerTools && <Drawer open={optionsOpen} onOpenChange={setOptionsOpen}>
+        <DrawerTrigger asChild><Button variant="ghost" size="sm">{t('navigation.advanced')}</Button></DrawerTrigger>
+        <DrawerContent closeLabel={t('common.close')} className="product-shell" title={t('navigation.advanced')}>
       {/* Model selector */}
       {onModelChange && (
         <div className="flex items-center justify-between">
@@ -326,7 +330,7 @@ function ChatComposer({
         {t('chat.visualResponses')}
       </label>
       {visualTools && <p className="text-xs text-muted-foreground mt-2">{t('chat.visualResponsesHint')}</p>}
-      </details>
+      </DrawerContent></Drawer>}
       {images.length > 0 && <ChatImages images={images} disabled={busy}
         onRemove={index => setImages(previous => previous.filter((_, position) => position !== index))} />}
       <input ref={fileInputRef} type="file" accept={CHAT_IMAGE_TYPES.join(',')} multiple

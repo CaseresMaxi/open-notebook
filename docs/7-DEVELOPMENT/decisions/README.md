@@ -63,3 +63,5 @@ What this makes easier, what it makes harder, what to watch. (bullets)
 - [ADR-021: NextNootbook identity and backend](ADR-021-nextnootbook-identity.md)
 
 - [ADR-022: Focused study interaction](ADR-022-focused-study-interaction.md)
+
+- [ADR-023: Glass navigation and study controls](ADR-023-glass-navigation-and-study-controls.md)

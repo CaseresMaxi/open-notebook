@@ -6,7 +6,7 @@ import { AppShell } from '@/components/layout/AppShell'
 import { NotebookList } from './components/NotebookList'
 import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
-import SegmentedControl from '@/components/arc/segmented-control/segmented-control'
+import { GlassSegmentedControl } from '@/components/layout/GlassSegmentedControl'
 import { useNotebooks } from '@/lib/hooks/use-notebooks'
 import { CreateNotebookDialog } from '@/components/notebooks/CreateNotebookDialog'
 import { Input } from '@/components/ui/input'
@@ -61,7 +61,7 @@ export default function NotebooksPage() {
 
           </div>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-            <SegmentedControl value={viewMode} onValueChange={value => setViewMode(value as 'tile' | 'list')} label={t('notebooks.title')} options={[{ value: 'tile', label: t('notebooks.tileView') }, { value: 'list', label: t('notebooks.listView') }]} />
+            <GlassSegmentedControl value={viewMode} onValueChange={value => setViewMode(value as 'tile' | 'list')} label={t('notebooks.title')} options={[{ value: 'tile', label: t('notebooks.tileView') }, { value: 'list', label: t('notebooks.listView') }]} />
             <Input
               id="notebook-search"
               name="notebook-search"

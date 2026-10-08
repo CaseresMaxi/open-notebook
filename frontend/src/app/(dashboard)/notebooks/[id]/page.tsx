@@ -13,7 +13,8 @@ import { useNotebookSources } from '@/lib/hooks/use-sources'
 import { useNotes } from '@/lib/hooks/use-notes'
 import { LoadingSpinner } from '@/components/common/LoadingSpinner'
 import { useTranslation } from '@/lib/hooks/use-translation'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { GlassTabsList } from '@/components/layout/GlassTabsList'
+import { Tabs, TabsContent } from '@/components/ui/tabs'
 import {
   applyBulkSourceContext,
   applyBulkNoteContext,
@@ -166,12 +167,12 @@ export default function NotebookPage() {
       <div className="shrink-0 px-4 pt-4 md:px-6 md:pt-6"><NotebookHeader notebook={notebook} /></div>
       <div className="flex-1 min-h-0 p-4 md:p-6 flex flex-col">
         <Tabs value={mobileActiveTab} onValueChange={value => setMobileActiveTab(value as typeof mobileActiveTab)} className="flex flex-col flex-1 min-h-0">
-          <TabsList className="grid w-full grid-cols-4 min-h-11 mb-4 shrink-0">
-            <TabsTrigger value="sources">{t('navigation.sources')}</TabsTrigger>
-            <TabsTrigger value="chat">{t('common.chat')}</TabsTrigger>
-            <TabsTrigger value="notes">{t('common.notes')}</TabsTrigger>
-            <TabsTrigger value="summaries">{t('product.summaries')}</TabsTrigger>
-          </TabsList>
+          <div className="study-view-switch shrink-0 mb-4">
+            <GlassTabsList value={mobileActiveTab} label={t('product.studyNavigation')} options={[
+              { value: 'sources', label: t('navigation.sources') }, { value: 'chat', label: t('common.chat') },
+              { value: 'notes', label: t('common.notes') }, { value: 'summaries', label: t('product.summaries') },
+            ]} />
+          </div>
           <TabsContent value="sources" className="study-focus study-pane flex-1 min-h-0 overflow-hidden">{sourcesPanel}</TabsContent>
           <TabsContent value="chat" forceMount className="study-focus study-pane flex-1 min-h-0 overflow-hidden data-[state=inactive]:hidden">{chatPanel}</TabsContent>
           <TabsContent value="notes" className="study-focus study-pane flex-1 min-h-0 overflow-hidden">

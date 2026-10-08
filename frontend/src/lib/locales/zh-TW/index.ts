@@ -2,6 +2,10 @@ import type { TranslationShape } from '../en-US';
 
 export const zhTW = {
   product: {
+    "sortBy": "依{{column}}排序",
+    "ascending": "升冪",
+    "descending": "降冪",
+
     "notebookActions": "Notebook actions",
     "loadMoreSources": "Load more sources",
     "generatingSummary": "Generating summary…",
@@ -73,7 +77,6 @@ export const zhTW = {
     "retry": "Try again",
     "summaryStatus": "Generating a summary from the selected source…",
     "study": "Study",
-    "sourcesDesc": "Your reference library. Add documents, links or text to use in your notebooks."
 },
 
   common: {
@@ -123,7 +126,6 @@ export const zhTW = {
     writeNote: "撰寫筆記",
     batchMode: "批次模式",
     optional: "可選",
-    type: "類型",
     title: "標題",
     created: "建立於 {{time}}",
     updated: "更新於 {{time}}",
@@ -354,19 +356,13 @@ export const zhTW = {
     statusCompletedDesc: "處理成功",
     statusFailedDesc: "處理失敗",
     failedToLoad: "載入來源失敗",
-    allSourcesDesc: "在此檢視所有來源。您可以新增新來源或管理現有來源。",
-    allSources: "所有來源",
     insights: "見解",
     no: "否",
-    loadingMore: "正在載入更多...",
     noSourcesYet: "暫無來源",
-    allSourcesDescShort: "在此檢視所有來源。",
     cannotSaveNoteNoNotebook: "無法儲存筆記：缺少筆記本 ID",
     createFirstSource: "新增您的第一個來源開始構建知識庫。",
     deleteSourceConfirm: "確定要刪除此來源嗎？",
     deleteConfirm: "確定要刪除嗎？",
-    deleteConfirmWithTitle: "確定要刪除 \"{{title}}\" 嗎？",
-    deleteSuccess: "來源刪除成功。注意：要從儲存中刪除檔案，必須在設定頁面中啟用「刪除檔案」選項。",
     failedToDelete: "刪除來源失敗",
     sourceQueued: "來源已加入隊列",
     sourceQueuedDesc: "來源已提交進行後台處理。您可以在來源列表中監控進度。",
@@ -395,9 +391,6 @@ export const zhTW = {
     content: "內容",
     metadata: "元資料",
     type: {
-      link: "連結",
-      file: "檔案",
-      text: "文字",
     },
     topics: "主題",
     embedded: "已嵌入向量",

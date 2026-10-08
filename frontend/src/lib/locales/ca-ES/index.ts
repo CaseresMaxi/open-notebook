@@ -2,6 +2,10 @@ import type { TranslationShape } from '../en-US';
 
 export const caES = {
   product: {
+    "sortBy": "Ordena per {{column}}",
+    "ascending": "Ascendent",
+    "descending": "Descendent",
+
     "notebookActions": "Notebook actions",
     "loadMoreSources": "Load more sources",
     "generatingSummary": "Generating summary…",
@@ -73,7 +77,6 @@ export const caES = {
     "retry": "Try again",
     "summaryStatus": "Generating a summary from the selected source…",
     "study": "Study",
-    "sourcesDesc": "Your reference library. Add documents, links or text to use in your notebooks."
 },
 
   common: {
@@ -123,7 +126,6 @@ export const caES = {
     writeNote: "Escriu una nota",
     batchMode: "Mode per lots",
     optional: "Opcional",
-    type: "Tipus",
     title: "Títol",
     created: "Creat {{time}}",
     updated: "Actualitzat {{time}}",
@@ -354,19 +356,13 @@ export const caES = {
     statusCompletedDesc: "Processat correctament",
     statusFailedDesc: "Ha fallat el processament",
     failedToLoad: "Ha fallat la càrrega de les fonts",
-    allSourcesDesc: "Consulta aquí totes les teves fonts. Pots afegir-ne de noves o gestionar les existents.",
-    allSources: "Totes les fonts",
     insights: "Anàlisis",
     no: "No",
-    loadingMore: "S'està carregant més...",
     noSourcesYet: "Encara no hi ha fonts",
-    allSourcesDescShort: "Consulta aquí totes les teves fonts.",
     cannotSaveNoteNoNotebook: "No es pot desar la nota: l'ID del quadern no està disponible",
     createFirstSource: "Afegeix la primera font per començar a construir la teva base de coneixement.",
     deleteSourceConfirm: "Segur que vols suprimir aquesta font?",
     deleteConfirm: "Segur que vols suprimir aquest element?",
-    deleteConfirmWithTitle: "Segur que vols suprimir «{{title}}»?",
-    deleteSuccess: "S'ha suprimit la font correctament. Nota: per suprimir el fitxer de l'emmagatzematge, cal activar l'opció «suprimeix el fitxer» a la pàgina de configuració.",
     failedToDelete: "Ha fallat la supressió de la font",
     sourceQueued: "Font afegida a la cua",
     sourceQueuedDesc: "La font s'ha enviat per al processament en segon pla. Pots controlar el progrés a la llista de fonts.",
@@ -395,9 +391,6 @@ export const caES = {
     content: "Contingut",
     metadata: "Metadades",
     type: {
-      link: "Enllaç",
-      file: "Fitxer",
-      text: "Text",
     },
     topics: "Temes",
     embedded: "Incrustat",

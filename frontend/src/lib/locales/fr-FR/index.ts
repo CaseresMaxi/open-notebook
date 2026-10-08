@@ -2,6 +2,10 @@ import type { TranslationShape } from '../en-US';
 
 export const frFR = {
   product: {
+    "sortBy": "Trier par {{column}}",
+    "ascending": "Croissant",
+    "descending": "Décroissant",
+
     "notebookActions": "Notebook actions",
     "loadMoreSources": "Load more sources",
     "generatingSummary": "Generating summary…",
@@ -73,7 +77,6 @@ export const frFR = {
     "retry": "Try again",
     "summaryStatus": "Generating a summary from the selected source…",
     "study": "Study",
-    "sourcesDesc": "Your reference library. Add documents, links or text to use in your notebooks."
 },
 
   common: {
@@ -123,7 +126,6 @@ export const frFR = {
     writeNote: "Écrire une note",
     batchMode: "Mode par lot",
     optional: "Optionnel",
-    type: "Type",
     title: "Titre",
     created: "Créé à {{time}}",
     updated: "Mis à jour à {{time}}",
@@ -354,19 +356,13 @@ export const frFR = {
     statusCompletedDesc: "Traitée avec succès",
     statusFailedDesc: "Échec du traitement",
     failedToLoad: "Échec du chargement des sources",
-    allSourcesDesc: "Affichez toutes vos sources ici. Vous pouvez en ajouter de nouvelles ou gérer les existantes.",
-    allSources: "Toutes les sources",
     insights: "Aperçus",
     no: "Non",
-    loadingMore: "Chargement...",
     noSourcesYet: "Aucune source pour le moment",
-    allSourcesDescShort: "Affichez toutes vos sources ici.",
     cannotSaveNoteNoNotebook: "Impossible d'enregistrer la note : ID du carnet non disponible",
     createFirstSource: "Ajoutez votre première source pour commencer à bâtir votre base de connaissances.",
     deleteSourceConfirm: "Êtes-vous sûr de vouloir supprimer cette source ?",
     deleteConfirm: "Êtes-vous sûr de vouloir supprimer cet élément ?",
-    deleteConfirmWithTitle: "Êtes-vous sûr de vouloir supprimer \"{{title}}\" ?",
-    deleteSuccess: "Source supprimée avec succès. Note : Pour supprimer le fichier du stockage, vous devez activer l'option \"supprimer le fichier\" dans la page des paramètres.",
     failedToDelete: "Échec de la suppression de la source",
     sourceQueued: "Source mise en attente",
     sourceQueuedDesc: "Source soumise pour traitement en arrière-plan. Vous pouvez suivre la progression dans la liste des sources.",
@@ -395,9 +391,6 @@ export const frFR = {
     content: "Contenu",
     metadata: "Métadonnées",
     type: {
-      link: "Lien",
-      file: "Fichier",
-      text: "Texte",
     },
     topics: "Sujets",
     embedded: "Indexé (Embedded)",

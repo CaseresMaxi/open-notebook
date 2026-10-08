@@ -1,5 +1,7 @@
 'use client'
 
+import { MarkdownDataTable } from '@/components/ui/study-data-table'
+
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
@@ -76,11 +78,7 @@ export function MarkdownRenderer({ children, components = {}}: { children: React
             li: ({ children }) => <li className="mb-1">{children}</li>,
             ul: ({ children }) => <ul className="mb-4 space-y-1">{children}</ul>,
             ol: ({ children }) => <ol className="mb-4 space-y-1">{children}</ol>,
-            table: ({ children }) => (
-              <div className="my-4 overflow-x-auto">
-                <table className="min-w-full border-collapse border border-border">{children}</table>
-              </div>
-            ),
+            table: ({ children }) => <MarkdownDataTable>{children}</MarkdownDataTable>,
             thead: ({ children }) => <thead className="bg-muted">{children}</thead>,
             tbody: ({ children }) => <tbody>{children}</tbody>,
             tr: ({ children }) => <tr className="border-b border-border">{children}</tr>,

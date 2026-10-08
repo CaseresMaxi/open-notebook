@@ -2,6 +2,10 @@ import type { TranslationShape } from '../en-US';
 
 export const trTR = {
   product: {
+    "sortBy": "{{column}} sütununa göre sırala",
+    "ascending": "Artan",
+    "descending": "Azalan",
+
     "notebookActions": "Notebook actions",
     "loadMoreSources": "Load more sources",
     "generatingSummary": "Generating summary…",
@@ -73,7 +77,6 @@ export const trTR = {
     "retry": "Try again",
     "summaryStatus": "Generating a summary from the selected source…",
     "study": "Study",
-    "sourcesDesc": "Your reference library. Add documents, links or text to use in your notebooks."
 },
 
   common: {
@@ -123,7 +126,6 @@ export const trTR = {
     writeNote: "Not Yaz",
     batchMode: "Toplu Mod",
     optional: "İsteğe Bağlı",
-    type: "Tür",
     title: "Başlık",
     created: "{{time}} oluşturuldu",
     updated: "{{time}} güncellendi",
@@ -354,19 +356,13 @@ export const trTR = {
     statusCompletedDesc: "Başarıyla işlendi",
     statusFailedDesc: "İşleme başarısız",
     failedToLoad: "Kaynaklar yüklenemedi",
-    allSourcesDesc: "Tüm kaynaklarınızı burada görüntüleyin. Yeni kaynaklar ekleyebilir veya mevcut olanları yönetebilirsiniz.",
-    allSources: "Tüm Kaynaklar",
     insights: "İçgörüler",
     no: "Hayır",
-    loadingMore: "Daha fazla yükleniyor...",
     noSourcesYet: "Henüz kaynak yok",
-    allSourcesDescShort: "Tüm kaynaklarınızı burada görüntüleyin.",
     cannotSaveNoteNoNotebook: "Not kaydedilemiyor: defter kimliği mevcut değil",
     createFirstSource: "Bilgi tabanınızı oluşturmaya başlamak için ilk kaynağınızı ekleyin.",
     deleteSourceConfirm: "Bu kaynağı silmek istediğinizden emin misiniz?",
     deleteConfirm: "Bunu silmek istediğinizden emin misiniz?",
-    deleteConfirmWithTitle: "\"{{title}}\" öğesini silmek istediğinizden emin misiniz?",
-    deleteSuccess: "Kaynak başarıyla silindi. Not: Dosyayı depolamadan silmek için ayarlar sayfasında \"dosyayı sil\" seçeneğini etkinleştirmeniz gerekir.",
     failedToDelete: "Kaynak silinemedi",
     sourceQueued: "Kaynak Kuyruğa Eklendi",
     sourceQueuedDesc: "Kaynak arka planda işlenmek üzere gönderildi. İlerlemeyi kaynaklar listesinden takip edebilirsiniz.",
@@ -395,9 +391,6 @@ export const trTR = {
     content: "İçerik",
     metadata: "Meta Veri",
     type: {
-      link: "Bağlantı",
-      file: "Dosya",
-      text: "Metin",
     },
     topics: "Konular",
     embedded: "Gömüldü",

@@ -3,14 +3,13 @@
 import { BrandMark } from './BrandMark'
 
 import Link from 'next/link'
+import { LayoutGroup, motion, useReducedMotion } from 'motion/react'
+import { useId } from 'react'
+import { LiquidSurface } from './LiquidSurface'
+import { motionTokens } from '@/components/arc/motion-tokens'
 import { usePathname } from 'next/navigation'
 import {
   BookOpen,
-  FileText,
-  StickyNote,
-  AlignLeft,
-  GraduationCap,
-  MessageSquare,
   UserRound,
   CreditCard,
   Settings,
@@ -35,15 +34,10 @@ export function AppSidebar() {
   const { isCollapsed, toggleCollapse } = useSidebarStore()
   const { openNotebookDialog } = useCreateDialogs()
   const profile = useProfile()
+  const navId = useId()
+  const reduced = useReducedMotion()
   const items = [
     { label: t('navigation.notebooks'), href: '/notebooks', icon: BookOpen },
-    { label: t('navigation.sources'), href: '/sources', icon: FileText },
-    { label: t('common.notes'), href: '/notes', icon: StickyNote },
-    { label: t('product.summaries'), href: '/summaries', icon: AlignLeft },
-    { label: t('navigation.exams'), href: '/exams', icon: GraduationCap },
-    { label: t('common.chat'), href: '/chat', icon: MessageSquare },
-  ]
-  const accountItems = [
     { label: t('product.profile'), href: '/profile', icon: UserRound },
     { label: t('product.payments'), href: '/payments', icon: CreditCard },
   ]
@@ -94,9 +88,11 @@ export function AppSidebar() {
         <Plus className="size-4" />
         {!isCollapsed && t('notebooks.newNotebook')}
       </Button>
+      <LiquidSurface className="sidebar-menu" radius={20}>
+      <LayoutGroup id={navId}>
       <nav
         aria-label={t('product.studyNavigation')}
-        className="flex-1 space-y-1 overflow-y-auto"
+        className="space-y-1 p-2"
       >
         {items.map(({ label, href, icon: Icon }) => (
           <Link
@@ -112,33 +108,18 @@ export function AppSidebar() {
             className={cn(
               'flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm text-muted-foreground hover:bg-accent hover:text-foreground',
               isCollapsed && 'justify-center',
-              (pathname === href || pathname?.startsWith(`${href}/`)) &&
-                'bg-card text-foreground font-medium border border-border'
+              'relative isolate'
             )}
           >
+            {(pathname === href || pathname?.startsWith(`${href}/`)) && <motion.span layoutId="nav-selection" transition={reduced ? { duration: 0 } : motionTokens.spring.morph} className="nav-selection" aria-hidden="true" />}
             <Icon className="size-4 shrink-0" />
             {!isCollapsed && label}
           </Link>
         ))}
       </nav>
-      <div className="border-t pt-4 mt-4 space-y-1">
-        {accountItems.map(({ label, href, icon: Icon }) => (
-          <Link
-            key={href}
-            href={href}
-            aria-label={isCollapsed ? label : undefined}
-            title={isCollapsed ? label : undefined}
-            aria-current={pathname === href ? 'page' : undefined}
-            className={cn(
-              'flex min-h-11 items-center gap-3 px-3 rounded-xl text-sm hover:bg-accent',
-              isCollapsed && 'justify-center',
-              pathname === href && 'bg-card font-medium'
-            )}
-          >
-            <Icon className="size-4 shrink-0" />
-            {!isCollapsed && label}
-          </Link>
-        ))}
+      </LayoutGroup>
+      </LiquidSurface>
+      <div className="border-t pt-4 mt-auto space-y-1">
         <Link
           href="/settings"
           aria-label={isCollapsed ? t('navigation.settings') : undefined}

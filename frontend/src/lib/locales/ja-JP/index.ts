@@ -2,6 +2,10 @@ import type { TranslationShape } from '../en-US';
 
 export const jaJP = {
   product: {
+    "sortBy": "{{column}}で並べ替え",
+    "ascending": "昇順",
+    "descending": "降順",
+
     "notebookActions": "Notebook actions",
     "loadMoreSources": "Load more sources",
     "generatingSummary": "Generating summary…",
@@ -73,7 +77,6 @@ export const jaJP = {
     "retry": "Try again",
     "summaryStatus": "Generating a summary from the selected source…",
     "study": "Study",
-    "sourcesDesc": "Your reference library. Add documents, links or text to use in your notebooks."
 },
 
   common: {
@@ -123,7 +126,6 @@ export const jaJP = {
     writeNote: "ノートを書く",
     batchMode: "一括モード",
     optional: "任意",
-    type: "種類",
     title: "タイトル",
     created: "{{time}}に作成",
     updated: "{{time}}に更新",
@@ -354,19 +356,13 @@ export const jaJP = {
     statusCompletedDesc: "処理完了",
     statusFailedDesc: "処理失敗",
     failedToLoad: "ソースの読み込みに失敗しました",
-    allSourcesDesc: "すべてのソースを表示します。新しいソースの追加や既存ソースの管理ができます。",
-    allSources: "すべてのソース",
     insights: "インサイト",
     no: "いいえ",
-    loadingMore: "さらに読み込み中...",
     noSourcesYet: "ソースがまだありません",
-    allSourcesDescShort: "すべてのソースを表示します。",
     cannotSaveNoteNoNotebook: "ノートを保存できません：ノートブックIDが利用できません",
     createFirstSource: "最初のソースを追加してナレッジベースの構築を始めましょう。",
     deleteSourceConfirm: "このソースを削除しますか？",
     deleteConfirm: "削除しますか？",
-    deleteConfirmWithTitle: "「{{title}}」を削除しますか？",
-    deleteSuccess: "ソースを削除しました。注意：ストレージからファイルを削除するには、設定ページで「ファイルを削除」オプションを有効にする必要があります。",
     failedToDelete: "ソースの削除に失敗しました",
     sourceQueued: "ソースをキューに追加",
     sourceQueuedDesc: "ソースをバックグラウンド処理に送信しました。ソース一覧で進捗を確認できます。",
@@ -395,9 +391,6 @@ export const jaJP = {
     content: "コンテンツ",
     metadata: "メタデータ",
     type: {
-      link: "リンク",
-      file: "ファイル",
-      text: "テキスト",
     },
     topics: "トピック",
     embedded: "Embedding済み",

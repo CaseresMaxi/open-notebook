@@ -9,7 +9,7 @@ describe('AppSidebar', () => {
   afterEach(() => { vi.mocked(usePathname).mockReturnValue(''); vi.mocked(useSidebarStore).mockReturnValue({ isCollapsed: false, toggleCollapse: vi.fn() } as ReturnType<typeof useSidebarStore>) })
   it('shows the study functions and account pages', () => {
     const { container } = render(<AppSidebar />)
-    for (const href of ['/notebooks', '/sources', '/notes', '/summaries', '/exams', '/chat', '/profile', '/payments']) expect(container.querySelector(`a[href="${href}"]`)).toBeInTheDocument()
+    for (const href of ['/notebooks', '/profile', '/payments']) expect(container.querySelector(`a[href="${href}"]`)).toBeInTheDocument()
     for (const href of ['/podcasts', '/transformations', '/advanced', '/settings/models']) expect(container.querySelector(`a[href="${href}"]`)).toBeNull()
   })
   it('marks only the notebook link as active on a notebook page', () => {
@@ -34,6 +34,6 @@ describe('AppSidebar', () => {
     vi.mocked(useSidebarStore).mockReturnValue({ isCollapsed: true, toggleCollapse: vi.fn() } as ReturnType<typeof useSidebarStore>)
     render(<AppSidebar />)
     expect(screen.queryByText('common.appName')).not.toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'product.summaries' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'navigation.notebooks' })).toBeInTheDocument()
   })
 })

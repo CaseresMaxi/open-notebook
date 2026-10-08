@@ -2,6 +2,10 @@ import type { TranslationShape } from '../en-US';
 
 export const itIT = {
   product: {
+    "sortBy": "Ordina per {{column}}",
+    "ascending": "Crescente",
+    "descending": "Decrescente",
+
     "notebookActions": "Notebook actions",
     "loadMoreSources": "Load more sources",
     "generatingSummary": "Generating summary…",
@@ -73,7 +77,6 @@ export const itIT = {
     "retry": "Try again",
     "summaryStatus": "Generating a summary from the selected source…",
     "study": "Study",
-    "sourcesDesc": "Your reference library. Add documents, links or text to use in your notebooks."
 },
 
   common: {
@@ -123,7 +126,6 @@ export const itIT = {
     writeNote: "Scrivi nota",
     batchMode: "Modalità batch",
     optional: "Opzionale",
-    type: "Tipo",
     title: "Titolo",
     created: "Creato {{time}}",
     updated: "Aggiornato {{time}}",
@@ -354,19 +356,13 @@ export const itIT = {
     statusCompletedDesc: "Elaborato con successo",
     statusFailedDesc: "Elaborazione fallita",
     failedToLoad: "Impossibile caricare le fonti",
-    allSourcesDesc: "Visualizza tutte le tue fonti qui. Puoi aggiungere nuove fonti o gestire quelle esistenti.",
-    allSources: "Tutte le fonti",
     insights: "Approfondimenti",
     no: "No",
-    loadingMore: "Caricamento...",
     noSourcesYet: "Ancora nessuna fonte",
-    allSourcesDescShort: "Visualizza tutte le tue fonti qui.",
     cannotSaveNoteNoNotebook: "Impossibile salvare la nota: ID quaderno non disponibile",
     createFirstSource: "Aggiungi la tua prima fonte per iniziare a costruire la tua base di conoscenza.",
     deleteSourceConfirm: "Sei sicuro di voler eliminare questa fonte?",
     deleteConfirm: "Sei sicuro di voler eliminare questo elemento?",
-    deleteConfirmWithTitle: "Sei sicuro di voler eliminare \"{{title}}\"?",
-    deleteSuccess: "Fonte eliminata con successo. Nota: Per eliminare il file dallo storage, devi abilitare l'opzione \"elimina file\" nella pagina impostazioni.",
     failedToDelete: "Impossibile eliminare la fonte",
     sourceQueued: "Fonte in coda",
     sourceQueuedDesc: "Fonte inviata per l'elaborazione in background. Puoi monitorare il progresso nella lista fonti.",
@@ -395,9 +391,6 @@ export const itIT = {
     content: "Contenuto",
     metadata: "Metadati",
     type: {
-      link: "Link",
-      file: "File",
-      text: "Testo",
     },
     topics: "Argomenti",
     embedded: "Indicizzato",

@@ -410,7 +410,7 @@ export function convertReferencesToCompactMarkdown(text: string, referencesLabel
 
   // Iterate through reference map in insertion order (Map preserves order)
   for (const [, refData] of referenceMap) {
-    const refListItem = `[${refData.number}] - [${refData.type}:${refData.id}](#ref-${refData.type}-${refData.id})`
+    const refListItem = `[${refData.number}] - [${referencesLabel} ${refData.number}](#ref-${refData.type}-${refData.id})`
     refListLines.push(refListItem)
   }
 
