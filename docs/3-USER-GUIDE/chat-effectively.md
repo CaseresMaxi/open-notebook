@@ -141,7 +141,7 @@ With visual responses enabled, figures appear beside the relevant explanation in
 
 Ask for a short test, practice questions or a self-check. The assistant can also include a test when applying an explained concept would help learning. Answer the interactive card directly in the chat and select **Submit answers** to see your score, feedback and solutions. Use **Try again** to take another attempt. Saved results remain available after reloading the conversation.
 
-Tests support single choice, multiple selection, blanks and open answers. Open answers are graded by AI. When a question needs a figure, its actual saved image is shown and used during grading. Ask directly for a source crop or a generated illustration for the test; you do not need to enable the visual responses checkbox. Requests for an exam or questionnaire also create an interactive test.
+Tests support single choice, multiple selection, blanks and open answers. Open answers are graded by AI. When a question needs a figure, its actual saved image is shown and used during grading. Ask directly for a source crop or a generated illustration for the test; you do not need to enable the visual responses checkbox. Requests for an exam or questionnaire first ask you to choose a separate exam or a test in chat when the format is unspecified.
 
 If the model produces a malformed test, the app tries to repair it automatically. If it cannot, your explanation and images remain available; you can ask the assistant to generate the test again.
 

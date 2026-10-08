@@ -70,3 +70,19 @@ def test_free_text_choice_preserves_original_request():
     assert "en el chat" in request
     assert "2 preguntas de KNN" in request
     assert "Create a separate exam" in followup_context(history)[1].content
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("fenced", [False, True])
+async def test_whole_json_question_is_rendered_when_model_omits_followup_fence(fenced):
+    raw = '{"question":"¿Cómo seguimos?","options":[{"label":"Repaso","message":"Dame un repaso"},{"label":"Ejemplo","message":"Mostrame un ejemplo"}]}'
+    if fenced:
+        raw = "```json\n" + raw + "\n```"
+    result = await chat_responses.materialize_chat_response(
+        AIMessage(content=raw),
+        "chat_session:test",
+        None,
+        "Preguntame cómo seguir",
+    )
+    assert result.content == "[[followup:1]]"
+    assert result.additional_kwargs["response_followups"][0]["kind"] == "question"

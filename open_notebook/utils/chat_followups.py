@@ -79,6 +79,30 @@ def materialize_followups(reply: Any, request: str, needs_study_choice: bool) ->
                 },
             }
         )
+    # Some providers omit the requested fence and return the complete object.
+    # Accept only a whole response matching the bounded clarification schema.
+    raw = content.strip()
+    json_fence = re.fullmatch(
+        r"```(?:json)?\s*(.*?)```", raw, flags=re.DOTALL | re.IGNORECASE
+    )
+    if json_fence:
+        raw = json_fence.group(1)
+    try:
+        question = FollowupQuestion.model_validate_json(raw)
+    except ValidationError:
+        pass
+    else:
+        return reply.model_copy(
+            update={
+                "content": "[[followup:1]]",
+                "additional_kwargs": {
+                    **reply.additional_kwargs,
+                    "response_followups": [
+                        {"kind": "question", **question.model_dump()}
+                    ],
+                },
+            }
+        )
     followups: list[dict[str, Any]] = []
 
     def replace(match: re.Match[str]) -> str:
