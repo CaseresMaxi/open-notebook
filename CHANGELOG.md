@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Notebook chat context controls show selected sources/notes and estimated history tokens, limit remembered exchanges, restart memory while keeping the transcript, or permanently clear all conversation checkpoints. Memory settings persist per chat; destructive cleanup requires confirmation.
 - Educational charts, tables, diagrams and animations now use saved HTML/CSS/SVG figures instead of raster image generation. Visuals appear inline, can be enlarged, persist across chat reloads and work in standalone/inline exam questions and grading. Generated code runs in a script-free sandbox; uploaded images and genuine source crops retain their original pixels.
 - Open-ended exam and inline-test answers support text, uploaded/pasted/dropped images, or images alone. AI grading receives the actual answer pixels separately from question figures; submitted images persist in attempt reviews.
 - Chat can ask how to continue with persistent clarification cards. Unspecified exam requests offer separate exam configuration or an interactive test in chat; free-text choices preserve the original request.

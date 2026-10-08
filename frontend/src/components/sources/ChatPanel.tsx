@@ -1,6 +1,6 @@
 'use client'
 
-import { memo, useCallback, useState, useRef, useEffect, useId } from 'react'
+import { type ReactNode, memo, useCallback, useState, useRef, useEffect, useId } from 'react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -37,6 +37,7 @@ interface NotebookContextStats {
 }
 
 interface ChatPanelProps {
+  headerActions?: ReactNode
   messages: SourceChatMessage[]
   isStreaming: boolean
   contextIndicators: SourceChatContextIndicator | null
@@ -61,6 +62,7 @@ interface ChatPanelProps {
 }
 
 export function ChatPanel({
+  headerActions,
   messages,
   isStreaming,
   contextIndicators,
@@ -112,11 +114,13 @@ export function ChatPanel({
     {examRequest !== null && <CreateExamDialog open onOpenChange={open => { if (!open) setExamRequest(null) }} initialNotebookId={notebookId} initialInstructions={examRequest || ''} initialModelId={modelOverride} />}
     <Card className="flex flex-col h-full flex-1 overflow-hidden">
       <CardHeader className="pb-3 flex-shrink-0">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <CardTitle className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.13em] text-muted-foreground">
             <span aria-hidden className="h-3.5 w-[3px] rounded-full bg-teal" />
             {title || (contextType === 'source' ? t('chat.chatWith', { name: t('navigation.sources') }) : t('chat.chatWith', { name: t('common.notebook') }))}
           </CardTitle>
+          <div className="ml-auto flex shrink-0 items-center gap-1">
+          {headerActions}
           {onSelectSession && onCreateSession && onDeleteSession && (
             <Dialog open={sessionManagerOpen} onOpenChange={setSessionManagerOpen}>
               <Button
@@ -124,7 +128,7 @@ export function ChatPanel({
                 size="sm"
                 className="gap-2 text-muted-foreground"
                 onClick={() => setSessionManagerOpen(true)}
-                disabled={loadingSessions}
+                disabled={loadingSessions || isStreaming}
               >
                 <Clock className="h-4 w-4" />
                 <span className="text-xs">{t('chat.sessions')}</span>
@@ -146,6 +150,7 @@ export function ChatPanel({
               </DialogContent>
             </Dialog>
           )}
+          </div>
         </div>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col min-h-0 p-0">

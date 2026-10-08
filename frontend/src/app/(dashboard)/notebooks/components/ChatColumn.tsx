@@ -9,16 +9,21 @@ import { Card, CardContent } from '@/components/ui/card'
 import { AlertCircle } from 'lucide-react'
 import { ContextSelections } from '../[id]/page'
 import { useTranslation } from '@/lib/hooks/use-translation'
+import { NotebookContextDialog } from '@/components/sources/NotebookContextDialog'
+import type { ContextMode, NoteContextMode } from '@/lib/types/notebook-context'
 import { SourceListResponse } from '@/lib/types/api'
 
 interface ChatColumnProps {
+  onSourceContextChange?: (id: string, mode: ContextMode) => void
+  onNoteContextChange?: (id: string, mode: NoteContextMode) => void
+  onExcludeMaterials?: () => void
   notebookId: string
   contextSelections: ContextSelections
   sources: SourceListResponse[]
   sourcesLoading: boolean
 }
 
-export function ChatColumn({ notebookId, contextSelections, sources, sourcesLoading }: ChatColumnProps) {
+export function ChatColumn({ notebookId, contextSelections, sources, sourcesLoading, onSourceContextChange, onNoteContextChange, onExcludeMaterials }: ChatColumnProps) {
   const { t } = useTranslation()
 
   // Fetch notes for this notebook
@@ -93,10 +98,18 @@ export function ChatColumn({ notebookId, contextSelections, sources, sourcesLoad
 
   return (
     <ChatPanel
+      headerActions={<NotebookContextDialog
+        sources={sources} notes={notes} selections={contextSelections}
+        onSourceChange={onSourceContextChange} onNoteChange={onNoteContextChange}
+        onExcludeMaterials={onExcludeMaterials}
+        memory={chat.memory} loading={chat.loadingMemory} error={chat.memoryError}
+        hasSession={!!chat.currentSessionId} busy={chat.isSending || chat.changingMemory}
+        onMemoryChange={chat.changeMemory} materialTokens={chat.tokenCount}
+      />}
       title={t('chat.chatWithNotebook')}
       contextType="notebook"
       messages={chat.messages}
-      isStreaming={chat.isSending}
+      isStreaming={chat.isSending || chat.changingMemory}
       contextIndicators={null}
       onSendMessage={chat.sendMessage}
       modelOverride={chat.currentSession?.model_override ?? chat.pendingModelOverride ?? undefined}

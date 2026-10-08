@@ -25,6 +25,7 @@ from open_notebook.utils.chat_responses import (
 )
 from open_notebook.utils.chat_visuals import run_visual_chat
 from open_notebook.utils.error_classifier import classify_error
+from open_notebook.utils.notebook_chat_context import select_history
 from open_notebook.utils.text_utils import extract_text_content
 
 
@@ -33,6 +34,8 @@ class ThreadState(TypedDict):
     notebook: Optional[Notebook]
     context: Optional[str]
     context_config: Optional[dict]
+    history_start: NotRequired[int]
+    history_turns: NotRequired[Optional[int]]
     visual_tools: NotRequired[bool]
     model_override: Optional[str]
 
@@ -42,7 +45,11 @@ def call_model_with_messages(state: ThreadState, config: RunnableConfig) -> dict
         system_prompt = Prompter(prompt_template="chat/system").render(data=state)  # type: ignore[arg-type]
         payload = [
             SystemMessage(content=system_prompt + quiz_instructions())
-        ] + state.get("messages", [])
+        ] + select_history(
+            state.get("messages", []),
+            state.get("history_start", 0),
+            state.get("history_turns"),
+        )
         payload = visual_history_context(followup_context(payload))
         model_id = config.get("configurable", {}).get("model_id") or state.get(
             "model_override"

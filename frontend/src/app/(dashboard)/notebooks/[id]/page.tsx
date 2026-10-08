@@ -212,6 +212,9 @@ export default function NotebookPage() {
                   <ChatColumn
                     notebookId={notebookId}
                     contextSelections={contextSelections}
+                    onSourceContextChange={handleSourceContextModeChange}
+                    onNoteContextChange={handleNoteContextModeChange}
+                    onExcludeMaterials={() => { handleBulkSourceContext('exclude'); handleBulkNoteContext('exclude') }}
                     sources={sources}
                     sourcesLoading={sourcesLoading}
                   />
@@ -265,6 +268,9 @@ export default function NotebookPage() {
               <ChatColumn
                 notebookId={notebookId}
                 contextSelections={contextSelections}
+                onSourceContextChange={handleSourceContextModeChange}
+                onNoteContextChange={handleNoteContextModeChange}
+                onExcludeMaterials={() => { handleBulkSourceContext('exclude'); handleBulkNoteContext('exclude') }}
                 sources={sources}
                 sourcesLoading={sourcesLoading}
               />

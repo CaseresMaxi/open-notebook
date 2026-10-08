@@ -12,20 +12,33 @@ from api.routers._chat_shared import (
     SuccessResponse,
     extract_chat_messages,
     get_session_or_404,
+    normalize_record_id,
 )
 from open_notebook.database.repository import ensure_record_id, repo_query
 from open_notebook.domain.notebook import ChatSession, Notebook
 from open_notebook.exceptions import (
+    InvalidInputError,
     NotFoundError,
     OpenNotebookError,
 )
 from open_notebook.graphs.chat import graph as chat_graph
 from open_notebook.utils import token_count
-from open_notebook.utils.chat_images import ChatInput, build_user_message
+from open_notebook.utils.chat_images import (
+    ChatInput,
+    build_user_message,
+    chat_model_context,
+    visual_history_context,
+)
+from open_notebook.utils.chat_followups import followup_context
 from open_notebook.utils.context_builder import build_notebook_context
 from open_notebook.utils.graph_utils import (
     get_session_message_count,
     invoke_chat_turn,
+)
+from open_notebook.utils.notebook_chat_context import (
+    checkpoint_operation,
+    select_history,
+    session_operation,
 )
 
 router = APIRouter()
@@ -282,11 +295,17 @@ async def update_session(session_id: str, request: UpdateSessionRequest):
 
 @router.delete("/chat/sessions/{session_id}", response_model=SuccessResponse)
 async def delete_session(session_id: str):
+    async with session_operation(normalize_record_id("chat_session", session_id)):
+        return await _delete_session(session_id)
+
+
+async def _delete_session(session_id: str):
     """Delete a chat session."""
     try:
         # Get session (normalizes the ID and 404s if missing)
         _full_session_id, session = await get_session_or_404(session_id)
 
+        await checkpoint_operation(_delete_checkpoints, _full_session_id)
         await session.delete()
 
         return SuccessResponse(success=True, message="Session deleted successfully")
@@ -303,6 +322,13 @@ async def delete_session(session_id: str):
 
 @router.post("/chat/execute", response_model=ExecuteChatResponse)
 async def execute_chat(request: ExecuteChatRequest):
+    async with session_operation(
+        normalize_record_id("chat_session", request.session_id)
+    ):
+        return await _execute_chat(request)
+
+
+async def _execute_chat(request: ExecuteChatRequest):
     """Execute a chat request and get AI response."""
     try:
         # Verify session exists (normalizes the ID and 404s if missing)
@@ -350,7 +376,7 @@ async def execute_chat(request: ExecuteChatRequest):
         # get_state() calls above.
         # invoke_chat_turn also drops the question from the checkpoint when the
         # turn fails, so a retry doesn't add it twice.
-        result = await asyncio.to_thread(
+        result = await checkpoint_operation(
             invoke_chat_turn,
             chat_graph,
             state_values,
@@ -413,3 +439,107 @@ async def build_context(request: BuildContextRequest):
     except Exception as e:
         logger.error(f"Error building context: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error building context: {str(e)}")
+
+
+class ChatMemoryRequest(BaseModel):
+    history_turns: Optional[int] = Field(None, ge=0, le=1000)
+
+
+class ChatMemoryResponse(BaseModel):
+    history_turns: Optional[int] = None
+    total_messages: int
+    active_messages: int
+    history_tokens: int
+
+
+async def _notebook_session(session_id: str) -> str:
+    full_id, _ = await get_session_or_404(session_id)
+    relations = await repo_query(
+        "SELECT out FROM refers_to WHERE in = $chat_id",
+        {"chat_id": ensure_record_id(full_id)},
+    )
+    if not any(str(row.get("out", "")).startswith("notebook:") for row in relations):
+        raise InvalidInputError("Context controls require a notebook chat session")
+    return full_id
+
+
+def _delete_checkpoints(session_id: str) -> None:
+    saver = chat_graph.checkpointer
+    assert saver is not None and not isinstance(saver, bool)
+    saver.delete_thread(session_id)
+
+
+async def _memory_status(session_id: str) -> ChatMemoryResponse:
+    state = await checkpoint_operation(
+        chat_graph.get_state, RunnableConfig(configurable={"thread_id": session_id})
+    )
+    values = state.values if state else {}
+    messages = values.get("messages", [])
+    active = select_history(
+        messages, values.get("history_start", 0), values.get("history_turns")
+    )
+    return ChatMemoryResponse(
+        history_turns=values.get("history_turns"),
+        total_messages=len(messages),
+        active_messages=len(active),
+        history_tokens=token_count(
+            chat_model_context(visual_history_context(followup_context(active)))
+        ),
+    )
+
+
+@router.get("/chat/sessions/{session_id}/memory", response_model=ChatMemoryResponse)
+async def get_chat_memory(session_id: str):
+    full_id = await _notebook_session(session_id)
+    async with session_operation(full_id):
+        return await _memory_status(full_id)
+
+
+@router.put("/chat/sessions/{session_id}/memory", response_model=ChatMemoryResponse)
+async def update_chat_memory(session_id: str, request: ChatMemoryRequest):
+    full_id = await _notebook_session(session_id)
+    async with session_operation(full_id):
+        await checkpoint_operation(
+            chat_graph.update_state,
+            RunnableConfig(configurable={"thread_id": full_id}),
+            {"history_turns": request.history_turns},
+            as_node="agent",
+        )
+        return await _memory_status(full_id)
+
+
+@router.post(
+    "/chat/sessions/{session_id}/memory/reset", response_model=ChatMemoryResponse
+)
+async def reset_chat_memory(session_id: str):
+    """Forget previous exchanges while keeping them visible in the transcript."""
+    full_id = await _notebook_session(session_id)
+    async with session_operation(full_id):
+        status = await _memory_status(full_id)
+        await checkpoint_operation(
+            chat_graph.update_state,
+            RunnableConfig(configurable={"thread_id": full_id}),
+            {
+                "history_start": status.total_messages,
+                "context": None,
+                "context_config": None,
+            },
+            as_node="agent",
+        )
+        return await _memory_status(full_id)
+
+
+@router.delete("/chat/sessions/{session_id}/history", response_model=ChatMemoryResponse)
+async def clear_chat_history(session_id: str):
+    """Remove all checkpoints, including superseded conversation/context data."""
+    full_id = await _notebook_session(session_id)
+    async with session_operation(full_id):
+        status = await _memory_status(full_id)
+        await checkpoint_operation(_delete_checkpoints, full_id)
+        await checkpoint_operation(
+            chat_graph.update_state,
+            RunnableConfig(configurable={"thread_id": full_id}),
+            {"history_turns": status.history_turns},
+            as_node="agent",
+        )
+        return await _memory_status(full_id)

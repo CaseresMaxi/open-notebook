@@ -35,6 +35,12 @@ export function useNotebookChat({ notebookId, sources, notes, contextSelections 
   // Pending model override for when user changes model before a session exists
   const [pendingModelOverride, setPendingModelOverride] = useState<string | null>(null)
 
+  useEffect(() => {
+    setCurrentSessionId(null)
+    setMessages([])
+    setPendingModelOverride(null)
+  }, [notebookId])
+
   // Fetch sessions for this notebook
   const {
     data: sessions = [],
@@ -56,12 +62,37 @@ export function useNotebookChat({ notebookId, sources, notes, contextSelections 
     enabled: !!notebookId && !!currentSessionId
   })
 
+  const memoryKey = ['notebookChatMemory', currentSessionId]
+  const { data: memory, isLoading: loadingMemory, isError: memoryError } = useQuery({
+    queryKey: memoryKey,
+    queryFn: () => chatApi.getMemory(currentSessionId!),
+    enabled: !!currentSessionId
+  })
+  const memoryMutation = useMutation({
+    mutationFn: async ({ sessionId, action, turns }: { sessionId: string, action: 'limit' | 'reset' | 'clear', turns?: number | null }) => {
+      if (action === 'clear') return chatApi.clearHistory(sessionId)
+      if (action === 'reset') return chatApi.resetMemory(sessionId)
+      return chatApi.setMemory(sessionId, turns ?? null)
+    },
+    onSuccess: async (data, variables) => {
+      queryClient.setQueryData(['notebookChatMemory', variables.sessionId], data)
+      await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.notebookChatSession(variables.sessionId) })
+      await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.notebookChatSessions(notebookId) })
+      toast.success(t('chat.contextUpdated'))
+    },
+    onError: () => toast.error(t('chat.contextUpdateFailed'))
+  })
+  const changeMemory = (action: 'limit' | 'reset' | 'clear', turns?: number | null) => {
+    if (!currentSessionId || isSending) return
+    memoryMutation.mutate({ sessionId: currentSessionId, action, turns })
+  }
+
   // Update messages when current session changes
   useEffect(() => {
-    if (currentSession?.messages) {
+    if (currentSession?.messages && currentSession.notebook_id === notebookId) {
       setMessages(currentSession.messages)
     }
-  }, [currentSession])
+  }, [currentSession, notebookId])
 
   // Auto-select most recent session when sessions are loaded
   useEffect(() => {
@@ -228,6 +259,7 @@ export function useNotebookChat({ notebookId, sources, notes, contextSelections 
 
       // Update messages with API response
       setMessages(response.messages)
+      queryClient.invalidateQueries({ queryKey: ['notebookChatMemory', sessionId] })
 
       // Refetch current session to get updated data
       await refetchCurrentSession()
@@ -255,6 +287,7 @@ export function useNotebookChat({ notebookId, sources, notes, contextSelections 
 
   // Switch session
   const switchSession = useCallback((sessionId: string) => {
+    setMessages([])
     setCurrentSessionId(sessionId)
   }, [])
 
@@ -313,6 +346,11 @@ export function useNotebookChat({ notebookId, sources, notes, contextSelections 
     messages,
     isSending,
     loadingSessions,
+    memory,
+    loadingMemory,
+    memoryError,
+    changingMemory: memoryMutation.isPending,
+    changeMemory,
     tokenCount,
     charCount,
     pendingModelOverride,

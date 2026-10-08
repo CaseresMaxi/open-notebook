@@ -170,3 +170,17 @@ Photographic or artistic requests can still use raster generation, and source cr
 Generated figures now start with the selected sources. The assistant inspects the original relevant PDF/image pages before adapting their representations, records what should be preserved and what changes, and checks the generated code against those original page pixels. Each HTML figure identifies whether it is an adaptation, a diagram of source concepts or an illustrative example, with source/page links and disclosed changes. These checks reduce errors; generated scientific content still warrants review.
 
 When an original file is unavailable, a conceptual figure can use a verified source-text excerpt. It must identify the limitation and cannot claim to reconstruct an unseen figure. To request a particular representation, name the source and page and the relationships you want explained. For example: “Adapt the Refund decision tree on page 8, preserving its branch conditions and class counts.”
+
+
+## Control notebook chat context
+
+Open **Context** beside **Sessions** in a notebook chat. The panel separates:
+
+- **Conversation memory**: choose all available history, the last 2/5/10/20/50 exchanges, or only the new question. An exchange is a user question and its response; the current question is always included. The setting persists for that chat.
+- **Sources and notes**: inspect each loaded material and select excluded, insights (sources with insights), or full content. **Exclude all materials** also excludes sources/notes loaded later. These selections apply to chats in the open notebook, using the existing source/note context controls.
+
+**Restart memory** keeps old messages visible, but excludes them and their images, figures, tests and clarification cards from future model input. Increasing the history limit does not undo this boundary. Selected sources and notes remain available. Excluding a source does not remove quotations from earlier messages: restart memory as well when those earlier references should be forgotten.
+
+**Delete history** permanently removes the current chat's messages, attachments and saved context, including older checkpoints. The chat name/model and its memory limit are retained; sources, notes, other chats and independently stored exams/tests are retained. Both cleanup actions ask for confirmation.
+
+The panel reports active/total messages and approximate history/material token counts separately. The counts exclude the system prompt; image tokens use an estimate and provider billing can differ. The controls are disabled while a reply or a context change is in progress.

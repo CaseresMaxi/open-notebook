@@ -10,7 +10,19 @@ import {
   BuildContextResponse,
 } from '@/lib/types/api'
 
+export interface ChatMemory {
+  history_turns: number | null
+  total_messages: number
+  active_messages: number
+  history_tokens: number
+}
+
 export const chatApi = {
+  getMemory: async (sessionId: string) => (await apiClient.get<ChatMemory>(`/chat/sessions/${sessionId}/memory`)).data,
+  setMemory: async (sessionId: string, historyTurns: number | null) => (await apiClient.put<ChatMemory>(`/chat/sessions/${sessionId}/memory`, { history_turns: historyTurns })).data,
+  resetMemory: async (sessionId: string) => (await apiClient.post<ChatMemory>(`/chat/sessions/${sessionId}/memory/reset`)).data,
+  clearHistory: async (sessionId: string) => (await apiClient.delete<ChatMemory>(`/chat/sessions/${sessionId}/history`)).data,
+
   // Session management
   listSessions: async (notebookId: string) => {
     const response = await apiClient.get<NotebookChatSession[]>(
