@@ -1,4 +1,6 @@
-import json, urllib.request, urllib.error
+import json
+import urllib.error
+import urllib.request
 
 base = "http://127.0.0.1:9199/v0/b/demo-nextnootbook.appspot.com/o"
 auth = urllib.request.Request(
