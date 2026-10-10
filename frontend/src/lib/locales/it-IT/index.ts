@@ -35,6 +35,7 @@ export const itIT = {
     "preview": "Preview",
     "hidePreview": "Nascondi anteprima",
     "showPreview": "Mostra anteprima",
+    "newNote": "Nuova nota",
     "paymentsNotice": "Billing is a product preview. No payment provider is connected and no charges can be made.",
     "currentPlan": "Current plan",
     "selfHosted": "Personal installation",

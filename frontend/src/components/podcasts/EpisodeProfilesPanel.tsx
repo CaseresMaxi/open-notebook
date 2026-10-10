@@ -120,7 +120,7 @@ export function EpisodeProfilesPanel({
               : null
 
             return (
-              <Card key={profile.id}>
+              <Card data-record-id={profile.id} key={profile.id}>
                 <CardHeader className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
                   <div>
                     <div className="flex items-center gap-2">

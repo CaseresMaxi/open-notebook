@@ -180,3 +180,13 @@ class TestEmbeddingEndpointNoteBranch:
         body = response.json()
         assert body["success"] is True
         assert body["command_id"] is None
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("title", [None, "", "   ", "  Useful title  "])
+async def test_note_save_always_persists_a_nonempty_trimmed_title(title):
+    note = Note(title=title, content=None)
+    with patch("open_notebook.domain.base.ObjectModel.save", new=AsyncMock()) as save:
+        await note.save()
+    save.assert_awaited_once()
+    assert note.title == ("Useful title" if title == "  Useful title  " else "New note")

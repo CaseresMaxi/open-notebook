@@ -32,7 +32,7 @@ export function TransformationCard({ transformation, onPlayground, onEdit }: Tra
   return (
     <>
       <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
-        <Card>
+        <Card data-record-id={transformation.id}>
           <CardHeader>
             <div className="flex items-start justify-between gap-4">
               <CollapsibleTrigger className="flex-1 text-left">

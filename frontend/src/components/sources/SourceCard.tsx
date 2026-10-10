@@ -222,7 +222,7 @@ function SourceCardImpl({
   const isCompleted: boolean = currentStatus === 'completed'
 
   return (
-    <Card
+    <Card data-record-id={source.id}
       className={cn(
         'transition-colors duration-150 shadow-none hover:border-sage/50 group relative cursor-pointer border',
         className

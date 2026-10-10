@@ -35,6 +35,7 @@ export const jaJP = {
     "preview": "Preview",
     "hidePreview": "プレビューを非表示",
     "showPreview": "プレビューを表示",
+    "newNote": "新しいノート",
     "paymentsNotice": "Billing is a product preview. No payment provider is connected and no charges can be made.",
     "currentPlan": "Current plan",
     "selfHosted": "Personal installation",

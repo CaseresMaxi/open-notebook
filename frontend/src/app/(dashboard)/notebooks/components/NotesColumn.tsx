@@ -137,6 +137,7 @@ export function NotesColumn({
                 {notes.map((note) => (
                   <div
                     key={note.id}
+                    data-record-id={note.id}
                     className="p-3 border rounded-md bg-card shadow-none card-hover group relative cursor-pointer"
                     onClick={standalone ? undefined : () => handleOpenEditor(note)}
                   >

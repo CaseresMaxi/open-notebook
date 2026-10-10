@@ -35,6 +35,7 @@ export const plPL = {
     "preview": "Preview",
     "hidePreview": "Ukryj podgląd",
     "showPreview": "Pokaż podgląd",
+    "newNote": "Nowa notatka",
     "paymentsNotice": "Billing is a product preview. No payment provider is connected and no charges can be made.",
     "currentPlan": "Current plan",
     "selfHosted": "Personal installation",

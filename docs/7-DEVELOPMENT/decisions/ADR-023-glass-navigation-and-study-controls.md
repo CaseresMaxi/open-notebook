@@ -28,3 +28,9 @@ For local frontend development, append `?developer=1` to a notebook or source UR
 ## Consequences
 
 The effects have a conservative solid fallback rather than requiring a GPU. Arc components remain vendored and can receive small integration extensions for localized accessibility labels. The backend context APIs and stored conversations are unchanged. This work stays on the personal fork branch; upstream's initial exam contribution remains frozen.
+
+### Record mutation feedback
+
+A shared dashboard listener animates only confirmed record mutations emitted by the API client. Record surfaces expose `data-record-id`, including the standard table rows. Initial loads, navigation, sorting and errors do not trigger the effect. Creations animate when their visible record arrives after query invalidation; deletions use an inert, aria-hidden snapshot so removal can finish after React unmounts the record. This introduces no extra requests, delays, mutation retries or data cache. Motion uses Arc durations/easing and follows the operating system's reduced-motion setting.
+
+Notes receive a localized default title in the editor and creation hook; the domain normalizes empty titles on save so all write paths preserve a non-empty title without migrating existing notes.

@@ -712,6 +712,9 @@ class Note(ObjectModel):
             Optional[str]: The command_id if embedding was submitted, None
                 otherwise (either no content to embed, or submission failed)
         """
+        # Every persisted note has a readable title, including generated notes.
+        self.title = (self.title or "").strip() or "New note"
+
         # Call parent save (without embedding)
         await super().save()
 

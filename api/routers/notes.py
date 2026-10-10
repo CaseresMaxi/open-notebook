@@ -70,7 +70,7 @@ async def create_note(note_data: NoteCreate):
     """Create a new note."""
     try:
         # Auto-generate title if not provided and it's an AI note
-        title = note_data.title
+        title = (note_data.title or "").strip()
         if not title and note_data.note_type == "ai" and note_data.content:
             from open_notebook.graphs.prompt import graph as prompt_graph
 
@@ -95,7 +95,7 @@ async def create_note(note_data: NoteCreate):
             )
 
         new_note = Note(
-            title=title,
+            title=(title or "").strip() or "New note",
             content=note_data.content,
             note_type=note_type,
         )
@@ -164,7 +164,7 @@ async def update_note(note_id: str, note_update: NoteUpdate):
 
         # Update only provided fields
         if note_update.title is not None:
-            note.title = note_update.title
+            note.title = note_update.title.strip() or "New note"
         if note_update.content is not None:
             note.content = note_update.content
         if note_update.note_type is not None:

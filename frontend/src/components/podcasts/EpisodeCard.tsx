@@ -225,7 +225,7 @@ export function EpisodeCard({ episode, onDelete, deleting, onRetry, retrying }: 
   const isFailed = FAILED_EPISODE_STATUSES.includes(episode.job_status as EpisodeStatus)
 
   return (
-    <Card>
+    <Card data-record-id={episode.id}>
       <CardContent className="space-y-4 p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-1">

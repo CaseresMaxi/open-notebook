@@ -35,6 +35,7 @@ export const caES = {
     "preview": "Preview",
     "hidePreview": "Amagar previsualització",
     "showPreview": "Mostrar previsualització",
+    "newNote": "Nota nova",
     "paymentsNotice": "Billing is a product preview. No payment provider is connected and no charges can be made.",
     "currentPlan": "Current plan",
     "selfHosted": "Personal installation",

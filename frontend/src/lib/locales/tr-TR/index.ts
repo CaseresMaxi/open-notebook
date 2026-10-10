@@ -35,6 +35,7 @@ export const trTR = {
     "preview": "Preview",
     "hidePreview": "Önizlemeyi gizle",
     "showPreview": "Önizlemeyi göster",
+    "newNote": "Yeni not",
     "paymentsNotice": "Billing is a product preview. No payment provider is connected and no charges can be made.",
     "currentPlan": "Current plan",
     "selfHosted": "Personal installation",

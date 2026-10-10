@@ -47,6 +47,7 @@ export function NotebookRow({ notebook }: NotebookRowProps) {
           the accessible primary action (a real link) for keyboard/screen-reader
           users — avoiding nested interactive (button-in-button) semantics. */}
       <div
+        data-record-id={notebook.id}
         className="group flex items-center gap-4 rounded-lg border bg-card px-4 py-3 card-hover"
         onClick={handleRowClick}
         style={{ cursor: 'pointer' }}

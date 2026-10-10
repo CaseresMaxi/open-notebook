@@ -29,7 +29,7 @@ export function useCreateNote() {
   const { t } = useTranslation()
 
   return useMutation({
-    mutationFn: (data: CreateNoteRequest) => notesApi.create(data),
+    mutationFn: (data: CreateNoteRequest) => notesApi.create({ ...data, title: data.title?.trim() || t('product.newNote') }),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ 
         queryKey: QUERY_KEYS.notes(variables.notebook_id) 

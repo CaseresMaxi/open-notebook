@@ -648,7 +648,7 @@ function SourceDetailContentInner({
               ) : (
                 <div className="divide-y divide-border">
                   {insights.map((insight) => (
-                    <div key={insight.id} className="py-4">
+                    <div data-record-id={insight.id} key={insight.id} className="py-4">
                       <div className="flex items-center gap-2">
                         <span className="h-1.5 w-1.5 rounded-full bg-teal" aria-hidden="true" />
                         <span className="text-xs font-medium uppercase tracking-wide text-teal">

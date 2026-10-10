@@ -168,6 +168,7 @@ export function SessionManager({
                 {sessions.map((session) => (
                   <div
                     key={session.id}
+                    data-record-id={session.id}
                     className={`p-3 rounded-lg border cursor-pointer transition-colors ${
                       currentSessionId === session.id
                         ? 'bg-primary/10 border-primary'

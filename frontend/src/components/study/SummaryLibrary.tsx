@@ -173,6 +173,7 @@ export function SummaryLibrary({ notebookId, standalone = false }: { notebookId:
           {summaries.map((note) => (
             <button
               key={note.id}
+              data-record-id={note.id}
               className="summary-record min-h-14 p-4 text-left"
               onClick={() => setEditing(note)}
             >

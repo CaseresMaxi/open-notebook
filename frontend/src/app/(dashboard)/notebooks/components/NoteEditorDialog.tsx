@@ -20,7 +20,7 @@ import { ContentUnavailable } from '@/components/common/ContentUnavailable'
 import { isNotFoundError } from '@/lib/utils/error-handler'
 
 const createNoteSchema = z.object({
-  title: z.string().optional(),
+  title: z.string().trim().min(1),
   content: z.string().min(1, 'Content is required'),
 })
 
@@ -35,6 +35,7 @@ interface NoteEditorDialogProps {
 
 export function NoteEditorDialog({ open, onOpenChange, notebookId, note }: NoteEditorDialogProps) {
   const { t } = useTranslation()
+  const defaultTitle = t('product.newNote')
   const createNote = useCreateNote()
   const updateNote = useUpdateNote()
   const queryClient = useQueryClient()
@@ -65,7 +66,7 @@ export function NoteEditorDialog({ open, onOpenChange, notebookId, note }: NoteE
   } = useForm<CreateNoteFormData>({
     resolver: zodResolver(createNoteSchema),
     defaultValues: {
-      title: '',
+      title: defaultTitle,
       content: '',
     },
   })
@@ -88,18 +89,18 @@ export function NoteEditorDialog({ open, onOpenChange, notebookId, note }: NoteE
     }
 
     const source = fetchedNote ?? note
-    const title = source?.title ?? ''
+    const title = source?.title?.trim() || defaultTitle
     const content = summaryContent(source?.content ?? '')
 
     reset({ title, content })
-  }, [open, note, fetchedNote, reset])
+  }, [open, note, fetchedNote, reset, defaultTitle])
 
   const onSubmit = async (data: CreateNoteFormData) => {
     if (note) {
       await updateNote.mutateAsync({
         id: noteIdWithPrefix,
         data: {
-          title: data.title || undefined,
+          title: data.title,
           content: isStudySummary(fetchedNote ?? note) ? `${SUMMARY_MARKER}\n\n${data.content}` : data.content,
         },
       })
@@ -114,7 +115,7 @@ export function NoteEditorDialog({ open, onOpenChange, notebookId, note }: NoteE
         return
       }
       await createNote.mutateAsync({
-        title: data.title || undefined,
+        title: data.title,
         content: data.content,
         note_type: 'human',
         notebook_id: notebookId,
@@ -151,7 +152,7 @@ export function NoteEditorDialog({ open, onOpenChange, notebookId, note }: NoteE
               <header className="note-dialog-heading">
                 {writing ? <InlineEdit
                   id="note-title" name="title" value={watchTitle ?? ''}
-                  onSave={(value) => setValue('title', value || '', { shouldDirty: true })}
+                  onSave={(value) => setValue('title', value.trim() || defaultTitle, { shouldDirty: true })}
                   placeholder={t('sources.addTitle')} emptyText={t('sources.untitledNote')}
                   className="note-dialog-title" inputClassName="note-dialog-title"
                 /> : <h2 className="note-dialog-title" title={watchTitle || t('sources.untitledNote')}>{watchTitle || t('sources.untitledNote')}</h2>}

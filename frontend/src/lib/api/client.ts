@@ -1,5 +1,6 @@
 import axios, { AxiosResponse } from 'axios'
 import { getApiUrl } from '@/lib/config'
+import { announceRecordMutation } from '@/lib/utils/record-motion'
 import { getAuthToken } from '@/lib/auth-token'
 
 // API client with runtime-configurable base URL
@@ -57,7 +58,10 @@ apiClient.interceptors.request.use(async (config) => {
 
 // Response interceptor for error handling
 apiClient.interceptors.response.use(
-  (response: AxiosResponse) => response,
+  (response: AxiosResponse) => {
+    announceRecordMutation(response.config.method, response.config.url, response.data)
+    return response
+  },
   (error) => {
     if (error.response?.status === 401) {
       // Clear auth and redirect to login

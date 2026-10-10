@@ -35,6 +35,7 @@ export const esES = {
     "preview": "Vista previa",
     "hidePreview": "Ocultar vista previa",
     "showPreview": "Mostrar vista previa",
+    "newNote": "Nueva nota",
     "paymentsNotice": "La facturación es una maqueta del producto. No hay un proveedor de pagos conectado y no se pueden realizar cobros.",
     "currentPlan": "Plan actual",
     "selfHosted": "Instalación personal",

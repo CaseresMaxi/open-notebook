@@ -35,6 +35,7 @@ export const bnIN = {
     "preview": "Preview",
     "hidePreview": "প্রিভিউ লুকান",
     "showPreview": "প্রিভিউ দেখান",
+    "newNote": "নতুন নোট",
     "paymentsNotice": "Billing is a product preview. No payment provider is connected and no charges can be made.",
     "currentPlan": "Current plan",
     "selfHosted": "Personal installation",

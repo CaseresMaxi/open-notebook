@@ -35,6 +35,7 @@ export const zhCN = {
     "preview": "Preview",
     "hidePreview": "隐藏预览",
     "showPreview": "显示预览",
+    "newNote": "新笔记",
     "paymentsNotice": "Billing is a product preview. No payment provider is connected and no charges can be made.",
     "currentPlan": "Current plan",
     "selfHosted": "Personal installation",

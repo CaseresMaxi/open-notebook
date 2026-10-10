@@ -35,6 +35,7 @@ export const ruRU = {
     "preview": "Preview",
     "hidePreview": "Скрыть предпросмотр",
     "showPreview": "Показать предпросмотр",
+    "newNote": "Новая заметка",
     "paymentsNotice": "Billing is a product preview. No payment provider is connected and no charges can be made.",
     "currentPlan": "Current plan",
     "selfHosted": "Personal installation",

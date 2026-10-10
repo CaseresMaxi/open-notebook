@@ -33,6 +33,7 @@ export const enUS = {
     "preview": "Preview",
     "hidePreview": "Hide preview",
     "showPreview": "Show preview",
+    "newNote": "New note",
     "paymentsNotice": "Billing is a product preview. No payment provider is connected and no charges can be made.",
     "currentPlan": "Current plan",
     "selfHosted": "Personal installation",

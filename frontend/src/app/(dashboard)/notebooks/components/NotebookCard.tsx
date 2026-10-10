@@ -35,7 +35,7 @@ export function NotebookCard({ notebook }: NotebookCardProps) {
 
   return (
     <>
-      <Card 
+      <Card data-record-id={notebook.id}
         className="group card-hover relative"
       >
           <CardHeader className="pb-3">

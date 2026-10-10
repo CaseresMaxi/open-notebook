@@ -35,6 +35,7 @@ export const zhTW = {
     "preview": "Preview",
     "hidePreview": "隱藏預覽",
     "showPreview": "顯示預覽",
+    "newNote": "新筆記",
     "paymentsNotice": "Billing is a product preview. No payment provider is connected and no charges can be made.",
     "currentPlan": "Current plan",
     "selfHosted": "Personal installation",

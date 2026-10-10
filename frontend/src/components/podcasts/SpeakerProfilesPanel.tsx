@@ -94,7 +94,7 @@ export function SpeakerProfilesPanel({
             const unconfigured = needsModelSetup(profile)
 
             return (
-              <Card key={profile.id}>
+              <Card data-record-id={profile.id} key={profile.id}>
                 <CardHeader className="flex flex-col gap-2">
                   <div className="flex items-center justify-between gap-2">
                     <div>

@@ -95,7 +95,7 @@ function ExamsPageContent() {
                     ? Math.round((exam.best_score / exam.max_score) * 100)
                     : null
                 return (
-                  <Card key={exam.id} className="flex flex-col">
+                  <Card data-record-id={exam.id} key={exam.id} className="flex flex-col">
                     <CardHeader className="pb-2">
                       <CardTitle className="text-base leading-snug">{exam.title}</CardTitle>
                       <p className="text-xs text-muted-foreground truncate">

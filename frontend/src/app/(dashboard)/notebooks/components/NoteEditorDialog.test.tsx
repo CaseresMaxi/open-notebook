@@ -7,11 +7,11 @@ import { useNote } from '@/lib/hooks/use-notes'
 
 // useTranslation is mocked globally in setup.ts (t returns the key string)
 
-const { updateNoteMock } = vi.hoisted(() => ({ updateNoteMock: vi.fn() }))
+const { updateNoteMock, createNoteMock } = vi.hoisted(() => ({ updateNoteMock: vi.fn(), createNoteMock: vi.fn() }))
 
 vi.mock('@/lib/hooks/use-notes', () => ({
   useNote: vi.fn(),
-  useCreateNote: () => ({ isPending: false, mutateAsync: vi.fn() }),
+  useCreateNote: () => ({ isPending: false, mutateAsync: createNoteMock }),
   useUpdateNote: () => ({ isPending: false, mutateAsync: updateNoteMock }),
 }))
 
@@ -143,4 +143,18 @@ it('hides summary metadata in the editor and preserves it when the user saves', 
   const saved = updateNoteMock.mock.calls[0][0].data
   expect(isStudySummary(saved)).toBe(true)
   expect(saved.content).toContain('Edited summary with original source')
+})
+
+
+it('creates notes with a mandatory default title and restores it when cleared', async () => {
+  mockUseNote.mockReturnValue(asResult({ data: undefined, isLoading: false, isError: false }))
+  renderDialog({ notebookId: 'notebook:one', note: undefined })
+  fireEvent.click(screen.getByRole('button', { name: 'product.newNote' }))
+  const title = document.getElementById('note-title')!
+  fireEvent.change(title, { target: { value: '   ' } })
+  fireEvent.blur(title)
+  await waitFor(() => expect(screen.getByRole('button', { name: 'product.newNote' })).toBeInTheDocument())
+  fireEvent.change(screen.getByTestId('markdown-editor'), { target: { value: 'A useful note' } })
+  fireEvent.click(screen.getByText('sources.createNoteBtn'))
+  await waitFor(() => expect(createNoteMock).toHaveBeenCalledWith(expect.objectContaining({ title: 'product.newNote', content: 'A useful note' })))
 })

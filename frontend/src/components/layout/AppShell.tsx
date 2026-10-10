@@ -1,6 +1,7 @@
 'use client'
 
 import { WorkspaceBackdrop } from './WorkspaceBackdrop'
+import { RecordMotion } from './RecordMotion'
 import { BrandMark } from './BrandMark'
 
 import { createContext, useContext, useState } from 'react'
@@ -53,6 +54,7 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
   const [menuOpen, setMenuOpen] = useState(false)
   return (
     <ShellContext.Provider value={true}><div className="product-shell flex h-dvh overflow-hidden bg-background text-foreground">
+      <RecordMotion />
       <WorkspaceBackdrop />
       <AppSidebar />
       <main

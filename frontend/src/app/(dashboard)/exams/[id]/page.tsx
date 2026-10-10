@@ -174,6 +174,7 @@ export default function ExamPage() {
               const percent = attempt.max_score > 0 ? Math.round((attempt.score / attempt.max_score) * 100) : 0
               return (
                 <div
+                  data-record-id={attempt.id}
                   key={attempt.id}
                   className={cn(
                     'flex items-center gap-2 rounded-md border p-2 text-sm',

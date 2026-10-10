@@ -35,6 +35,7 @@ export const frFR = {
     "preview": "Preview",
     "hidePreview": "Masquer l’aperçu",
     "showPreview": "Afficher l’aperçu",
+    "newNote": "Nouvelle note",
     "paymentsNotice": "Billing is a product preview. No payment provider is connected and no charges can be made.",
     "currentPlan": "Current plan",
     "selfHosted": "Personal installation",

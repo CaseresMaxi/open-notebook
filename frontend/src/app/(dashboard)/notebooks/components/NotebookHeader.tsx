@@ -53,7 +53,7 @@ export function NotebookHeader({ notebook }: NotebookHeaderProps) {
   return (
     <>
       <div className="notebook-heading-bar">
-        <div className="notebook-heading-title">
+        <div data-record-id={notebook.id} className="notebook-heading-title">
           <h1 title={notebook.name}>{notebook.name}</h1>
           {notebook.archived && <Badge variant="secondary">{t('notebooks.archived')}</Badge>}
         </div>
