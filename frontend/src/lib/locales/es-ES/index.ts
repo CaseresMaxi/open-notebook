@@ -33,6 +33,8 @@ export const esES = {
     "appearance": "Apariencia e idioma",
     "paymentsDesc": "Consultá tu plan, métodos de pago y facturas.",
     "preview": "Vista previa",
+    "hidePreview": "Ocultar vista previa",
+    "showPreview": "Mostrar vista previa",
     "paymentsNotice": "La facturación es una maqueta del producto. No hay un proveedor de pagos conectado y no se pueden realizar cobros.",
     "currentPlan": "Plan actual",
     "selfHosted": "Instalación personal",

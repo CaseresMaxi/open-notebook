@@ -522,3 +522,23 @@
   .product-shell .note-dialog-writing { padding: 12px; }
   .product-shell .note-dialog-footer { padding: 10px 12px; padding-bottom: max(10px, env(safe-area-inset-bottom)); }
 }
+
+/* Editing and the rendered document remain visible together. */
+.product-shell .note-editing-panes { display: flex; flex: 1; min-height: 0; min-width: 0; gap: 20px; }
+.product-shell .note-editing-panes.with-preview > * { flex: 1; min-width: 0; }
+.product-shell .note-live-preview { overflow-y: auto; padding: 8px 12px; }
+.product-shell .note-preview-heading { font-size: var(--text-xs); color: var(--ink-soft); margin-bottom: 16px; }
+.product-shell .note-markdown-editor .w-md-editor-toolbar { display: flex; align-items: center; justify-content: center; background: var(--surface-recessed); }
+.product-shell .note-markdown-editor .w-md-editor-toolbar ul { display: flex; align-items: center; justify-content: center; gap: 2px; }
+.product-shell .note-markdown-editor .w-md-editor-toolbar li { display: flex; align-items: center; }
+.product-shell .note-markdown-editor .w-md-editor-toolbar button { display: inline-flex; align-items: center; justify-content: center; padding: 0; line-height: 1; border: 1px solid transparent; }
+.product-shell .note-markdown-editor .w-md-editor-toolbar button svg { display: block; width: 16px; height: 16px; }
+.product-shell .note-markdown-editor .w-md-editor-toolbar button:hover,
+.product-shell .note-markdown-editor .w-md-editor-toolbar button:focus-visible { border-color: var(--nn-edge); box-shadow: inset 0 1px 0 var(--nn-edge); }
+.product-shell .note-dialog-footer button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; border-radius: 14px; }
+@media (max-width: 767px) {
+  .product-shell .note-editing-panes.with-preview { flex-direction: column; gap: 12px; }
+  .product-shell .note-live-preview { padding: 8px 8px; border-top: 1px solid var(--line); }
+  .product-shell .note-preview-toggle-label { display: none; }
+  .product-shell .note-mode-control button:has(.note-preview-toggle-label) { width: 44px; padding: 0; }
+}

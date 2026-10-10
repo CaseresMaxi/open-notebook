@@ -33,6 +33,8 @@ export const bnIN = {
     "appearance": "Appearance and language",
     "paymentsDesc": "Manage your plan, payment methods and invoices.",
     "preview": "Preview",
+    "hidePreview": "প্রিভিউ লুকান",
+    "showPreview": "প্রিভিউ দেখান",
     "paymentsNotice": "Billing is a product preview. No payment provider is connected and no charges can be made.",
     "currentPlan": "Current plan",
     "selfHosted": "Personal installation",

@@ -33,6 +33,8 @@ export const trTR = {
     "appearance": "Appearance and language",
     "paymentsDesc": "Manage your plan, payment methods and invoices.",
     "preview": "Preview",
+    "hidePreview": "Önizlemeyi gizle",
+    "showPreview": "Önizlemeyi göster",
     "paymentsNotice": "Billing is a product preview. No payment provider is connected and no charges can be made.",
     "currentPlan": "Current plan",
     "selfHosted": "Personal installation",

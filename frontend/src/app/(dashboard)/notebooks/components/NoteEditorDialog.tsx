@@ -3,6 +3,7 @@
 import { isStudySummary, summaryContent, SUMMARY_MARKER } from '@/lib/utils/study-summary'
 import { Controller, useForm, useWatch } from 'react-hook-form'
 import { useEffect, useState } from 'react'
+import { Eye, EyeOff, Pencil } from 'lucide-react'
 import { useQueryClient } from '@tanstack/react-query'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -71,9 +72,13 @@ export function NoteEditorDialog({ open, onOpenChange, notebookId, note }: NoteE
   const watchTitle = useWatch({ control, name: 'title' })
   const content = useWatch({ control, name: 'content' })
   const [writing, setWriting] = useState(!note)
+  const [showPreview, setShowPreview] = useState(true)
 
   useEffect(() => {
-    if (open) setWriting(!isEditing)
+    if (open) {
+      setWriting(!isEditing)
+      setShowPreview(true)
+    }
   }, [open, note?.id, isEditing])
 
   useEffect(() => {
@@ -152,11 +157,14 @@ export function NoteEditorDialog({ open, onOpenChange, notebookId, note }: NoteE
                 /> : <h2 className="note-dialog-title" title={watchTitle || t('sources.untitledNote')}>{watchTitle || t('sources.untitledNote')}</h2>}
               </header>
               <div className={`note-dialog-body ${writing ? 'note-dialog-writing' : 'note-dialog-reading'}`}>
-                {writing ? <Controller control={control} name="content" render={({ field }) => (
+                {writing ? <div className={`note-editing-panes ${showPreview ? 'with-preview' : ''}`}><Controller control={control} name="content" render={({ field }) => (
                   <MarkdownEditor key={note?.id ?? 'new'} textareaId="note-content" name="content"
                     value={field.value} onChange={field.onChange} height="100%" preview="edit" compact
                     placeholder={t('sources.writeNotePlaceholder')} className="note-markdown-editor" />
-                )} /> : <article className="note-reading-content"><MarkdownRenderer>{content || ''}</MarkdownRenderer></article>}
+                )} />{showPreview && <section className="note-live-preview" aria-label={t('product.preview')}>
+                  <div className="note-preview-heading">{t('product.preview')}</div>
+                  <article className="note-reading-content"><MarkdownRenderer>{content || ''}</MarkdownRenderer></article>
+                </section>}</div> : <article className="note-reading-content"><MarkdownRenderer>{content || ''}</MarkdownRenderer></article>}
                 {errors.content && <p className="text-sm text-destructive mt-1">{errors.content.message}</p>}
               </div>
             </>
@@ -165,8 +173,11 @@ export function NoteEditorDialog({ open, onOpenChange, notebookId, note }: NoteE
           <footer className="note-dialog-footer">
             <LiquidSurface className="note-mode-control" radius={14}>
               <Button type="button" variant="ghost" disabled={noteLoading || isSaving}
-                onClick={() => setWriting(value => !value)}>
-                {writing ? t('product.preview') : t('common.edit')}
+                aria-label={writing ? t(showPreview ? 'product.hidePreview' : 'product.showPreview') : t('common.edit')}
+                aria-pressed={writing ? showPreview : undefined}
+                onClick={() => writing ? setShowPreview(value => !value) : setWriting(true)}>
+                {writing ? (showPreview ? <EyeOff size={18} /> : <Eye size={18} />) : <Pencil size={18} />}
+                <span className={writing ? 'note-preview-toggle-label' : undefined}>{writing ? t(showPreview ? 'product.hidePreview' : 'product.showPreview') : t('common.edit')}</span>
               </Button>
             </LiquidSurface>
             <div className="flex gap-2">
