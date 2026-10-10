@@ -32,18 +32,18 @@ export default function SourcesPage() {
   })
   const rows = query.data?.pages.flatMap(page => page.map(source => ({ ...source }))) ?? []
   return <AppShell>
-    <div className="flex-1 min-h-0 overflow-y-auto">
-      <div className="product-page">
-        <div className="product-heading">
+    <div className="source-library-viewport flex-1 min-h-0 overflow-y-auto">
+      <div className="product-page source-library-page">
+        <div className="product-heading source-library-heading">
           <h1>{t('navigation.sources')}</h1>
           <Button onClick={() => setAddOpen(true)}><Plus className="size-4" />{t('sources.newSource')}</Button>
         </div>
         {query.isLoading ? <LoadingSpinner /> : query.isError ? <div role="alert"><p>{t('sources.failedToLoad')}</p><Button onClick={() => query.refetch()}>{t('product.retry')}</Button></div> :
-          <StudyDataTable rows={rows} rowKey="id" caption={t('navigation.sources')} emptyMessage={t('sources.noSourcesYet')} defaultSort={sort} onSortChange={setSort} columns={[
-            { key: 'title', label: t('common.title'), render: (_, source) => <Link className="flex min-h-11 items-center gap-3" href={`/sources/${encodeURIComponent(source.id)}`}><FileText className="size-4 shrink-0 text-muted-foreground" /><span className="break-words">{source.title || t('sources.untitledSource')}</span></Link> },
-            { key: 'actions', label: t('common.actions'), sortable: false, width: 72, render: (_, source) => <Button size="icon" variant="ghost" aria-label={t('common.delete')} onClick={() => setDeleting(source)}><Trash2 className="size-4" /></Button> },
-          ]} />}
-        {query.hasNextPage && <Button variant="ghost" disabled={query.isFetchingNextPage} onClick={() => query.fetchNextPage()}>{query.isFetchingNextPage ? t('common.loading') : t('product.loadMoreSources')}</Button>}
+          <div className="source-library-table"><StudyDataTable rows={rows} rowKey="id" caption={t('navigation.sources')} emptyMessage={t('sources.noSourcesYet')} defaultSort={sort} onSortChange={setSort} columns={[
+            { key: 'title', label: t('common.title'), render: (_, source) => <Link className="source-library-link flex min-h-11 items-center gap-3" href={`/sources/${encodeURIComponent(source.id)}`}><FileText className="size-4 shrink-0 text-muted-foreground" /><span className="break-words">{source.title || t('sources.untitledSource')}</span></Link> },
+            { key: 'actions', label: t('common.actions'), sortable: false, width: 104, render: (_, source) => <div className="source-library-row-actions"><Button size="icon" variant="ghost" aria-label={`${t('sources.deleteSource')}: ${source.title || t('sources.untitledSource')}`} onClick={() => setDeleting(source)}><Trash2 className="size-4" /></Button></div> },
+          ]} /></div>}
+        {query.hasNextPage && <Button className="source-library-more" variant="ghost" disabled={query.isFetchingNextPage} onClick={() => query.fetchNextPage()}>{query.isFetchingNextPage ? t('common.loading') : t('product.loadMoreSources')}</Button>}
       </div>
     </div>
     <AddSourceDialog open={addOpen} onOpenChange={setAddOpen} />

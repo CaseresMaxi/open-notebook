@@ -9,6 +9,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   BookOpen,
+  FileText,
   Menu,
   UserRound,
   CreditCard,
@@ -30,6 +31,7 @@ export function WorkspaceNavigation({ onNavigate }: { onNavigate: () => void }) 
   const pathname = usePathname()
   const links = [
     ['/notebooks', 'navigation.notebooks', BookOpen],
+    ['/sources', 'navigation.sources', FileText],
     ['/profile', 'product.profile', UserRound],
     ['/payments', 'product.payments', CreditCard],
     ['/settings', 'navigation.settings', Settings],

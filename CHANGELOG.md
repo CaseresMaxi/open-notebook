@@ -43,6 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Development:** `architecture.md`, `testing.md`, `api-reference.md` and `code-standards.md` are rewritten from the code. A new playbook covers adding an AI provider. Dev setup lives on one page. The AGENTS files agree with the docs. Contributor conventions (Conventional Commits, CHANGELOG sections, pre-PR checks that match CI) are documented
 
 ### Fixed
+- Source library navigation is available in the desktop sidebar and mobile drawer. Its standard Arc table has consistent page margins, compact heading, aligned row actions and accessible deletion labels.
 - Source reading restores visible content, analysis and detail tabs, notebook associations and existing source actions, with shared glass navigation, aligned add controls and one scroll viewport in pages and dialogs.
 - Chat no longer displays both native and Radix scrollbars. Session creation and drawer close actions no longer overlap; responsive table grid tracks contain mobile content. Chat references keep their original targets with readable numbered labels.
 - Study layouts remove nested card frames, use open columns and source/note rows, and keep scroll regions within available height. Chat updates follow only readers near the end and never scroll the outer page. Source detail uses mobile tabs with independent content/chat viewports; dialogs fit the dynamic viewport.

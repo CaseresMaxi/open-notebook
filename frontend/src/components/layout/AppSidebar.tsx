@@ -10,6 +10,7 @@ import { motionTokens } from '@/components/arc/motion-tokens'
 import { usePathname } from 'next/navigation'
 import {
   BookOpen,
+  FileText,
   UserRound,
   CreditCard,
   Settings,
@@ -35,6 +36,7 @@ export function AppSidebar() {
   const reduced = useReducedMotion()
   const items = [
     { label: t('navigation.notebooks'), href: '/notebooks', icon: BookOpen },
+    { label: t('navigation.sources'), href: '/sources', icon: FileText },
     { label: t('product.profile'), href: '/profile', icon: UserRound },
     { label: t('product.payments'), href: '/payments', icon: CreditCard },
   ]

@@ -574,3 +574,19 @@
 }
 
 .product-shell .source-reading-navigation [data-slot=tabs-trigger] { white-space: nowrap; }
+
+/* The source library keeps the standard Arc table inside one page gutter. */
+.product-shell .source-library-viewport { overscroll-behavior: contain; scrollbar-gutter: stable; }
+.product-shell .source-library-page { max-width: 1184px; padding: 24px 32px 48px; gap: 20px; }
+.product-shell .source-library-heading { padding-block: 8px; border-bottom: 0; }
+.product-shell .source-library-heading h1 { font-size: var(--text-2xl); font-weight: 500; }
+.product-shell .source-library-heading > button { min-height: 44px; }
+.product-shell .source-library-table { min-width: 0; }
+.product-shell .source-library-link { padding-block: 8px; overflow-wrap: anywhere; }
+.product-shell .source-library-row-actions { display: flex; justify-content: center; align-items: center; }
+.product-shell .source-library-more { justify-self: center; min-height: 44px; margin-top: 4px; }
+@media (max-width: 767px) {
+  .product-shell .source-library-page { padding: 16px 16px 32px; gap: 16px; }
+  .product-shell .source-library-heading { gap: 12px; }
+  .product-shell .source-library-row-actions { justify-content: flex-end; }
+}
