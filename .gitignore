@@ -158,3 +158,9 @@ history.txt
 # oss-maintainer local state
 .maintainer/profile.local.toml
 .maintainer/state/
+
+# Firebase CLI state and account-specific provisioning config
+.firebase/
+firebase-debug.log*
+ui-debug.log*
+firebase.auth.local.json

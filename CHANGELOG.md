@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Personal fork has a dedicated Firebase development project and web app with email/password and Google providers enabled, local Auth/Storage emulator configuration and deny-by-default object rules. Application account integration and cloud Storage setup remain pending.
 - NextNootbook adds a subtle animated dot-wave backdrop adapted from the Instasent effects lab, capped at 20 fps/1.5 DPR and paused offscreen, in hidden tabs and with reduced motion.
 - Personal study product adds browser-local profile and billing preview pages, notebook note/summary libraries, source-grounded saved summaries, a conversation launcher, and free Arc UI components. Billing remains explicitly unavailable until a provider and plans are defined.
 - Notebook chat context controls show selected sources/notes and estimated history tokens, limit remembered exchanges, restart memory while keeping the transcript, or permanently clear all conversation checkpoints. Memory settings persist per chat; destructive cleanup requires confirmation.
