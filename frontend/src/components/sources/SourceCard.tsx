@@ -432,6 +432,7 @@ function areEqual(prev: SourceCardProps, next: SourceCardProps): boolean {
     p.asset?.url === n.asset?.url &&
     p.asset?.file_path === n.asset?.file_path &&
     topicsEqual(p.topics, n.topics) &&
+    prev.compact === next.compact &&
     prev.contextMode === next.contextMode &&
     prev.showRemoveFromNotebook === next.showRemoveFromNotebook &&
     prev.className === next.className

@@ -447,3 +447,32 @@
 .product-shell .study-library-workspace .study-sources .study-library-list h4:first-child { min-height: 44px; }
 .product-shell .study-library-workspace .study-sources .study-library-list h4:only-child { margin: 0; }
 @media (max-width: 767px) { .product-shell .study-library-workspace > .study-pane { border-radius: 22px; } }
+
+/* The notebook header shares the reading column and keeps utilities in a drawer. */
+.product-shell .notebook-heading-bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; max-width: 1000px; margin-inline: auto; min-height: 44px; }
+.product-shell .notebook-heading-title { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.product-shell .notebook-heading-title h1 { font-size: var(--text-xl); letter-spacing: var(--tracking-display); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.product-shell .notebook-heading-control { flex-shrink: 0; }
+.product-shell .notebook-heading-control button { width: 44px; height: 44px; }
+.product-shell .notebook-heading-wrap { padding-top: 8px; }
+.product-shell .notebook-workspace-wrap { padding-top: 8px; }
+@media (max-width: 767px) {
+  .product-shell .product-mobile-header { min-height: 44px; border-bottom: 0; background: transparent; padding-inline: 12px; }
+  .product-shell .product-mobile-header > a { font-size: var(--text-xs); }
+  .product-shell .product-mobile-header > a svg { width: 20px; height: 20px; }
+  .product-shell .notebook-heading-wrap { padding: 0 12px; }
+  .product-shell .notebook-heading-title h1 { font-size: var(--text-lg); }
+  .product-shell .notebook-workspace-wrap { padding: 4px 6px 6px; }
+  .product-shell .study-library-workspace .study-view-switch { inset: 10px 56px auto 8px; justify-content: flex-start; }
+  .product-shell .study-library-workspace .glass-tabs [data-slot=tabs-trigger] { padding-inline: 8px; font-size: var(--text-xs); }
+  .product-shell .study-library-workspace .glass-tabs [data-slot=tabs-list] { gap: 0; }
+  .product-shell .study-workspace-chat .study-conversation { --chat-top-space: 78px; }
+  .product-shell .study-workspace-chat .study-conversation > [data-slot=card-header] { top: 14px; left: auto; right: 10px; width: 44px; padding: 0; }
+  .product-shell .chat-session-control button { width: 44px; height: 44px; padding: 0; }
+  .product-shell .chat-session-control button .text-xs { display: none; }
+  .product-shell .study-conversation [data-slot=scroll-area] { padding-inline: 12px; }
+  .product-shell .chat-message-avatar { display: none; }
+  .product-shell .chat-message { gap: 0; }
+  .product-shell .chat-composer-controls textarea { font-size: var(--text-sm); min-height: 44px; }
+  .product-shell .study-conversation .chat-composer { padding: 8px; padding-bottom: max(8px, env(safe-area-inset-bottom)); }
+}

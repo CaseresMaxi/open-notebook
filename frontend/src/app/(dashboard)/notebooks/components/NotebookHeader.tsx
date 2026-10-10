@@ -3,9 +3,11 @@
 import { useState } from 'react'
 import { NotebookResponse } from '@/lib/types/api'
 import { Button } from '@/components/ui/button'
+import { Drawer, DrawerContent, DrawerTrigger } from '@/components/arc/drawer/drawer'
+import { LiquidSurface } from '@/components/layout/LiquidSurface'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
-import { Archive, ArchiveRestore, GraduationCap, Trash2 } from 'lucide-react'
+import { Archive, ArchiveRestore, GraduationCap, Trash2, MoreHorizontal } from 'lucide-react'
 import { useUpdateNotebook } from '@/lib/hooks/use-notebooks'
 import { NotebookDeleteDialog } from './NotebookDeleteDialog'
 import { InlineEdit } from '@/components/common/InlineEdit'
@@ -48,77 +50,47 @@ export function NotebookHeader({ notebook }: NotebookHeaderProps) {
 
   return (
     <>
-      <div className="border-b pb-4">
-        <div className="space-y-2">
-          <div className="study-heading">
-            <div className="flex items-center gap-3 flex-1 min-w-0">
-              <InlineEdit
-                id="notebook-name"
-                name="notebook-name"
-                value={notebook.name}
-                onSave={handleUpdateName}
-                className="font-display text-2xl font-medium tracking-tight"
-                inputClassName="font-display text-2xl font-medium tracking-tight"
-                placeholder={t('notebooks.namePlaceholder')}
-              />
-              {notebook.archived && (
-                <Badge variant="secondary">{t('notebooks.archived')}</Badge>
-              )}
-            </div>
-            <div className="study-heading-actions">
-              <Button asChild variant="outline" size="sm">
+      <div className="notebook-heading-bar">
+        <div className="notebook-heading-title">
+          <h1 title={notebook.name}>{notebook.name}</h1>
+          {notebook.archived && <Badge variant="secondary">{t('notebooks.archived')}</Badge>}
+        </div>
+        <Drawer>
+          <LiquidSurface className="notebook-heading-control" radius={16}>
+            <DrawerTrigger asChild>
+              <Button variant="ghost" size="icon" aria-label={t('common.actions')}>
+                <MoreHorizontal className="size-5" />
+              </Button>
+            </DrawerTrigger>
+          </LiquidSurface>
+          <DrawerContent title={notebook.name} closeLabel={t('common.close')} className="product-shell">
+            <div className="grid gap-6">
+              <div className="grid gap-2">
+                <span className="text-sm text-muted-foreground">{t('common.name')}</span>
+                <InlineEdit id="notebook-name" name="notebook-name" value={notebook.name}
+                  onSave={handleUpdateName} placeholder={t('notebooks.namePlaceholder')} />
+              </div>
+              <div className="grid gap-2">
+                <span className="text-sm text-muted-foreground">{t('common.description')}</span>
+                <InlineEdit id="notebook-description" name="notebook-description" value={notebook.description || ''}
+                  onSave={handleUpdateDescription} placeholder={t('notebooks.addDescription')}
+                  multiline emptyText={t('notebooks.addDescription')} />
+              </div>
+              <Button asChild>
                 <Link href={`/exams?notebook=${encodeURIComponent(notebook.id)}&new=1`}>
-                  <GraduationCap className="h-4 w-4 mr-2" />
-                  {t('exams.createFromNotebook')}
+                  <GraduationCap className="size-4" />{t('exams.createFromNotebook')}
                 </Link>
               </Button>
-              <details className="notebook-actions">
-                <summary>{t('common.edit')}</summary>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleArchiveToggle}
-              >
-                {notebook.archived ? (
-                  <>
-                    <ArchiveRestore className="h-4 w-4 mr-2" />
-                    {t('notebooks.unarchive')}
-                  </>
-                ) : (
-                  <>
-                    <Archive className="h-4 w-4 mr-2" />
-                    {t('notebooks.archive')}
-                  </>
-                )}
+              <Button variant="outline" onClick={handleArchiveToggle}>
+                {notebook.archived ? <ArchiveRestore className="size-4" /> : <Archive className="size-4" />}
+                {notebook.archived ? t('notebooks.unarchive') : t('notebooks.archive')}
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowDeleteDialog(true)}
-                className="text-destructive hover:text-destructive"
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                {t('common.delete')}
+              <Button variant="outline" onClick={() => setShowDeleteDialog(true)} className="text-destructive">
+                <Trash2 className="size-4" />{t('common.delete')}
               </Button>
-              </details>
             </div>
-          </div>
-
-
-          {notebook.description && (          <InlineEdit
-            id="notebook-description"
-            name="notebook-description"
-            value={notebook.description || ''}
-            onSave={handleUpdateDescription}
-            className="text-muted-foreground"
-            inputClassName="text-muted-foreground"
-            placeholder={t('notebooks.addDescription')}
-            multiline
-            emptyText={t('notebooks.addDescription')}
-          />)}
-          
-
-        </div>
+          </DrawerContent>
+        </Drawer>
       </div>
 
       <NotebookDeleteDialog

@@ -35,7 +35,8 @@ describe('NotebookHeader', () => {
   it('sends an empty description when the description is cleared', async () => {
     render(<NotebookHeader notebook={notebook} />)
 
-    fireEvent.click(screen.getByText('old description'))
+    fireEvent.click(screen.getByRole('button', { name: /actions/i }))
+    fireEvent.click(await screen.findByText('old description'))
     const textarea = screen.getByDisplayValue('old description')
     fireEvent.change(textarea, { target: { value: '' } })
     fireEvent.blur(textarea)

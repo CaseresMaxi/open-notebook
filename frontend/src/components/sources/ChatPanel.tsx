@@ -141,7 +141,8 @@ export function ChatPanel({
               <LiquidSurface className="chat-session-control" radius={16}><DrawerTrigger asChild><Button
                 variant="ghost"
                 size="sm"
-                className="gap-2 text-muted-foreground"
+                aria-label={t('chat.sessions')}
+                  className="gap-2 text-muted-foreground"
                 onClick={() => setSessionManagerOpen(true)}
                 disabled={loadingSessions || isStreaming}
               >
@@ -368,7 +369,8 @@ function ChatComposer({
               void addImages(files)
             }
           }}
-          placeholder={t('chat.sendPlaceholder')}
+          placeholder={t('common.message')}
+          aria-label={t('chat.sendPlaceholder')}
           disabled={busy}
           className="flex-1 min-h-[40px] max-h-[100px] resize-none py-2 px-3 min-w-0"
           rows={1}
@@ -418,12 +420,12 @@ const ChatMessage = memo(function ChatMessage({
     .replace(/\[\[quiz-unavailable\]\]/g, t('chat.quizPreparationFailed'))
   return (
     <div
-      className={`flex gap-3 ${
+      className={`chat-message flex gap-3 ${
         message.type === 'human' ? 'justify-end' : 'justify-start'
       }`}
     >
       {message.type === 'ai' && (
-        <div className="flex-shrink-0">
+        <div className="chat-message-avatar flex-shrink-0">
           <div className="h-8 w-8 rounded-full bg-teal-tint flex items-center justify-center">
             <Bot className="h-4 w-4 text-teal" />
           </div>
