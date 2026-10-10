@@ -511,6 +511,7 @@ export const frFR = {
     noSessions: "Aucune session de chat pour le moment",
     deleteSession: "Supprimer la session",
     deleteSessionDesc: "Êtes-vous sûr de vouloir supprimer cette session de chat ? Cette action est irréversible.",
+    messagePlaceholder: "Message…",
     sendPlaceholder: "Posez n'importe quelle question sur vos sources...",
     sessionsTitle: "Sessions de Chat",
     chatWith: "Discuter avec {{name}}",

@@ -511,6 +511,7 @@ export const zhCN = {
     noSessions: "暂无会话",
     deleteSession: "删除会话",
     deleteSessionDesc: "确定要删除此聊天会话吗？此操作无法撤销。",
+    messagePlaceholder: "消息…",
     sendPlaceholder: "向您的来源提问...",
     sessionsTitle: "对话列表",
     chatWith: "与{{name}}对话",

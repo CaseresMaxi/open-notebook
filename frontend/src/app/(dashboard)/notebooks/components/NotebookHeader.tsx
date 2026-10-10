@@ -4,11 +4,11 @@ import { useState } from 'react'
 import { NotebookResponse } from '@/lib/types/api'
 import { Button } from '@/components/ui/button'
 import { Drawer, DrawerContent, DrawerTrigger } from '@/components/arc/drawer/drawer'
-import { useOpenNavigation } from '@/components/layout/AppShell'
+import { WorkspaceNavigation } from '@/components/layout/AppShell'
 import { LiquidSurface } from '@/components/layout/LiquidSurface'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
-import { Archive, ArchiveRestore, GraduationCap, Trash2, MoreHorizontal, Menu } from 'lucide-react'
+import { Archive, ArchiveRestore, GraduationCap, Trash2, MoreHorizontal } from 'lucide-react'
 import { useUpdateNotebook } from '@/lib/hooks/use-notebooks'
 import { NotebookDeleteDialog } from './NotebookDeleteDialog'
 import { InlineEdit } from '@/components/common/InlineEdit'
@@ -20,7 +20,7 @@ interface NotebookHeaderProps {
 
 export function NotebookHeader({ notebook }: NotebookHeaderProps) {
   const { t } = useTranslation()
-  const openNavigation = useOpenNavigation()
+  const [optionsOpen, setOptionsOpen] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   
   const updateNotebook = useUpdateNotebook()
@@ -58,8 +58,7 @@ export function NotebookHeader({ notebook }: NotebookHeaderProps) {
           {notebook.archived && <Badge variant="secondary">{t('notebooks.archived')}</Badge>}
         </div>
         <div className="notebook-heading-utilities">
-          {openNavigation && <Button className="md:hidden" variant="ghost" size="icon" aria-label={t('product.openNavigation')} onClick={openNavigation}><Menu className="size-5" /></Button>}
-        <Drawer>
+        <Drawer open={optionsOpen} onOpenChange={setOptionsOpen}>
           <LiquidSurface className="notebook-heading-control" radius={16}>
             <DrawerTrigger asChild>
               <Button variant="ghost" size="icon" aria-label={t('common.actions')}>
@@ -69,6 +68,9 @@ export function NotebookHeader({ notebook }: NotebookHeaderProps) {
           </LiquidSurface>
           <DrawerContent title={notebook.name} closeLabel={t('common.close')} className="product-shell">
             <div className="grid gap-6">
+              <div className="notebook-mobile-navigation">
+                <WorkspaceNavigation onNavigate={() => setOptionsOpen(false)} />
+              </div>
               <div className="grid gap-2">
                 <span className="text-sm text-muted-foreground">{t('common.name')}</span>
                 <InlineEdit id="notebook-name" name="notebook-name" value={notebook.name}

@@ -369,7 +369,7 @@ function ChatComposer({
               void addImages(files)
             }
           }}
-          placeholder={t('common.message')}
+          placeholder={t('chat.messagePlaceholder')}
           aria-label={t('chat.sendPlaceholder')}
           disabled={busy}
           className="flex-1 min-h-[40px] max-h-[100px] resize-none py-2 px-3 min-w-0"

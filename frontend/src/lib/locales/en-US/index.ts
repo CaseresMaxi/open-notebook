@@ -509,6 +509,7 @@ export const enUS = {
     noSessions: "No chat sessions yet",
     deleteSession: "Delete Session",
     deleteSessionDesc: "Are you sure you want to delete this chat session? This action cannot be undone.",
+    messagePlaceholder: "Message…",
     sendPlaceholder: "Ask anything about your sources...",
     sessionsTitle: "Chat Sessions",
     chatWith: "Chat with {{name}}",

@@ -511,6 +511,7 @@ export const jaJP = {
     noSessions: "チャットセッションがまだありません",
     deleteSession: "セッションを削除",
     deleteSessionDesc: "このチャットセッションを削除しますか？この操作は元に戻せません。",
+    messagePlaceholder: "メッセージ…",
     sendPlaceholder: "ソースについて何でも質問してください...",
     sessionsTitle: "チャットセッション",
     chatWith: "{{name}}とチャット",

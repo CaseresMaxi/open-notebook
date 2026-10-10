@@ -511,6 +511,7 @@ export const zhTW = {
     noSessions: "暫無對話",
     deleteSession: "刪除對話",
     deleteSessionDesc: "確定要刪除此聊天會話嗎？此操作無法撤銷。",
+    messagePlaceholder: "訊息…",
     sendPlaceholder: "向您的來源提問...",
     sessionsTitle: "對話列表",
     chatWith: "與 {{name}} 對話",

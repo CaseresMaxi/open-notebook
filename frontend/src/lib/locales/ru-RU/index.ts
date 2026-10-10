@@ -511,6 +511,7 @@ export const ruRU = {
     noSessions: "Пока нет сессий чата",
     deleteSession: "Удалить сессию",
     deleteSessionDesc: "Вы уверены, что хотите удалить эту сессию чата? Это действие нельзя отменить.",
+    messagePlaceholder: "Сообщение…",
     sendPlaceholder: "Задайте вопрос о ваших источниках...",
     sessionsTitle: "Сессии чата",
     chatWith: "Чат с {{name}}",

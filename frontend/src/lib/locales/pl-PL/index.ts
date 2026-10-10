@@ -511,6 +511,7 @@ export const plPL = {
     noSessions: "Brak sesji czatu",
     deleteSession: "Usuń sesję",
     deleteSessionDesc: "Czy na pewno chcesz usunąć tę sesję czatu? Tej operacji nie można cofnąć.",
+    messagePlaceholder: "Wiadomość…",
     sendPlaceholder: "Zapytaj o cokolwiek dotyczące swoich źródeł...",
     sessionsTitle: "Sesje czatu",
     chatWith: "Czat z {{name}}",

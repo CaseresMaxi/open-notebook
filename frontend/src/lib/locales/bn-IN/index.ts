@@ -511,6 +511,7 @@ export const bnIN = {
     noSessions: "এখনও কোন চ্যাট সেশন নেই",
     deleteSession: "সেশন মুছে ফেলুন",
     deleteSessionDesc: "আপনি কি নিশ্চিত এই চ্যাট সেশন মুছে ফেলতে চান? এই কাজটি পুনরায় করা যাবে না।",
+    messagePlaceholder: "বার্তা…",
     sendPlaceholder: "আপনার উৎসগুলি সম্পর্কে যেকোন কিছু জিজ্ঞাসা করুন...",
     sessionsTitle: "চ্যাট সেশনগুলি",
     chatWith: "{{name}} এর সাথে চ্যাট করুন",

@@ -24,10 +24,22 @@ import {
 import { useTranslation } from '@/lib/hooks/use-translation'
 
 const ShellContext = createContext(false)
-const NavigationContext = createContext<(() => void) | null>(null)
-
-export function useOpenNavigation() {
-  return useContext(NavigationContext)
+export function WorkspaceNavigation({ onNavigate }: { onNavigate: () => void }) {
+  const { t } = useTranslation()
+  const pathname = usePathname()
+  const links = [
+    ['/notebooks', 'navigation.notebooks', BookOpen],
+    ['/profile', 'product.profile', UserRound],
+    ['/payments', 'product.payments', CreditCard],
+    ['/settings', 'navigation.settings', Settings],
+  ] as const
+  return <nav aria-label={t('product.studyNavigation')} className="grid gap-1">
+    {links.map(([href, label, Icon]) => <Link key={href} href={href} onClick={onNavigate}
+      aria-current={pathname === href ? 'page' : undefined}
+      className="flex min-h-11 items-center gap-3 rounded-lg p-3 hover:bg-accent">
+      <Icon className="size-4" />{t(label)}
+    </Link>)}
+  </nav>
 }
 
 /** The dashboard owns a persistent shell; legacy page wrappers remain compatible. */
@@ -38,16 +50,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
 function DashboardShell({ children }: { children: React.ReactNode }) {
   const { t } = useTranslation()
-  const pathname = usePathname()
   const [menuOpen, setMenuOpen] = useState(false)
-  const links = [
-    ['/notebooks', 'navigation.notebooks', BookOpen],
-    ['/profile', 'product.profile', UserRound],
-    ['/payments', 'product.payments', CreditCard],
-    ['/settings', 'navigation.settings', Settings],
-  ] as const
   return (
-    <ShellContext.Provider value={true}><NavigationContext.Provider value={() => setMenuOpen(true)}><div className="product-shell flex h-dvh overflow-hidden bg-background text-foreground">
+    <ShellContext.Provider value={true}><div className="product-shell flex h-dvh overflow-hidden bg-background text-foreground">
       <WorkspaceBackdrop />
       <AppSidebar />
       <main
@@ -78,22 +83,9 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
         <DialogContent className="product-shell max-w-sm">
           <DialogTitle>{t('product.studyNavigation')}</DialogTitle>
           <DialogDescription>{t('product.workspaceDesc')}</DialogDescription>
-          <nav className="grid gap-1">
-            {links.map(([href, label, Icon]) => (
-              <Link
-                key={href}
-                href={href}
-                onClick={() => setMenuOpen(false)}
-                aria-current={pathname === href ? 'page' : undefined}
-                className="flex min-h-11 items-center gap-3 rounded-lg p-3 hover:bg-accent"
-              >
-                <Icon className="size-4" />
-                {t(label)}
-              </Link>
-            ))}
-          </nav>
+          <WorkspaceNavigation onNavigate={() => setMenuOpen(false)} />
         </DialogContent>
       </Dialog>
-    </div></NavigationContext.Provider></ShellContext.Provider>
+    </div></ShellContext.Provider>
   )
 }

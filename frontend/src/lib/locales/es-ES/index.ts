@@ -511,6 +511,7 @@ export const esES = {
     noSessions: "Aún no hay sesiones de chat",
     deleteSession: "Eliminar sesión",
     deleteSessionDesc: "¿Estás seguro de que quieres eliminar esta sesión de chat? Esta acción no se puede deshacer.",
+    messagePlaceholder: "Mensaje…",
     sendPlaceholder: "Pregunta cualquier cosa sobre tus fuentes...",
     sessionsTitle: "Sesiones de chat",
     chatWith: "Chat con {{name}}",

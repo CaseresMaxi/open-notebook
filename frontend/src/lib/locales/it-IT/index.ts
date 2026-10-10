@@ -511,6 +511,7 @@ export const itIT = {
     noSessions: "Ancora nessuna sessione chat",
     deleteSession: "Elimina sessione",
     deleteSessionDesc: "Sei sicuro di voler eliminare questa sessione chat? Questa azione non può essere annullata.",
+    messagePlaceholder: "Messaggio…",
     sendPlaceholder: "Chiedi qualsiasi cosa sulle tue fonti...",
     sessionsTitle: "Sessioni chat",
     chatWith: "Chatta con {{name}}",

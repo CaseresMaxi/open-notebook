@@ -490,3 +490,8 @@
   .product-shell .notebook-screen .study-materials { border: 0; border-radius: 0; box-shadow: none; }
   .product-shell .notebook-screen .study-pane { border-radius: 0; }
 }
+
+.product-shell .notebook-mobile-navigation { display: none; }
+@media (max-width: 767px) {
+  .product-shell .notebook-mobile-navigation { display: block; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
+}
