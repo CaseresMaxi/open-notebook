@@ -1,5 +1,7 @@
 'use client'
 
+import { useAuthStore } from '@/lib/stores/auth-store'
+import { AccountReady } from '@/components/auth/AccountReady'
 import { useAuth } from '@/lib/hooks/use-auth'
 import { useVersionCheck } from '@/lib/hooks/use-version-check'
 import { useRouter } from 'next/navigation'
@@ -17,6 +19,7 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   const { isAuthenticated, isLoading } = useAuth()
+  const { mode, user } = useAuthStore()
   const router = useRouter()
   const [hasCheckedAuth, setHasCheckedAuth] = useState(false)
 
@@ -51,6 +54,8 @@ export default function DashboardLayout({
   if (!isAuthenticated) {
     return null
   }
+
+  if (mode === 'firebase' && !user?.admin) return <AccountReady />
 
   return (
     <ErrorBoundary>

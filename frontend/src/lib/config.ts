@@ -77,7 +77,7 @@ async function fetchConfig(): Promise<AppConfig> {
       const runtimeData = await runtimeResponse.json()
       runtimeApiUrl = runtimeData.apiUrl
       // Treat empty string as "not set" to allow fallback to env var or default
-      if (runtimeApiUrl === '') {
+      if (runtimeApiUrl === '' && !runtimeData.sameOrigin) {
         runtimeApiUrl = null
       }
       if (isDev) console.log('✅ [Config] Runtime API URL from server:', runtimeApiUrl)

@@ -1,5 +1,6 @@
 'use client'
 
+import { useAuthStore } from '@/lib/stores/auth-store'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Settings, ArrowUpRight } from 'lucide-react'
@@ -19,6 +20,7 @@ import { useTranslation } from '@/lib/hooks/use-translation'
 
 export default function ProfilePage() {
   const { t } = useTranslation()
+  const { firebaseConfig, user } = useAuthStore()
   const profile = useProfile()
   const [draft, setDraft] = useState<LocalProfile>(profile)
   const [status, setStatus] = useState<'saved' | 'error' | null>(null)
@@ -29,6 +31,16 @@ export default function ProfilePage() {
     setStatus(null)
     setDraft((prev) => ({ ...prev, [key]: value }))
   }
+  if (user) return <AppShell><div className="product-page">
+    <div className="product-heading"><h1>{t('product.profile')}</h1></div>
+    <section className="product-form space-y-6">
+      <Avatar name={user.name || user.email} size="xl" />
+      <h2 className="text-xl font-medium">{user.name || user.email}</h2>
+      <dl className="space-y-4"><div><dt className="text-sm text-muted-foreground">{t('product.email')}</dt><dd className="break-words">{user.email}</dd>{user.emailVerified && <dd className="text-sm text-muted-foreground">{t('account.verifiedEmail')}</dd>}</div>
+        <div><dt className="text-sm text-muted-foreground">{t('account.accountRole')}</dt><dd>{t(user.admin ? 'account.administrator' : 'account.member')}</dd></div></dl>
+      <div className="flex items-center gap-3"><ThemeToggle /><LanguageToggle /></div>
+    </section>
+  </div></AppShell>
   return (
     <AppShell>
       <div className="flex-1 min-h-0 overflow-y-auto">
@@ -39,6 +51,10 @@ export default function ProfilePage() {
               <p>{t('product.profileDesc')}</p>
             </div>
           </div>
+          {firebaseConfig && <div className="mb-6 flex flex-wrap items-center gap-3">
+            <Button asChild><Link href="/register">{t('account.registerTitle')}</Link></Button>
+            <Button asChild variant="outline"><Link href="/account/login">{t('auth.signIn')}</Link></Button>
+          </div>}
           <form
             className="product-form"
             onSubmit={(event) => {

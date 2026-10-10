@@ -61,6 +61,10 @@ function extractHostname(hostHeader: string): string | null {
  * This allows the same Docker image to work in different deployment scenarios.
  */
 export async function GET(request: NextRequest) {
+  // Cookie sessions use the same origin and Next's API proxy.
+  if (process.env.NEXTNOOTBOOK_AUTH_MODE === 'firebase') {
+    return NextResponse.json({ apiUrl: '', sameOrigin: true })
+  }
   // Priority 1: Check if API_URL is explicitly set
   const envApiUrl = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL
 

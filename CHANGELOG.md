@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Personal fork adds Firebase registration, Google/email login, email verification, password recovery and server sessions, with verified-email administrator bootstrap and immutable binding of existing local study data to the verified owner UID. Accounts are optional in the default local installation. Private staging protects legacy study data from newly registered accounts; public multiuser cutover is still pending.
+- Firebase migration tooling inventories all study records/files, checks source paths and conversation integrity, creates an account-scoped immutable cloud copy and verifies file hashes and record counts without deleting originals or switching the runtime.
 - Personal fork has a dedicated Firebase development project and web app with email/password and Google providers enabled, local Auth/Storage emulator configuration and deny-by-default object rules. Application account integration and cloud Storage setup remain pending.
 - NextNootbook adds a subtle animated dot-wave backdrop adapted from the Instasent effects lab, capped at 20 fps/1.5 DPR and paused offscreen, in hidden tabs and with reduced motion.
 - Personal study product adds browser-local profile and billing preview pages, notebook note/summary libraries, source-grounded saved summaries, a conversation launcher, and free Arc UI components. Billing remains explicitly unavailable until a provider and plans are defined.

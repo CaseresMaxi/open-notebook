@@ -1,10 +1,18 @@
 import axios from 'axios'
+import type { FirebaseOptions } from 'firebase/app'
+import type { AccountUser } from '@/lib/firebase'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import apiClient from '@/lib/api/client'
 import { getApiUrl } from '@/lib/config'
 
 interface AuthState {
+  accountEpoch: number
+  mode: 'legacy' | 'firebase'
+  firebaseConfig: FirebaseOptions | null
+  user: AccountUser | null
+  finishAccountLogin: (idToken: string) => Promise<AccountUser>
+
   isAuthenticated: boolean
   token: string | null
   isLoading: boolean
@@ -16,13 +24,19 @@ interface AuthState {
   setHasHydrated: (state: boolean) => void
   checkAuthRequired: () => Promise<boolean>
   login: (password: string) => Promise<boolean>
-  logout: () => void
+  logout: () => Promise<void>
   checkAuth: () => Promise<boolean>
 }
 
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
+      accountEpoch: 0, mode: 'legacy', firebaseConfig: null, user: null,
+      finishAccountLogin: async (idToken) => {
+        const { data } = await apiClient.post<{ user: AccountUser }>('/auth/session', { idToken })
+        set({ user: data.user, isAuthenticated: true, token: get().mode === 'firebase' ? null : get().token, accountEpoch: get().accountEpoch + 1, lastAuthCheck: Date.now(), error: null })
+        return data.user
+      },
       isAuthenticated: false,
       token: null,
       isLoading: false,
@@ -38,18 +52,28 @@ export const useAuthStore = create<AuthState>()(
 
       checkAuthRequired: async () => {
         try {
-          const response = await apiClient.get<{ auth_enabled?: boolean }>('/auth/status', {
+          const response = await apiClient.get<{ auth_enabled?: boolean; mode?: 'firebase'; firebase?: FirebaseOptions }>('/auth/status', {
             headers: { 'Cache-Control': 'no-store' },
           })
 
           const required = response.data.auth_enabled || false
-          set({ authRequired: required })
+          set({ authRequired: required, mode: response.data.mode ?? 'legacy', firebaseConfig: response.data.firebase ?? null })
+          if (response.data.mode === 'firebase') {
+            set({ token: null, isAuthenticated: false, lastAuthCheck: null })
+          }
 
           // If auth is not required, mark as authenticated
           if (!required) {
             set({ isAuthenticated: true, token: 'not-required' })
           }
 
+          if (response.data.firebase && response.data.mode !== 'firebase') {
+            const epoch = get().accountEpoch
+            try {
+              const account = await apiClient.get<{ user: AccountUser }>('/auth/me')
+              if (get().accountEpoch === epoch) set({ user: account.data.user })
+            } catch { if (get().accountEpoch === epoch) set({ user: null }) }
+          }
           return required
         } catch (error) {
           console.error('Failed to check auth status:', error)
@@ -137,14 +161,17 @@ export const useAuthStore = create<AuthState>()(
         }
       },
       
-      logout: () => {
-        set({ 
-          isAuthenticated: false, 
-          token: null, 
-          error: null 
+      logout: async () => {
+        if (get().mode === 'firebase' || get().firebaseConfig) await apiClient.post('/auth/logout')
+        const local = get().mode === 'legacy' && get().authRequired === false
+        set({
+          isAuthenticated: local,
+          token: local ? 'not-required' : null,
+          error: null, user: null, lastAuthCheck: null,
+          accountEpoch: get().accountEpoch + 1,
         })
       },
-      
+
       checkAuth: async () => {
         const state = get()
         const { token, lastAuthCheck, isCheckingAuth, isAuthenticated } = state
@@ -152,6 +179,18 @@ export const useAuthStore = create<AuthState>()(
         // If already checking, return current auth state
         if (isCheckingAuth) {
           return isAuthenticated
+        }
+
+        if (state.mode === 'firebase') {
+          set({ isCheckingAuth: true })
+          try {
+            const { data } = await apiClient.get<{ user: AccountUser }>('/auth/me')
+            set({ user: data.user, isAuthenticated: true, isCheckingAuth: false, lastAuthCheck: Date.now() })
+            return true
+          } catch {
+            set({ user: null, isAuthenticated: false, isCheckingAuth: false })
+            return false
+          }
         }
 
         // If no token, not authenticated
@@ -211,8 +250,8 @@ export const useAuthStore = create<AuthState>()(
     {
       name: 'auth-storage',
       partialize: (state) => ({
-        token: state.token,
-        isAuthenticated: state.isAuthenticated
+        token: state.mode === 'firebase' ? null : state.token,
+        isAuthenticated: state.mode === 'firebase' ? false : state.isAuthenticated
       }),
       onRehydrateStorage: () => (state) => {
         state?.setHasHydrated(true)

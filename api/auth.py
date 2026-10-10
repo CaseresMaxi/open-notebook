@@ -6,6 +6,7 @@ from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoin
 from starlette.responses import JSONResponse, Response
 from starlette.types import ASGIApp
 
+from api import firebase_auth
 from open_notebook.utils.encryption import get_secret_from_env
 
 
@@ -33,6 +34,39 @@ class PasswordAuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(
         self, request: Request, call_next: RequestResponseEndpoint
     ) -> Response:
+        if firebase_auth.enabled():
+            if (
+                request.method == "OPTIONS"
+                or request.url.path in self.excluded_paths
+                or request.url.path
+                in {
+                    "/api/auth/session",
+                    "/api/auth/logout",
+                    "/api/auth/me",
+                }
+            ):
+                return await call_next(request)
+            try:
+                cookie = request.cookies.get(firebase_auth.SESSION_COOKIE)
+                if not cookie:
+                    raise ValueError("Missing session")
+                user = await firebase_auth.session_user(cookie)
+            except Exception:
+                return JSONResponse(
+                    status_code=401, content={"detail": "Authentication required"}
+                )
+            request.state.user = user
+            # Legacy records have no tenant scope. Protect them until the storage cutover.
+            owner_uid = firebase_auth.legacy_owner_uid()
+            if not user["admin"] or (
+                owner_uid is not None and owner_uid != user["uid"]
+            ):
+                return JSONResponse(
+                    status_code=403,
+                    content={"detail": "Workspace provisioning pending"},
+                )
+            return await call_next(request)
+
         # Skip authentication if no password is set
         if not self.password:
             return await call_next(request)

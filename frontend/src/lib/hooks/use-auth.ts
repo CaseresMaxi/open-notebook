@@ -15,7 +15,8 @@ export function useAuth() {
     checkAuthRequired,
     error,
     hasHydrated,
-    authRequired
+    authRequired,
+    isCheckingAuth
   } = useAuthStore()
 
   useEffect(() => {
@@ -28,7 +29,7 @@ export function useAuth() {
           if (required) {
             checkAuth()
           }
-        })
+        }).catch(() => {})
       } else if (authRequired) {
         // Auth is required, check credentials
         checkAuth()
@@ -43,7 +44,7 @@ export function useAuth() {
     if (success) {
       // Check if there's a stored redirect path
       const redirectPath = sessionStorage.getItem('redirectAfterLogin')
-      if (redirectPath) {
+      if (redirectPath?.startsWith('/') && !redirectPath.startsWith('//') && !redirectPath.includes('\\')) {
         sessionStorage.removeItem('redirectAfterLogin')
         router.push(redirectPath)
       } else {
@@ -53,14 +54,14 @@ export function useAuth() {
     return success
   }
 
-  const handleLogout = () => {
-    logout()
-    router.push('/login')
+  const handleLogout = async () => {
+    await logout()
+    router.push(useAuthStore.getState().firebaseConfig ? '/account/login' : '/login')
   }
 
   return {
     isAuthenticated,
-    isLoading: isLoading || !hasHydrated, // Treat lack of hydration as loading
+    isLoading: isLoading || !hasHydrated || isCheckingAuth || authRequired === null, // Treat lack of hydration as loading
     error,
     login: handleLogin,
     logout: handleLogout

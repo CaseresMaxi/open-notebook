@@ -1,5 +1,6 @@
 'use client'
 
+import { AccountForm } from './AccountForm'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/hooks/use-auth'
@@ -16,7 +17,7 @@ export function LoginForm() {
   const { t, language } = useTranslation()
   const [password, setPassword] = useState('')
   const { login, isLoading, error } = useAuth()
-  const { authRequired, checkAuthRequired, hasHydrated, isAuthenticated } = useAuthStore()
+  const { mode, authRequired, checkAuthRequired, hasHydrated, isAuthenticated } = useAuthStore()
   const [isCheckingAuth, setIsCheckingAuth] = useState(true)
   const [configInfo, setConfigInfo] = useState<{ apiUrl: string; version: string; buildTime: string } | null>(null)
   const router = useRouter()
@@ -124,6 +125,8 @@ export function LoginForm() {
       </div>
     )
   }
+
+  if (mode === 'firebase') return <AccountForm />
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

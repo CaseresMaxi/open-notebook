@@ -40,6 +40,9 @@ apiClient.interceptors.request.use(async (config) => {
     config.baseURL = `${apiUrl}/api`
   }
 
+  if (config.url?.startsWith('/auth/') && config.url !== '/auth/status') {
+    config.withCredentials = true
+  }
   const token = getAuthToken()
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
@@ -63,7 +66,7 @@ apiClient.interceptors.response.use(
     return response
   },
   (error) => {
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 && !error.config?.url?.startsWith('/auth/')) {
       // Clear auth and redirect to login
       if (typeof window !== 'undefined') {
         localStorage.removeItem('auth-storage')
