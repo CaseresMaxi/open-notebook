@@ -166,7 +166,7 @@ export default function NotebookPage() {
     <div className="flex flex-col flex-1 min-h-0">
       <div className="shrink-0 px-4 pt-4 md:px-6 md:pt-6"><NotebookHeader notebook={notebook} /></div>
       <div className="flex-1 min-h-0 p-4 md:p-6 flex flex-col">
-        <Tabs value={mobileActiveTab} onValueChange={value => setMobileActiveTab(value as typeof mobileActiveTab)} className="flex flex-col flex-1 min-h-0">
+        <Tabs value={mobileActiveTab} onValueChange={value => setMobileActiveTab(value as typeof mobileActiveTab)} className={`study-workspace flex flex-col flex-1 min-h-0 ${mobileActiveTab === 'chat' ? 'study-workspace-chat' : ''}`}>
           <div className="study-view-switch shrink-0 mb-4">
             <GlassTabsList value={mobileActiveTab} label={t('product.studyNavigation')} options={[
               { value: 'sources', label: t('navigation.sources') }, { value: 'chat', label: t('common.chat') },

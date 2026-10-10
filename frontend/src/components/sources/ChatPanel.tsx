@@ -127,7 +127,7 @@ export function ChatPanel({
   return (
     <>
     {examRequest !== null && <CreateExamDialog open onOpenChange={open => { if (!open) setExamRequest(null) }} initialNotebookId={notebookId} initialInstructions={examRequest || ''} initialModelId={modelOverride} />}
-    <Card className="study-conversation py-0 flex flex-col h-full min-h-0 flex-1 overflow-hidden">
+    <Card className="study-conversation relative py-0 flex flex-col h-full min-h-0 flex-1 overflow-hidden">
       <CardHeader className="pb-3 flex-shrink-0">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <CardTitle className="flex items-center gap-2 study-column-heading text-sm font-medium">
@@ -169,7 +169,7 @@ export function ChatPanel({
       </CardHeader>
       <CardContent className="flex-1 flex flex-col min-h-0 p-0">
         <ScrollArea className="flex-1 min-h-0 px-4" ref={scrollAreaRef}>
-          <div className="space-y-4 py-4">
+          <div className="chat-transcript space-y-4 py-4">
             {messages.length === 0 ? (
               <div className="text-center text-muted-foreground py-8">
                 <Bot className="h-12 w-12 mx-auto mb-4 opacity-50" />
@@ -250,6 +250,18 @@ function ChatComposer({
   const [readingImages, setReadingImages] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const composerRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const composer = composerRef.current
+    const conversation = composer?.closest<HTMLElement>('.study-conversation')
+    if (!composer || !conversation) return
+    const measure = () => conversation.style.setProperty('--composer-height', `${composer.getBoundingClientRect().height}px`)
+    measure()
+    if (typeof ResizeObserver === 'undefined') return
+    const observer = new ResizeObserver(measure)
+    observer.observe(composer)
+    return () => observer.disconnect()
+  }, [])
   const readingRef = useRef(false)
   const busy = isStreaming || readingImages || submitting
 
@@ -301,7 +313,7 @@ function ChatComposer({
 
 
   return (
-    <div className="chat-composer flex-shrink-0 p-4 space-y-3"
+    <div ref={composerRef} className="chat-composer flex-shrink-0 p-4 space-y-3"
       onDragOver={event => event.preventDefault()}
       onDrop={event => {
         event.preventDefault()
