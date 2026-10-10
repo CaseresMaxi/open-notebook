@@ -495,3 +495,30 @@
 @media (max-width: 767px) {
   .product-shell .notebook-mobile-navigation { display: block; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
 }
+
+/* Notes open as documents; editing uses one quiet Markdown column. */
+.product-shell.note-dialog { width: calc(100vw - 24px); max-width: 880px; height: min(88dvh, 900px); max-height: calc(100dvh - 24px); display: flex; flex-direction: column; gap: 0; overflow: hidden; padding: 0; background: var(--surface); color: var(--ink); border: 1px solid var(--nn-edge); border-radius: 28px; box-shadow: 0 24px 64px var(--nn-shadow); }
+.product-shell .note-dialog-heading { padding: 24px 56px 16px 28px; border-bottom: 1px solid var(--line); }
+.product-shell .note-dialog-title { font-size: var(--text-xl); font-weight: 500; line-height: 1.4; word-break: normal; overflow-wrap: anywhere; }
+.product-shell h2.note-dialog-title { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.product-shell .note-dialog-body { flex: 1; min-height: 0; min-width: 0; }
+.product-shell .note-dialog-reading { overflow-y: auto; padding: 24px 28px; }
+.product-shell .note-dialog-writing { overflow: hidden; padding: 16px 24px; display: flex; flex-direction: column; }
+.product-shell .note-reading-content { max-width: 760px; margin-inline: auto; }
+.product-shell .note-dialog-footer { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 12px 24px 20px; border-top: 1px solid var(--line); }
+.product-shell .note-markdown-editor { flex: 1; min-height: 0; overflow: hidden; }
+.product-shell .note-markdown-editor .w-md-editor { --md-editor-font-family: var(--font-body); --md-editor-background-color: var(--surface); --md-editor-box-shadow-color: var(--line); background: var(--surface); color: var(--ink); box-shadow: none; border: 1px solid var(--line); border-radius: 18px; overflow: hidden; }
+.product-shell .note-markdown-editor .w-md-editor-toolbar { background: var(--surface-recessed); border-color: var(--line); padding: 6px 8px; }
+.product-shell .note-markdown-editor .w-md-editor-toolbar button { width: 44px; height: 44px; border-radius: 12px; color: var(--ink-soft); }
+.product-shell .note-markdown-editor .w-md-editor-toolbar button:hover { background: var(--surface-sunken); color: var(--ink); }
+.product-shell .note-markdown-editor .w-md-editor-text { padding: 16px; }
+.product-shell .note-markdown-editor .w-md-editor-text-pre,
+.product-shell .note-markdown-editor .w-md-editor-text-input { font-size: 16px !important; line-height: 1.65 !important; color: var(--ink); }
+@media (max-width: 767px) {
+  .product-shell.note-dialog { width: calc(100vw - 12px); height: calc(100dvh - 12px); max-height: calc(100dvh - 12px); border-radius: 24px; }
+  .product-shell .note-dialog-heading { padding: 20px 48px 16px 20px; }
+  .product-shell .note-dialog-title { font-size: var(--text-lg); }
+  .product-shell .note-dialog-reading { padding: 20px; }
+  .product-shell .note-dialog-writing { padding: 12px; }
+  .product-shell .note-dialog-footer { padding: 10px 12px; padding-bottom: max(10px, env(safe-area-inset-bottom)); }
+}

@@ -1,6 +1,7 @@
 'use client'
 
 import dynamic from 'next/dynamic'
+import { bold, italic, title, link, unorderedListCommand, code } from '@uiw/react-md-editor/commands'
 import { forwardRef } from 'react'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
@@ -56,7 +57,8 @@ export interface MarkdownEditorProps {
   value?: string
   onChange?: (value?: string) => void
   placeholder?: string
-  height?: number
+  compact?: boolean
+  height?: number | '100%'
   preview?: 'live' | 'edit' | 'preview'
   hideToolbar?: boolean
   textareaId?: string
@@ -65,7 +67,7 @@ export interface MarkdownEditorProps {
 }
 
 export const MarkdownEditor = forwardRef<HTMLDivElement, MarkdownEditorProps>(
-  ({ value = '', onChange, placeholder, height = 300, preview = 'live', hideToolbar = false, className, textareaId, name }, ref) => {
+  ({ value = '', onChange, placeholder, compact = false, height = 300, preview = 'live', hideToolbar = false, className, textareaId, name }, ref) => {
     const { effectiveTheme, hasHydrated } = useTheme()
 
     return (
@@ -77,6 +79,9 @@ export const MarkdownEditor = forwardRef<HTMLDivElement, MarkdownEditorProps>(
             preview={preview}
             height={height}
             hideToolbar={hideToolbar}
+            commands={compact ? [bold, italic, title, link, unorderedListCommand, code] : undefined}
+            extraCommands={compact ? [] : undefined}
+            visibleDragbar={!compact}
             textareaProps={{
               placeholder: placeholder || 'Enter markdown...',
               id: textareaId,

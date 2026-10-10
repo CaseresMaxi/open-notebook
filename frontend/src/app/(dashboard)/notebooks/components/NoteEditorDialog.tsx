@@ -10,9 +10,10 @@ import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { useCreateNote, useUpdateNote, useNote } from '@/lib/hooks/use-notes'
 import { QUERY_KEYS } from '@/lib/api/query-client'
+import { MarkdownRenderer } from '@/components/ui/markdown-renderer'
+import { LiquidSurface } from '@/components/layout/LiquidSurface'
 import { MarkdownEditor } from '@/components/ui/markdown-editor'
 import { InlineEdit } from '@/components/common/InlineEdit'
-import { cn } from "@/lib/utils";
 import { useTranslation } from '@/lib/hooks/use-translation'
 import { ContentUnavailable } from '@/components/common/ContentUnavailable'
 import { isNotFoundError } from '@/lib/utils/error-handler'
@@ -57,7 +58,7 @@ export function NoteEditorDialog({ open, onOpenChange, notebookId, note }: NoteE
   const {
     handleSubmit,
     control,
-    formState: { errors },
+    formState: { errors, isDirty },
     reset,
     setValue,
   } = useForm<CreateNoteFormData>({
@@ -68,7 +69,12 @@ export function NoteEditorDialog({ open, onOpenChange, notebookId, note }: NoteE
     },
   })
   const watchTitle = useWatch({ control, name: 'title' })
-  const [isEditorFullscreen, setIsEditorFullscreen] = useState(false)
+  const content = useWatch({ control, name: 'content' })
+  const [writing, setWriting] = useState(!note)
+
+  useEffect(() => {
+    if (open) setWriting(!isEditing)
+  }, [open, note?.id, isEditing])
 
   useEffect(() => {
     if (!open) {
@@ -82,16 +88,6 @@ export function NoteEditorDialog({ open, onOpenChange, notebookId, note }: NoteE
 
     reset({ title, content })
   }, [open, note, fetchedNote, reset])
-
-  useEffect(() => {
-    if (!open) return
-
-    const observer = new MutationObserver(() => {
-      setIsEditorFullscreen(!!document.querySelector('.w-md-editor-fullscreen'))
-    })
-    observer.observe(document.body, { subtree: true, attributes: true, attributeFilter: ['class'] })
-    return () => observer.disconnect()
-  }, [open])
 
   const onSubmit = async (data: CreateNoteFormData) => {
     if (note) {
@@ -125,16 +121,12 @@ export function NoteEditorDialog({ open, onOpenChange, notebookId, note }: NoteE
 
   const handleClose = () => {
     reset()
-    setIsEditorFullscreen(false)
     onOpenChange(false)
   }
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className={cn(
-          "sm:max-w-3xl w-full h-[90vh] max-h-[90vh] overflow-hidden p-0 flex flex-col",
-          isEditorFullscreen && "!max-w-screen !max-h-screen border-none w-screen h-screen"
-      )}>
+      <DialogContent className="product-shell note-dialog">
         <DialogTitle className="sr-only">
           {isEditing ? t('sources.editNote') : t('sources.createNote')}
         </DialogTitle>
@@ -151,63 +143,41 @@ export function NoteEditorDialog({ open, onOpenChange, notebookId, note }: NoteE
             </div>
           ) : (
             <>
-              <div className="border-b px-6 py-4">
-                <InlineEdit
-                  id="note-title"
-                  name="title"
-                  value={watchTitle ?? ''}
-                  onSave={(value) => setValue('title', value || '')}
-                  placeholder={t('sources.addTitle')}
-                  emptyText={t('sources.untitledNote')}
-                  className="text-xl font-semibold"
-                  inputClassName="text-xl font-semibold"
-                />
-              </div>
-
-              <div className={cn(
-                  "flex-1 min-h-0 overflow-y-auto",
-                  !isEditorFullscreen && "px-6 py-4")
-              }>
-                <Controller
-                  control={control}
-                  name="content"
-                  render={({ field }) => (
-                    <MarkdownEditor
-                      key={note?.id ?? 'new'}
-                      textareaId="note-content"
-                      value={field.value}
-                      onChange={field.onChange}
-                      height={420}
-                      placeholder={t('sources.writeNotePlaceholder')}
-                      className={cn(
-                          "w-full h-full min-h-[420px] overflow-hidden [&_.w-md-editor]:!static [&_.w-md-editor]:!w-full [&_.w-md-editor]:!h-full [&_.w-md-editor-content]:overflow-y-auto",
-                          !isEditorFullscreen && "rounded-md border"
-                      )}
-                    />
-                  )}
-                />
-                {errors.content && (
-                  <p className="text-sm text-destructive mt-1">{errors.content.message}</p>
-                )}
+              <header className="note-dialog-heading">
+                {writing ? <InlineEdit
+                  id="note-title" name="title" value={watchTitle ?? ''}
+                  onSave={(value) => setValue('title', value || '', { shouldDirty: true })}
+                  placeholder={t('sources.addTitle')} emptyText={t('sources.untitledNote')}
+                  className="note-dialog-title" inputClassName="note-dialog-title"
+                /> : <h2 className="note-dialog-title" title={watchTitle || t('sources.untitledNote')}>{watchTitle || t('sources.untitledNote')}</h2>}
+              </header>
+              <div className={`note-dialog-body ${writing ? 'note-dialog-writing' : 'note-dialog-reading'}`}>
+                {writing ? <Controller control={control} name="content" render={({ field }) => (
+                  <MarkdownEditor key={note?.id ?? 'new'} textareaId="note-content" name="content"
+                    value={field.value} onChange={field.onChange} height="100%" preview="edit" compact
+                    placeholder={t('sources.writeNotePlaceholder')} className="note-markdown-editor" />
+                )} /> : <article className="note-reading-content"><MarkdownRenderer>{content || ''}</MarkdownRenderer></article>}
+                {errors.content && <p className="text-sm text-destructive mt-1">{errors.content.message}</p>}
               </div>
             </>
           )}
 
-          <div className="border-t px-6 py-4 flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={handleClose}>
-              {t('common.cancel')}
-            </Button>
-            <Button
-              type="submit"
-              disabled={isSaving || (isEditing && noteLoading)}
-            >
-              {isSaving
-                ? isEditing ? `${t('common.saving')}...` : `${t('common.creating')}...`
-                : isEditing
-                  ? t('sources.saveNote')
-                  : t('sources.createNoteBtn')}
-            </Button>
-          </div>
+          <footer className="note-dialog-footer">
+            <LiquidSurface className="note-mode-control" radius={14}>
+              <Button type="button" variant="ghost" disabled={noteLoading || isSaving}
+                onClick={() => setWriting(value => !value)}>
+                {writing ? t('product.preview') : t('common.edit')}
+              </Button>
+            </LiquidSurface>
+            <div className="flex gap-2">
+              <Button type="button" variant="ghost" onClick={handleClose} disabled={isSaving}>
+                {writing || isDirty || !isEditing ? t('common.cancel') : t('common.close')}
+              </Button>
+              {(writing || isDirty || !isEditing) && <Button type="submit" disabled={isSaving || (isEditing && noteLoading)}>
+                {isSaving ? t('common.saving') : isEditing ? t('sources.saveNote') : t('sources.createNoteBtn')}
+              </Button>}
+            </div>
+          </footer>
         </form>
         )}
       </DialogContent>

@@ -94,7 +94,7 @@ describe('NoteEditorDialog', () => {
     expect(onOpenChange).toHaveBeenCalledWith(false)
   })
 
-  it('renders the editor when the note loads successfully', () => {
+  it('opens a loaded note in reading mode and allows editing', () => {
     mockUseNote.mockReturnValue(
       asResult({
         data: {
@@ -113,15 +113,26 @@ describe('NoteEditorDialog', () => {
 
     renderDialog()
 
+    expect(screen.getByText('Note body')).toBeInTheDocument()
+    expect(screen.queryByTestId('markdown-editor')).not.toBeInTheDocument()
+    fireEvent.click(screen.getByText('common.edit'))
     expect(screen.getByTestId('markdown-editor')).toBeInTheDocument()
     expect(screen.getByText('sources.saveNote')).toBeInTheDocument()
     expect(screen.queryByTestId('content-unavailable')).not.toBeInTheDocument()
+    fireEvent.change(screen.getByTestId('markdown-editor'), { target: { value: 'Unsaved draft' } })
+    fireEvent.click(screen.getByText('product.preview'))
+    expect(screen.getByText('Unsaved draft')).toBeInTheDocument()
+    expect(screen.queryByTestId('markdown-editor')).not.toBeInTheDocument()
+    fireEvent.click(screen.getByText('common.edit'))
+    expect(screen.getByTestId('markdown-editor')).toHaveValue('Unsaved draft')
+    expect(updateNoteMock).not.toHaveBeenCalled()
   })
 })
 
 it('hides summary metadata in the editor and preserves it when the user saves', async () => {
   mockUseNote.mockReturnValue(asResult({ data: { id: 'note-1', title: 'Summary', content: `${SUMMARY_MARKER}\n\nSource-grounded summary`, note_type: 'ai', created: '2026-01-01', updated: '2026-01-01' }, isLoading: false, isError: false }))
   renderDialog({ notebookId: 'notebook:one' })
+  fireEvent.click(screen.getByText('common.edit'))
   const editor = screen.getByTestId('markdown-editor')
   expect(editor).toHaveValue('Source-grounded summary')
   fireEvent.change(editor, { target: { value: 'Edited summary with original source' } })
