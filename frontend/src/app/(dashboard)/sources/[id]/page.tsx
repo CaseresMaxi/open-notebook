@@ -7,7 +7,8 @@ import { ArrowLeft } from 'lucide-react'
 import { useSourceChat } from '@/lib/hooks/use-source-chat'
 import { ChatPanel } from '@/components/sources/ChatPanel'
 import { useNavigation } from '@/lib/hooks/use-navigation'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Tabs } from '@/components/ui/tabs'
+import { GlassTabsList } from '@/components/layout/GlassTabsList'
 import { useTranslation } from '@/lib/hooks/use-translation'
 import { AppShell } from '@/components/layout/AppShell'
 import { SourceDetailContent } from '@/components/sources/SourceDetailContent'
@@ -32,27 +33,19 @@ export default function SourceDetailPage() {
   return (
     <AppShell>
     <div className="source-workspace flex flex-col flex-1 min-h-0">
-      {/* Back button */}
-      <div className="pt-6 pb-4 px-6">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleBack}
-          className="mb-4"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          {navigation.getReturnLabel()}
+      <div className="source-workspace-toolbar">
+        <Button variant="ghost" size="sm" onClick={handleBack}>
+          <ArrowLeft className="h-4 w-4" />{navigation.getReturnLabel()}
         </Button>
+        <Tabs value={panel} onValueChange={setPanel}>
+          <GlassTabsList value={panel} label={t('sources.detailsTitle')} options={[
+            { value: 'source', label: t('sources.content') },
+            { value: 'chat', label: t('common.chat') },
+          ]} />
+        </Tabs>
       </div>
-
-      <Tabs value={panel} onValueChange={setPanel} className="px-6 pb-4 shrink-0">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="source">{t('sources.content')}</TabsTrigger>
-          <TabsTrigger value="chat">{t('common.chat')}</TabsTrigger>
-        </TabsList>
-      </Tabs>
       {/* Main content: Source detail + Chat */}
-      <div className="source-detail-grid flex-1 min-h-0 grid gap-6 overflow-hidden px-6 pb-6">
+      <div className="source-detail-grid flex-1 min-h-0 grid overflow-hidden">
         {/* Left column - Source detail */}
         <div className={`min-h-0 overflow-hidden ${panel === 'source' ? 'flex' : 'hidden'} flex-col`}>
           <SourceDetailContent

@@ -266,7 +266,19 @@ function SourceCardImpl({
               </h4>
             </div>
 
-
+            {statusData?.message && (isProcessing || isFailed) && (
+              <p className="text-xs text-muted-foreground mt-1">{statusData.message}</p>
+            )}
+            <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+              <span className="inline-flex items-center gap-1">
+                <SourceTypeIcon className="h-3 w-3" />
+                {sourceType === 'link' ? t('sources.addUrl') : sourceType === 'upload' ? t('sources.uploadFile') : t('sources.enterText')}
+              </span>
+              {isCompleted && source.insights_count > 0 && (
+                <span>{t('sources.insightsCount', { count: source.insights_count })}</span>
+              )}
+              {isCompleted && source.topics?.length ? <span className="truncate">{source.topics.slice(0, 2).join(', ')}</span> : null}
+            </div>
           </div>
 
           {/* Context toggle and actions */}

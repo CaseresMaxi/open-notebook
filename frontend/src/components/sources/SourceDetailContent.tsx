@@ -19,7 +19,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Tabs, TabsContent } from '@/components/ui/tabs'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -66,6 +66,8 @@ import { getDateLocale } from '@/lib/utils/date-locale'
 import { toast } from 'sonner'
 import { useTranslation } from '@/lib/hooks/use-translation'
 import { SourceInsightDialog } from '@/components/sources/SourceInsightDialog'
+import { ConfirmDialog } from '@/components/common/ConfirmDialog'
+import { GlassTabsList } from '@/components/layout/GlassTabsList'
 import { NotebookAssociations } from '@/components/sources/NotebookAssociations'
 
 interface SourceDetailContentProps {
@@ -102,6 +104,8 @@ function SourceDetailContentInner({
 }: SourceDetailContentProps) {
   const { t, language } = useTranslation()
   const queryClient = useQueryClient()
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [activeTab, setActiveTab] = useState('content')
   const [insights, setInsights] = useState<SourceInsightResponse[]>([])
   const [transformations, setTransformations] = useState<Transformation[]>([])
   const [selectedTransformation, setSelectedTransformation] = useState<string>('')
@@ -405,16 +409,12 @@ function SourceDetailContentInner({
   const handleDelete = async () => {
     if (!source) return
 
-    if (confirm(t('sources.deleteSourceConfirm') || t('common.confirm'))) {
-      try {
-        // The mutation hook shows the toasts and invalidates the source
-        // queries, so a reopened dialog can't serve the deleted source from
-        // the cache.
-        await deleteSource.mutateAsync(source.id)
-        onClose?.()
-      } catch (error) {
-        console.error('Failed to delete source:', error)
-      }
+    try {
+      await deleteSource.mutateAsync(source.id)
+      setDeleteDialogOpen(false)
+      onClose?.()
+    } catch (error) {
+      console.error('Failed to delete source:', error)
     }
   }
 
@@ -440,16 +440,16 @@ function SourceDetailContentInner({
   }
 
   return (
-    <div className="flex flex-col h-full min-h-0">
+    <div className="source-reading-surface flex flex-col h-full min-h-0">
       {/* Header */}
-      <div className="pb-5 pr-10 shrink-0">
+      <div className="source-reading-heading shrink-0">
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <InlineEdit
               value={source.title || ''}
               onSave={handleUpdateTitle}
-              className="text-2xl font-bold"
-              inputClassName="text-2xl font-bold"
+              className="text-xl font-medium break-words"
+              inputClassName="text-xl font-medium"
               placeholder={t('sources.titlePlaceholder')}
               emptyText={t('sources.untitledSource')}
             />
@@ -458,7 +458,7 @@ function SourceDetailContentInner({
           <div className="flex items-center gap-2">
             {getSourceIcon()}
             <Badge variant="secondary" className="text-sm">
-              {getSourceType()}
+              {getSourceType() === 'file' ? t('sources.uploadFile') : getSourceType() === 'link' ? t('sources.addUrl') : t('sources.enterText')}
             </Badge>
 
             {/* Chat with source button - only in modal */}
@@ -471,7 +471,7 @@ function SourceDetailContentInner({
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon">
+                <Button variant="ghost" size="icon" aria-label={t('common.actions')}>
                   <MoreVertical className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
@@ -502,7 +502,7 @@ function SourceDetailContentInner({
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   className="text-destructive"
-                  onClick={handleDelete}
+                  onClick={() => setDeleteDialogOpen(true)}
                 >
                   <Trash2 className="mr-2 h-4 w-4" />
                   {t('sources.deleteSource')}
@@ -513,20 +513,15 @@ function SourceDetailContentInner({
         </div>
       </div>
 
-      {/* Tabs Content */}
-      <div className="flex-1 min-h-0 overflow-y-auto">
-        <Tabs defaultValue="content" className="w-full">
-          <details className="mb-4">
-            <summary className="text-sm text-muted-foreground cursor-pointer">{t('sources.details')}</summary>
-          <TabsList className="w-full mt-3 bg-card">
-            <TabsTrigger value="content">{t('sources.content')}</TabsTrigger>
-            <TabsTrigger value="insights">
-              {t('common.insights')} {insights.length > 0 && `(${insights.length})`}
-            </TabsTrigger>
-            <TabsTrigger value="details">{t('sources.details')}</TabsTrigger>
-          </TabsList>
-          </details>
-
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="source-reading-tabs flex-1 min-h-0">
+        <div className="source-reading-navigation">
+          <GlassTabsList value={activeTab} label={t('sources.detailsTitle')} options={[
+            { value: 'content', label: t('sources.content') },
+            { value: 'insights', label: `${t('common.insights')}${insights.length ? ` (${insights.length})` : ''}` },
+            { value: 'details', label: t('sources.details') },
+          ]} />
+        </div>
+        <div className="source-reading-scroll flex-1 min-h-0 overflow-y-auto">
           <TabsContent value="content" className="mt-5">
             <section>
               {externalHref && !isYouTubeUrl && (
@@ -544,7 +539,7 @@ function SourceDetailContentInner({
               )}
               {isYouTubeUrl && youTubeVideoId && (
                 <div className="mb-6">
-                  <div className="aspect-video rounded-md overflow-hidden bg-black">
+                  <div className="aspect-video rounded-md overflow-hidden bg-muted">
                     <iframe
                       src={`https://www.youtube.com/embed/${youTubeVideoId}`}
                       title={t('common.accessibility.ytVideo')}
@@ -596,7 +591,7 @@ function SourceDetailContentInner({
                   <Sparkles className="h-4 w-4 text-teal" />
                   {t('sources.generateNewInsight')}
                 </Label>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <Select
                     name="transformation"
                     value={selectedTransformation}
@@ -651,7 +646,7 @@ function SourceDetailContentInner({
                     <div data-record-id={insight.id} key={insight.id} className="py-4">
                       <div className="flex items-center gap-2">
                         <span className="h-1.5 w-1.5 rounded-full bg-teal" aria-hidden="true" />
-                        <span className="text-xs font-medium uppercase tracking-wide text-teal">
+                        <span className="text-sm font-medium text-muted-foreground">
                           {insight.insight_type}
                         </span>
                       </div>
@@ -711,7 +706,7 @@ function SourceDetailContentInner({
                     <div>
                       <h3 className="mb-2 text-sm font-medium">{t('common.url')}</h3>
                       <div className="flex items-center gap-2">
-                        <code className="flex-1 rounded bg-muted px-2 py-1 text-sm">
+                        <code className="min-w-0 flex-1 break-all rounded bg-muted px-2 py-1 text-sm">
                           {source.asset.url}
                         </code>
                         <Button
@@ -741,7 +736,7 @@ function SourceDetailContentInner({
                     <div className="space-y-2">
                       <h3 className="text-sm font-medium">{t('sources.uploadedFile')}</h3>
                       <div className="flex flex-wrap items-center gap-2">
-                        <code className="rounded bg-muted px-2 py-1 text-sm">
+                        <code className="max-w-full break-all rounded bg-muted px-2 py-1 text-sm">
                           {source.asset.file_path}
                         </code>
                         <Button
@@ -828,9 +823,19 @@ function SourceDetailContentInner({
               onSave={() => void refetchSource()}
             />
           </TabsContent>
-        </Tabs>
-      </div>
+        </div>
+      </Tabs>
 
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title={t('sources.deleteSource')}
+        description={t('sources.deleteSourceConfirm')}
+        confirmText={t('common.delete')}
+        onConfirm={handleDelete}
+        isLoading={deleteSource.isPending}
+        confirmVariant="destructive"
+      />
       <SourceInsightDialog
         open={Boolean(selectedInsight)}
         onOpenChange={(open) => {

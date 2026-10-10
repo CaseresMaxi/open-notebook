@@ -549,3 +549,28 @@
 .record-pop-dot { position: absolute; width: 3px; height: 3px; border-radius: 50%; background: var(--ink-soft); pointer-events: none; }
 .record-pop-table { width: 100%; height: 100%; border-collapse: collapse; table-layout: fixed; }
 .record-pop-table td { padding: 12px 16px; border-bottom: 1px solid var(--line); font-size: var(--text-sm); }
+
+/* Source tools use the same material and single reading viewport as study chat. */
+.product-shell .source-workspace { width: 100%; max-width: 1120px; margin-inline: auto; padding: 20px 24px 24px; overflow: hidden; }
+.product-shell .source-workspace-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 16px; flex-shrink: 0; }
+.product-shell .source-reading-surface { overflow: hidden; border: 1px solid var(--nn-edge); border-radius: 28px; background: var(--surface); }
+.product-shell .source-reading-heading { padding: 24px 24px 12px; }
+.product-shell .source-reading-heading > div { gap: 12px; }
+.product-shell .source-reading-heading > div > div:first-child { min-width: 0; }
+.product-shell .source-reading-navigation { display: flex; justify-content: center; padding: 0 16px 12px; flex-shrink: 0; }
+.product-shell .source-reading-scroll { padding: 0 28px 28px; overscroll-behavior: contain; scrollbar-gutter: stable; }
+.product-shell .source-reading-scroll > [data-slot=tabs-content] { max-width: 800px; margin-inline: auto; overflow-wrap: anywhere; }
+.product-shell.source-detail-dialog { display: flex; flex-direction: column; gap: 0; padding: 0; overflow: hidden; height: min(90dvh, 960px); width: calc(100vw - 24px); max-width: 1024px; border-radius: 28px; }
+.product-shell.source-detail-dialog .source-reading-surface { border: 0; border-radius: inherit; }
+.product-shell.source-detail-dialog .source-reading-heading { padding-right: 56px; }
+@media (max-width: 767px) {
+  .product-shell .source-workspace { padding: 8px 8px 12px; }
+  .product-shell .source-workspace-toolbar { flex-wrap: wrap; gap: 8px; padding-bottom: 8px; }
+  .product-shell .source-reading-surface { border-radius: 22px; }
+  .product-shell .source-reading-heading { padding: 16px 16px 8px; }
+  .product-shell .source-reading-heading > div { flex-wrap: wrap; }
+  .product-shell .source-reading-scroll { padding: 0 16px 20px; }
+  .product-shell.source-detail-dialog { height: calc(100dvh - 16px); max-width: calc(100vw - 16px); }
+}
+
+.product-shell .source-reading-navigation [data-slot=tabs-trigger] { white-space: nowrap; }
