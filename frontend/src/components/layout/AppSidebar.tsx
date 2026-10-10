@@ -20,12 +20,10 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { Avatar } from '@/components/arc/avatar/avatar'
 import { useAuth } from '@/lib/hooks/use-auth'
 import { useSidebarStore } from '@/lib/stores/sidebar-store'
 import { useCreateDialogs } from '@/lib/hooks/use-create-dialogs'
 import { useTranslation } from '@/lib/hooks/use-translation'
-import { useProfile } from '@/lib/hooks/use-profile'
 
 export function AppSidebar() {
   const { t } = useTranslation()
@@ -33,7 +31,6 @@ export function AppSidebar() {
   const { logout } = useAuth()
   const { isCollapsed, toggleCollapse } = useSidebarStore()
   const { openNotebookDialog } = useCreateDialogs()
-  const profile = useProfile()
   const navId = useId()
   const reduced = useReducedMotion()
   const items = [
@@ -44,8 +41,8 @@ export function AppSidebar() {
   return (
     <aside
       className={cn(
-        'app-sidebar hidden md:flex shrink-0 h-full flex-col border-r py-4',
-        isCollapsed ? 'w-20 px-3' : 'w-60 px-4'
+        'app-sidebar hidden md:flex shrink-0 h-full flex-col py-4',
+        isCollapsed ? 'w-20 px-3' : 'w-52 px-3'
       )}
     >
       <div
@@ -62,7 +59,7 @@ export function AppSidebar() {
             isCollapsed && 'hidden'
           )}
         >
-          <BrandMark className="size-8 shrink-0" />
+          <BrandMark className="size-5 shrink-0" />
           {!isCollapsed && <span>{t('common.appName')}</span>}
         </Link>
         <Button
@@ -80,10 +77,10 @@ export function AppSidebar() {
         </Button>
       </div>
       <Button
-        variant="outline"
+        variant="ghost"
         onClick={openNotebookDialog}
         aria-label={t('notebooks.newNotebook')}
-        className="mb-6"
+        className="sidebar-create mb-4 justify-start"
       >
         <Plus className="size-4" />
         {!isCollapsed && t('notebooks.newNotebook')}
@@ -119,49 +116,16 @@ export function AppSidebar() {
       </nav>
       </LayoutGroup>
       </LiquidSurface>
-      <div className="border-t pt-4 mt-auto space-y-1">
-        <Link
-          href="/settings"
-          aria-label={isCollapsed ? t('navigation.settings') : undefined}
-          className={cn(
-            'flex min-h-11 items-center gap-3 px-3 rounded-xl text-sm text-muted-foreground hover:bg-accent',
-            isCollapsed && 'justify-center'
-          )}
-        >
+      <div className={cn('sidebar-utilities mt-auto flex items-center gap-1 pt-6', isCollapsed && 'flex-col')}>
+        <Link href="/settings" aria-label={isCollapsed ? t('navigation.settings') : undefined}
+          title={isCollapsed ? t('navigation.settings') : undefined}
+          className={cn('flex min-h-11 flex-1 items-center gap-3 rounded-xl px-3 text-sm text-muted-foreground hover:text-foreground', isCollapsed && 'justify-center')}>
           <Settings className="size-4 shrink-0" />
           {!isCollapsed && t('navigation.settings')}
         </Link>
-        <div
-          className={cn(
-            'flex items-center gap-3 pt-4 mt-2 border-t min-w-0',
-            isCollapsed && 'flex-col'
-          )}
-        >
-          <Link href="/profile" aria-label={t('product.profile')}>
-            <Avatar
-              name={profile.name || t('product.localProfile')}
-              size="sm"
-            />
-          </Link>
-          {!isCollapsed && (
-            <div className="flex-1 min-w-0">
-              <p className="truncate text-sm font-medium">
-                {profile.name || t('product.localProfile')}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {t('product.personalWorkspace')}
-              </p>
-            </div>
-          )}
-          <Button
-            size="icon"
-            variant="ghost"
-            onClick={logout}
-            aria-label={t('common.signOut')}
-          >
-            <LogOut className="size-4" />
-          </Button>
-        </div>
+        <Button size="icon" variant="ghost" onClick={logout} aria-label={t('common.signOut')} title={t('common.signOut')}>
+          <LogOut className="size-4" />
+        </Button>
       </div>
     </aside>
   )

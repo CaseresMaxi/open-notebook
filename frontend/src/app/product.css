@@ -277,3 +277,36 @@
 .dark .liquid-surface { --glass-film: rgba(150, 150, 150, .125); }
 .liquid-surface > .ql-tint { background: var(--glass-film) !important; }
 .product-shell .session-list { background: transparent; border: 0; border-radius: 0; box-shadow: none; padding: 0; gap: 16px; }
+
+/* Floating study surface. The lens stays on controls, with one opaque reading face. */
+.product-shell .app-sidebar > div:first-child { margin-bottom: 20px; }
+.product-shell .app-sidebar > div:first-child > a { gap: 8px; letter-spacing: -.025em; }
+.product-shell .sidebar-create { padding-inline: 12px; color: var(--ink-soft); }
+.product-shell .sidebar-menu { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--nn-edge) 45%, transparent); }
+.product-shell .sidebar-menu .nav-selection { box-shadow: inset 0 0 0 1px var(--nn-edge); }
+.product-shell .sidebar-utilities { padding-inline: 4px; }
+.product-shell .study-focus:has(.study-conversation) { background: transparent; overflow: visible; }
+.product-shell .study-conversation { padding: 0; background: var(--surface); border: 1px solid var(--nn-edge); border-radius: 28px; box-shadow: 0 20px 60px var(--nn-shadow), inset 0 1px 0 var(--nn-edge); }
+.product-shell .study-conversation [data-slot="scroll-area-viewport"] { background: transparent; }
+.product-shell .study-conversation [data-slot="card-header"] { padding: 14px 20px 4px; }
+.product-shell .study-conversation [data-slot="card-header"] [data-slot="card-title"] { display: none; }
+.product-shell .chat-session-control [data-slot="button"] { border-radius: 16px; padding-inline: 12px; }
+.product-shell .chat-composer { padding: 12px 18px 18px; }
+.product-shell .chat-composer-glass { box-shadow: inset 0 0 0 1px var(--nn-edge), 0 8px 24px var(--nn-shadow); }
+.product-shell .chat-composer-controls { padding: 8px; }
+.product-shell .chat-composer-controls textarea { background: transparent; border-color: transparent; padding-inline: 8px; }
+.product-shell .chat-composer-controls [data-slot="button"] { width: 44px; height: 44px; border-radius: 50%; }
+.product-shell .chat-composer-controls > button:first-child { background: transparent; border-color: transparent; }
+@media (max-width: 767px) {
+  .product-shell .study-conversation { border-radius: 22px; box-shadow: 0 12px 32px var(--nn-shadow); }
+  .product-shell .chat-composer { padding: 10px; }
+  .product-shell .chat-composer-controls { gap: 4px; padding: 6px; }
+  .product-shell .study-conversation [data-slot="card-header"] { padding: 10px 12px 2px; }
+}
+@media (prefers-reduced-transparency: reduce), (forced-colors: active) {
+  .product-shell .study-conversation, .product-shell .chat-composer-glass { box-shadow: none; }
+}
+
+/* Radix's table-size wrapper must not let rich responses widen the chat viewport. */
+.product-shell .study-conversation [data-slot="scroll-area-viewport"] > div { display: block !important; min-width: 0 !important; width: 100%; }
+@media (max-width: 767px) { .product-shell .study-heading > :first-child { flex-basis: 100%; } }

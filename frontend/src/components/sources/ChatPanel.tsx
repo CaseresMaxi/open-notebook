@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { LiquidSurface } from '@/components/layout/LiquidSurface'
 import { Drawer, DrawerContent, DrawerTrigger } from '@/components/arc/drawer/drawer'
 import { useDevelopmentTools } from '@/lib/hooks/use-development-tools'
 import { Bot, User, Send, Loader2, Clock, ImagePlus } from 'lucide-react'
@@ -126,7 +127,7 @@ export function ChatPanel({
   return (
     <>
     {examRequest !== null && <CreateExamDialog open onOpenChange={open => { if (!open) setExamRequest(null) }} initialNotebookId={notebookId} initialInstructions={examRequest || ''} initialModelId={modelOverride} />}
-    <Card className="study-conversation flex flex-col h-full min-h-0 flex-1 overflow-hidden">
+    <Card className="study-conversation py-0 flex flex-col h-full min-h-0 flex-1 overflow-hidden">
       <CardHeader className="pb-3 flex-shrink-0">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <CardTitle className="flex items-center gap-2 study-column-heading text-sm font-medium">
@@ -137,7 +138,7 @@ export function ChatPanel({
           {developerTools && headerActions}
           {onSelectSession && onCreateSession && onDeleteSession && (
             <Drawer open={sessionManagerOpen} onOpenChange={setSessionManagerOpen}>
-              <DrawerTrigger asChild><Button
+              <LiquidSurface className="chat-session-control" radius={16}><DrawerTrigger asChild><Button
                 variant="ghost"
                 size="sm"
                 className="gap-2 text-muted-foreground"
@@ -146,7 +147,7 @@ export function ChatPanel({
               >
                 <Clock className="h-4 w-4" />
                 <span className="text-xs">{t('chat.sessions')}</span>
-              </Button></DrawerTrigger>
+              </Button></DrawerTrigger></LiquidSurface>
               <DrawerContent closeLabel={t('common.close')} className="product-shell" title={t('chat.sessionsTitle')}>
                 <SessionManager embedded
                   sessions={sessions}
@@ -300,7 +301,7 @@ function ChatComposer({
 
 
   return (
-    <div className="flex-shrink-0 p-4 space-y-3 border-t"
+    <div className="chat-composer flex-shrink-0 p-4 space-y-3"
       onDragOver={event => event.preventDefault()}
       onDrop={event => {
         event.preventDefault()
@@ -335,7 +336,7 @@ function ChatComposer({
           void addImages(Array.from(event.target.files || []))
           event.target.value = ''
         }} />
-      <div className="flex gap-2 items-end min-w-0">
+      <LiquidSurface className="chat-composer-glass" radius={24}><div className="chat-composer-controls flex gap-2 items-end min-w-0">
         <Button type="button" variant="outline" size="icon" className="h-[40px] w-[40px] flex-shrink-0"
           aria-label={t('chat.attachImages')} title={t('chat.attachImages')} disabled={busy}
           onClick={() => fileInputRef.current?.click()}>
@@ -373,7 +374,7 @@ function ChatComposer({
             <Send className="h-4 w-4" />
           )}
         </Button>
-      </div>
+      </div></LiquidSurface>
     </div>
   )
 }
