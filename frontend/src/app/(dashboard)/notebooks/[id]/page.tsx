@@ -166,7 +166,7 @@ export default function NotebookPage() {
     <div className="flex flex-col flex-1 min-h-0">
       <div className="shrink-0 px-4 pt-4 md:px-6 md:pt-6"><NotebookHeader notebook={notebook} /></div>
       <div className="flex-1 min-h-0 p-4 md:p-6 flex flex-col">
-        <Tabs value={mobileActiveTab} onValueChange={value => setMobileActiveTab(value as typeof mobileActiveTab)} className={`study-workspace flex flex-col flex-1 min-h-0 ${mobileActiveTab === 'chat' ? 'study-workspace-chat' : ''}`}>
+        <Tabs value={mobileActiveTab} onValueChange={value => setMobileActiveTab(value as typeof mobileActiveTab)} className={`study-workspace study-library-workspace flex flex-col flex-1 min-h-0 ${mobileActiveTab === 'chat' ? 'study-workspace-chat' : ''}`}>
           <div className="study-view-switch shrink-0 mb-4">
             <GlassTabsList value={mobileActiveTab} label={t('product.studyNavigation')} options={[
               { value: 'sources', label: t('navigation.sources') }, { value: 'chat', label: t('common.chat') },
@@ -180,8 +180,8 @@ export default function NotebookPage() {
               contextSelections={contextSelections.notes} onContextModeChange={handleNoteContextModeChange}
               onBulkContextModeChange={handleBulkNoteContext} standalone />
           </TabsContent>
-          <TabsContent value="summaries" className="study-focus study-pane flex-1 min-h-0 overflow-y-auto product-panel">
-            <SummaryLibrary key={notebookId} notebookId={notebookId} />
+          <TabsContent value="summaries" className="study-focus study-pane study-summary-pane flex-1 min-h-0 overflow-hidden">
+            <SummaryLibrary key={notebookId} notebookId={notebookId} standalone />
           </TabsContent>
         </Tabs>
 

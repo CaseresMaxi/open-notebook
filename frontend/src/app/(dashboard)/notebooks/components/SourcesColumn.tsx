@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useRef, useCallback, useEffect } from 'react'
 import { SourceListResponse } from '@/lib/types/api'
+import { LiquidSurface } from '@/components/layout/LiquidSurface'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -160,10 +161,9 @@ export function SourcesColumn({
           <CardHeader className="pb-3 flex-shrink-0">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <CardTitle className="flex items-center gap-2 study-column-heading text-sm font-medium">
-                <span aria-hidden className="h-3.5 w-[3px] rounded-full bg-sage" />
                 {t('navigation.sources')}
               </CardTitle>
-              <div className="flex flex-wrap items-center gap-2">
+              <LiquidSurface className="study-library-actions">
                 {!standalone && onBulkContextModeChange && sources && sources.length > 0 && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -205,7 +205,7 @@ export function SourcesColumn({
                   </DropdownMenuContent>
                 </DropdownMenu>
                 {!standalone && collapseButton}
-              </div>
+              </LiquidSurface>
             </div>
           </CardHeader>
 
@@ -221,11 +221,12 @@ export function SourcesColumn({
                 description={t('sources.createFirstSource')}
               />
             ) : (
-              <div className="space-y-2">
+              <div className="study-library-list space-y-2">
                 {sources.map((source) => (
                   <SourceCard
                     key={source.id}
                     source={source}
+                    compact={standalone}
                     onClick={handleSourceClick}
                     onDelete={handleDeleteClick}
                     onRetry={handleRetry}

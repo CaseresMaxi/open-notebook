@@ -1,9 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { AlignLeft, ArrowUpRight } from 'lucide-react'
+import { AlignLeft } from 'lucide-react'
+import { LiquidSurface } from '@/components/layout/LiquidSurface'
 import { Button } from '@/components/ui/button'
 import {
   Select,
@@ -23,7 +23,7 @@ import { isStudySummary } from '@/lib/utils/study-summary'
 import { NoteEditorDialog } from '@/app/(dashboard)/notebooks/components/NoteEditorDialog'
 import type { NoteResponse } from '@/lib/types/api'
 
-export function SummaryLibrary({ notebookId }: { notebookId: string }) {
+export function SummaryLibrary({ notebookId, standalone = false }: { notebookId: string; standalone?: boolean }) {
   const { t, language } = useTranslation()
   const client = useQueryClient()
   const {
@@ -77,8 +77,11 @@ export function SummaryLibrary({ notebookId }: { notebookId: string }) {
       ),
   })
   return (
-    <div className="grid gap-4">
-      <div className="grid gap-3">
+    <div className={`summary-library ${standalone ? 'study-materials study-summaries' : ''}`}>
+      {standalone && <header className="study-summary-heading"><h2>{t('product.summaries')}</h2></header>}
+      <div className="summary-create">
+      <LiquidSurface className="summary-create-glass">
+      <div className="summary-create-controls">
         <Select
           value={sourceId}
           onValueChange={(value) => {
@@ -127,6 +130,8 @@ export function SummaryLibrary({ notebookId }: { notebookId: string }) {
             ? t('product.generatingSummary')
             : t('product.generateSummary')}
         </Button>
+      </div>
+      </LiquidSurface>
         {templates.isError && (
           <div role="alert" className="text-sm">
             <p>{t('product.summaryTemplateMissing')}</p>
@@ -140,13 +145,14 @@ export function SummaryLibrary({ notebookId }: { notebookId: string }) {
             {t('product.summaryStatus')}
           </p>
         )}
-        <p
+        {status && <p
           role={generate.isError ? 'alert' : 'status'}
           className="product-inline-status break-words"
         >
           {status}
-        </p>
+        </p>}
       </div>
+      <div className="summary-library-content">
       {isError ? (
         <div role="alert">
           <p>{t('common.error')}</p>
@@ -163,11 +169,11 @@ export function SummaryLibrary({ notebookId }: { notebookId: string }) {
           description={t('product.noSummariesDesc')}
         />
       ) : (
-        <div className="grid gap-2">
+        <div className="study-library-list grid gap-2">
           {summaries.map((note) => (
             <button
               key={note.id}
-              className="min-h-14 rounded-xl border bg-card p-4 text-left hover:bg-accent"
+              className="summary-record min-h-14 p-4 text-left"
               onClick={() => setEditing(note)}
             >
               <span className="flex items-center gap-2 text-sm font-medium">
@@ -180,13 +186,7 @@ export function SummaryLibrary({ notebookId }: { notebookId: string }) {
           ))}
         </div>
       )}
-      <Link
-        className="product-link text-sm"
-        href={`/notebooks/${encodeURIComponent(notebookId)}?tab=chat`}
-      >
-        {t('product.openChat')}
-        <ArrowUpRight className="size-4" />
-      </Link>
+      </div>
       <NoteEditorDialog
         notebookId={notebookId}
         open={!!editing}

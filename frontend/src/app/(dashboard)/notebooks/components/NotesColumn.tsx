@@ -3,6 +3,7 @@
 import { summaryContent } from '@/lib/utils/study-summary'
 import { useState, useMemo } from 'react'
 import { NoteResponse } from '@/lib/types/api'
+import { LiquidSurface } from '@/components/layout/LiquidSurface'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -90,10 +91,9 @@ export function NotesColumn({
           <CardHeader className="pb-3 flex-shrink-0">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <CardTitle className="flex items-center gap-2 study-column-heading text-sm font-medium">
-                <span aria-hidden className="h-3.5 w-[3px] rounded-full bg-gold" />
                 {notesLabel}
               </CardTitle>
-              <div className="flex items-center gap-2">
+              <LiquidSurface className="study-library-actions">
                 {!standalone && onBulkContextModeChange && notes && notes.length > 0 && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -117,7 +117,7 @@ export function NotesColumn({
                   {t('common.writeNote')}
                 </Button>
                 {!standalone && collapseButton}
-              </div>
+              </LiquidSurface>
             </div>
           </CardHeader>
 
@@ -133,12 +133,12 @@ export function NotesColumn({
                 description={t('sources.createFirstNote')}
               />
             ) : (
-              <div className="space-y-2">
+              <div className="study-library-list space-y-2">
                 {notes.map((note) => (
                   <div
                     key={note.id}
                     className="p-3 border rounded-md bg-card shadow-none card-hover group relative cursor-pointer"
-                    onClick={() => handleOpenEditor(note)}
+                    onClick={standalone ? undefined : () => handleOpenEditor(note)}
                   >
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex items-center gap-2 ml-auto">
@@ -148,7 +148,8 @@ export function NotesColumn({
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="h-8 w-8 p-0 "
+                              aria-label={`${t('common.actions')}: ${note.title || t('common.untitled')}`}
+                              className="h-11 w-11 p-0"
                               onClick={(e) => e.stopPropagation()}
                             >
                               <MoreVertical className="h-4 w-4" />
@@ -171,7 +172,7 @@ export function NotesColumn({
                     </div>
 
                     {note.title && (
-                      <h4 className="text-sm font-medium mb-2 break-all">{note.title}</h4>
+                      <h4 className="text-sm font-medium mb-2 break-words">{standalone ? <button className="study-record-title" onClick={() => handleOpenEditor(note)}>{note.title}</button> : note.title}</h4>
                     )}
 
                     {note.content && (

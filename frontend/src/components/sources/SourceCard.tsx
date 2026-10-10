@@ -32,6 +32,7 @@ import { ContextToggle } from '@/components/common/ContextToggle'
 import { ContextMode } from '@/app/(dashboard)/notebooks/[id]/page'
 
 interface SourceCardProps {
+  compact?: boolean
   source: SourceListResponse
   onDelete?: (sourceId: string) => void
   onRetry?: (sourceId: string) => void
@@ -109,6 +110,7 @@ function getSourceType(source: SourceListResponse): 'link' | 'upload' | 'text' {
 
 function SourceCardImpl({
   source,
+  compact = false,
   onClick,
   onDelete,
   onRetry,
@@ -225,7 +227,7 @@ function SourceCardImpl({
         'transition-colors duration-150 shadow-none hover:border-sage/50 group relative cursor-pointer border',
         className
       )}
-      onClick={handleCardClick}
+      onClick={compact ? undefined : handleCardClick}
     >
       <CardContent className="px-3 py-1">
         {/* Header with status indicator */}
@@ -255,12 +257,12 @@ function SourceCardImpl({
             )}
 
             {/* Title */}
-            <div className={cn('mb-1.5', !isCompleted && 'mb-1')}>
+            <div className={cn(!compact && 'mb-1.5', !compact && !isCompleted && 'mb-1')}>
               <h4
                 className="text-sm font-medium leading-tight line-clamp-2 break-all pr-6"
                 title={title}
               >
-                {title}
+                {compact ? <button className="study-record-title" onClick={handleCardClick}>{title}</button> : title}
               </h4>
             </div>
 
@@ -284,7 +286,8 @@ function SourceCardImpl({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-9 w-9 p-0 text-muted-foreground"
+                  aria-label={`${t('common.actions')}: ${title}`}
+                  className="h-11 w-11 p-0 text-muted-foreground"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <MoreVertical className="h-4 w-4" />
