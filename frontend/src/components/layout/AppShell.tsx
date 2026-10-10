@@ -24,6 +24,11 @@ import {
 import { useTranslation } from '@/lib/hooks/use-translation'
 
 const ShellContext = createContext(false)
+const NavigationContext = createContext<(() => void) | null>(null)
+
+export function useOpenNavigation() {
+  return useContext(NavigationContext)
+}
 
 /** The dashboard owns a persistent shell; legacy page wrappers remain compatible. */
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -42,7 +47,7 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
     ['/settings', 'navigation.settings', Settings],
   ] as const
   return (
-    <ShellContext.Provider value={true}><div className="product-shell flex h-dvh overflow-hidden bg-background text-foreground">
+    <ShellContext.Provider value={true}><NavigationContext.Provider value={() => setMenuOpen(true)}><div className="product-shell flex h-dvh overflow-hidden bg-background text-foreground">
       <WorkspaceBackdrop />
       <AppSidebar />
       <main
@@ -89,6 +94,6 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
           </nav>
         </DialogContent>
       </Dialog>
-    </div></ShellContext.Provider>
+    </div></NavigationContext.Provider></ShellContext.Provider>
   )
 }

@@ -4,10 +4,11 @@ import { useState } from 'react'
 import { NotebookResponse } from '@/lib/types/api'
 import { Button } from '@/components/ui/button'
 import { Drawer, DrawerContent, DrawerTrigger } from '@/components/arc/drawer/drawer'
+import { useOpenNavigation } from '@/components/layout/AppShell'
 import { LiquidSurface } from '@/components/layout/LiquidSurface'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
-import { Archive, ArchiveRestore, GraduationCap, Trash2, MoreHorizontal } from 'lucide-react'
+import { Archive, ArchiveRestore, GraduationCap, Trash2, MoreHorizontal, Menu } from 'lucide-react'
 import { useUpdateNotebook } from '@/lib/hooks/use-notebooks'
 import { NotebookDeleteDialog } from './NotebookDeleteDialog'
 import { InlineEdit } from '@/components/common/InlineEdit'
@@ -19,6 +20,7 @@ interface NotebookHeaderProps {
 
 export function NotebookHeader({ notebook }: NotebookHeaderProps) {
   const { t } = useTranslation()
+  const openNavigation = useOpenNavigation()
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   
   const updateNotebook = useUpdateNotebook()
@@ -55,6 +57,8 @@ export function NotebookHeader({ notebook }: NotebookHeaderProps) {
           <h1 title={notebook.name}>{notebook.name}</h1>
           {notebook.archived && <Badge variant="secondary">{t('notebooks.archived')}</Badge>}
         </div>
+        <div className="notebook-heading-utilities">
+          {openNavigation && <Button className="md:hidden" variant="ghost" size="icon" aria-label={t('product.openNavigation')} onClick={openNavigation}><Menu className="size-5" /></Button>}
         <Drawer>
           <LiquidSurface className="notebook-heading-control" radius={16}>
             <DrawerTrigger asChild>
@@ -91,6 +95,7 @@ export function NotebookHeader({ notebook }: NotebookHeaderProps) {
             </div>
           </DrawerContent>
         </Drawer>
+        </div>
       </div>
 
       <NotebookDeleteDialog

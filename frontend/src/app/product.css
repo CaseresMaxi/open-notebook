@@ -476,3 +476,17 @@
   .product-shell .chat-composer-controls textarea { font-size: var(--text-sm); min-height: 44px; }
   .product-shell .study-conversation .chat-composer { padding: 8px; padding-bottom: max(8px, env(safe-area-inset-bottom)); }
 }
+
+.product-shell .notebook-heading-title { flex: 1; }
+.product-shell .notebook-heading-utilities { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+@media (max-width: 767px) {
+  .product-shell main:has(.notebook-screen) > .product-mobile-header { display: none; }
+  .product-shell .notebook-screen { margin: 6px; border: 1px solid var(--nn-edge); border-radius: 24px; background: var(--surface); overflow: hidden; }
+  .product-shell .notebook-heading-wrap { padding: 8px 12px 4px; }
+  .product-shell .notebook-heading-bar { gap: 8px; }
+  .product-shell .notebook-heading-control { background: transparent; box-shadow: none; }
+  .product-shell .notebook-workspace-wrap { padding: 0; }
+  .product-shell .notebook-screen .study-conversation,
+  .product-shell .notebook-screen .study-materials { border: 0; border-radius: 0; box-shadow: none; }
+  .product-shell .notebook-screen .study-pane { border-radius: 0; }
+}
