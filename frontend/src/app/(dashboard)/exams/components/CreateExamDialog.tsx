@@ -20,6 +20,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useNotebooks } from '@/lib/hooks/use-notebooks'
 import { useSources } from '@/lib/hooks/use-sources'
 import { useModels } from '@/lib/hooks/use-models'
+import { useAuthStore } from '@/lib/stores/auth-store'
 import { useLanguages } from '@/lib/hooks/use-podcasts'
 import { useCreateExam } from '@/lib/hooks/use-exams'
 import { useTranslation } from '@/lib/hooks/use-translation'
@@ -44,6 +45,8 @@ function clampCount(value: string) {
 export function CreateExamDialog({ open, onOpenChange, initialNotebookId, initialInstructions, initialModelId }: CreateExamDialogProps) {
   const { t } = useTranslation()
   const router = useRouter()
+  const { mode, user } = useAuthStore()
+  const canChooseModel = mode === 'legacy' && !user
   const fieldId = useId()
   const { data: notebooks = [] } = useNotebooks(false)
   const { data: models = [] } = useModels()
@@ -112,7 +115,7 @@ export function CreateExamDialog({ open, onOpenChange, initialNotebookId, initia
       difficulty,
       language: language === DEFAULT_VALUE ? undefined : language,
       instructions: instructions.trim() || undefined,
-      model_id: modelId === DEFAULT_VALUE ? undefined : modelId,
+      model_id: canChooseModel && modelId !== DEFAULT_VALUE ? modelId : undefined,
     }, {
       onSuccess: (exam) => {
         onOpenChange(false)
@@ -298,7 +301,7 @@ export function CreateExamDialog({ open, onOpenChange, initialNotebookId, initia
             />
           </div>
 
-          <div className="space-y-2">
+          {canChooseModel && <div className="space-y-2">
             <Label htmlFor={`${fieldId}-model`}>{t('exams.model')}</Label>
             <Select value={modelId} onValueChange={setModelId}>
               <SelectTrigger id={`${fieldId}-model`} className="w-full">
@@ -314,7 +317,7 @@ export function CreateExamDialog({ open, onOpenChange, initialNotebookId, initia
               </SelectContent>
             </Select>
             <p className="text-xs text-muted-foreground">{t('exams.modelHint')}</p>
-          </div>
+          </div>}
         </div>
 
         <DialogFooter className="items-center gap-3">
