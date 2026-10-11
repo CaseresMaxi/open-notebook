@@ -1,6 +1,6 @@
 # ADR-025: Firebase server sessions and verified personal data copies
 
-Date: 2026-10-10. Status: accepted for the personal fork's private staging deployment.
+Date: 2026-10-10. Status: implemented; the temporary staging boundary is superseded by ADR-026.
 
 ## Context
 
@@ -12,13 +12,13 @@ Use the Firebase Web SDK only to authenticate. Exchange a recent ID token for an
 
 The owner's existing installation remains local by default. Optional Firebase account screens are available when configured, without replacing the local authentication mode. The existing personal data is bound once to the verified administrator UID in a private atomic owner manifest, without rewriting or deleting study records.
 
-Firebase mode is opt-in. Legacy installations retain password authentication. In Firebase mode legacy shared product endpoints are accessible only to an administrator; new members see account provisioning status. This is a temporary private staging boundary, not completed SaaS tenant isolation. Claims are not a replacement for workspace scoping.
+Firebase mode is opt-in. Legacy installations retain password authentication. ADR-026 replaces the initial staging gate with server-selected private databases, checkpoint stores and signed worker contexts. New verified members receive their own workspace. Claims are not a replacement for workspace scoping.
 
 Keep the application's runtime database until its repository, graph queries, embeddings, relationships and checkpoint persistence have a verified replacement. Never automatically delete or switch storage after a cloud copy. Snapshot all database records, schema and files while writers are stopped. Preserve encryption material privately for restoration. Verify local source paths and SQLite integrity before transfer.
 
 Copy the immutable snapshot to account-scoped private Firebase Storage and Firestore migration collections. Hash and download-verify every file; verify every Firestore record and table count. Retrying uses content-addressed migration IDs and immutable objects. Large records remain in the verified complete JSON archive to avoid Firestore document limits. Mark success as `verified-copy`, explicitly `runtimeCutover: false`. A failed/incomplete transfer is never reported as migration completion.
 
-Client Storage and Firestore rules deny all access; backend IAM enforces account ownership. Provision only Auth permissions for the staging runtime; Storage/Firestore privileges require the actual selected resources. Production should use workload identity and HTTPS instead of local service-account files or insecure local cookies.
+Client Storage and Firestore rules deny all access; backend IAM enforces account ownership. The runtime identity has Auth administration, object administration and metadata read on the chosen private bucket, and Firestore data access for verified archives. Production should use workload identity and HTTPS instead of local service-account files or insecure local cookies.
 
 ## Remaining cutover gates
 

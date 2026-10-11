@@ -1,7 +1,8 @@
 'use client'
 
 import { useAuthStore } from '@/lib/stores/auth-store'
-import { AccountReady } from '@/components/auth/AccountReady'
+import { usePathname } from 'next/navigation'
+import { useTranslation } from '@/lib/hooks/use-translation'
 import { useAuth } from '@/lib/hooks/use-auth'
 import { useVersionCheck } from '@/lib/hooks/use-version-check'
 import { useRouter } from 'next/navigation'
@@ -20,6 +21,8 @@ export default function DashboardLayout({
 }) {
   const { isAuthenticated, isLoading } = useAuth()
   const { mode, user } = useAuthStore()
+  const path = usePathname()
+  const { t } = useTranslation()
   const router = useRouter()
   const [hasCheckedAuth, setHasCheckedAuth] = useState(false)
 
@@ -55,8 +58,7 @@ export default function DashboardLayout({
     return null
   }
 
-  if (mode === 'firebase' && !user?.admin) return <AccountReady />
-
+  if ((mode === 'firebase' || !!user) && !user?.admin && ['/admin', '/advanced', '/settings/models', '/models', '/podcasts'].some(prefix => path.startsWith(prefix))) return <AppShell><div className="product-page"><h1>{t('commercial.adminRequired')}</h1></div></AppShell>
   return (
     <ErrorBoundary>
       <CreateDialogsProvider>

@@ -375,6 +375,9 @@ async def stream_source_chat_response(
 
         # Add user message to state
         # Explicit id so a failed turn can remove it from the checkpoint.
+        from open_notebook.storage import retain_images
+
+        await asyncio.to_thread(retain_images, images or [])
         user_message = build_user_message(message, images or [])
         state_values["messages"].append(user_message)
 

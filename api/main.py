@@ -23,6 +23,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from api.auth import PasswordAuthMiddleware
 from api.middleware import MaxBodySizeMiddleware, get_max_upload_size_bytes
 from api.routers import (
+    accounts,
     auth,
     capabilities,
     chat,
@@ -184,10 +185,10 @@ async def _run_database_migrations() -> None:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """
-    Lifespan event handler for the FastAPI application.
-    Runs database migrations automatically on startup.
-    """
+    """Run security checks and database migrations before serving requests."""
+    from api.firebase_auth import validate_runtime_configuration
+
+    validate_runtime_configuration()
     # Startup: Security checks
     logger.info("Starting API initialization...")
 
@@ -382,6 +383,7 @@ async def open_notebook_error_handler(request: Request, exc: OpenNotebookError):
 
 
 # Include routers
+app.include_router(accounts.router, prefix="/api", tags=["accounts"])
 app.include_router(auth.router, prefix="/api", tags=["auth"])
 app.include_router(config.router, prefix="/api", tags=["config"])
 app.include_router(notebooks.router, prefix="/api", tags=["notebooks"])

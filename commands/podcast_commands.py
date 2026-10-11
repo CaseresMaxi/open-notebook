@@ -16,6 +16,7 @@ from open_notebook.podcasts.models import (
     _resolve_model_config,
 )
 from open_notebook.utils.model_utils import full_model_dump
+from open_notebook.workspace_commands import workspace_command
 
 try:
     from podcast_creator import configure, create_podcast
@@ -118,6 +119,7 @@ class PodcastGenerationOutput(CommandOutput):
 
 
 @command("generate_podcast", app="open_notebook", retry={"max_attempts": 1})
+@workspace_command
 async def generate_podcast_command(
     input_data: PodcastGenerationInput,
 ) -> PodcastGenerationOutput:

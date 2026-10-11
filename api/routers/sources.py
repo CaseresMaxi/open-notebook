@@ -16,7 +16,7 @@ from fastapi import (
 from fastapi.responses import FileResponse, Response
 from loguru import logger
 from pydantic import ValidationError
-from surreal_commands import execute_command_sync, submit_command
+from surreal_commands import execute_command_sync
 
 from api.command_service import CommandService
 from api.credentials_service import validate_url
@@ -42,6 +42,9 @@ from open_notebook.exceptions import (
     OpenNotebookError,
     UnsupportedTypeException,
 )
+from open_notebook.workspace_commands import submit_command
+from open_notebook.workspaces import current_workspace
+from open_notebook.workspaces import uploads_folder as account_uploads_folder
 
 router = APIRouter()
 
@@ -159,11 +162,21 @@ def generate_unique_filename(original_filename: str, upload_folder: str) -> str:
 def _write_uploaded_file(filename: str, content: bytes) -> str:
     """Sync filesystem work for save_uploaded_file() - run via asyncio.to_thread
     so a large upload doesn't block the event loop for other requests."""
-    file_path = generate_unique_filename(filename, UPLOADS_FOLDER)
+    if current_workspace():
+        from uuid import uuid4
+
+        filename = f"{uuid4().hex}_{os.path.basename(filename)}"
+    file_path = generate_unique_filename(filename, uploads_folder())
     try:
+        from open_notebook.usage import claim_file
+
+        claim_file(file_path, len(content))
         with open(file_path, "wb") as f:
             f.write(content)
 
+        from open_notebook.storage import retain_file
+
+        retain_file(file_path)
         logger.info(f"Saved uploaded file to: {file_path}")
         return file_path
     except Exception as e:
@@ -171,6 +184,9 @@ def _write_uploaded_file(filename: str, content: bytes) -> str:
         # Clean up partial file if it exists
         if os.path.exists(file_path):
             os.unlink(file_path)
+        from open_notebook.usage import release_file
+
+        release_file(file_path)
         raise
 
 
@@ -419,7 +435,9 @@ def _cleanup_uploaded_file(
     never a caller-supplied file_path."""
     if file_path and upload_file:
         try:
-            os.unlink(file_path)
+            from open_notebook.storage import delete_file
+
+            delete_file(file_path)
         except Exception:
             pass
 
@@ -450,7 +468,7 @@ async def _build_content_state(
                 detail="File upload or file_path is required for upload type",
             )
         # Validate file_path is within the uploads directory to prevent LFI
-        uploads_resolved = Path(UPLOADS_FOLDER).resolve()
+        uploads_resolved = Path(uploads_folder()).resolve()
         file_resolved = Path(final_file_path).resolve()
         if not str(file_resolved).startswith(str(uploads_resolved) + os.sep):
             raise HTTPException(
@@ -460,7 +478,10 @@ async def _build_content_state(
         # Reject unsupported files before enqueueing a doomed background job.
         await _assert_file_supported(final_file_path)
         content_state["file_path"] = final_file_path
-        content_state["delete_source"] = source_data.delete_source
+
+        content_state["delete_source"] = (
+            False if current_workspace() else source_data.delete_source
+        )
     elif source_data.type == "text":
         if not source_data.content:
             raise HTTPException(
@@ -516,7 +537,7 @@ async def _create_source_async_path(
             content_state=content_state,
             notebook_ids=source_data.notebooks,
             transformations=transformation_ids,
-            embed=source_data.embed,
+            embed=True if current_workspace() else source_data.embed,
         )
 
         command_id = await CommandService.submit_command_job(
@@ -593,7 +614,7 @@ async def _create_source_sync_path(
             content_state=content_state,
             notebook_ids=source_data.notebooks,
             transformations=transformation_ids,
-            embed=source_data.embed,
+            embed=True if current_workspace() else source_data.embed,
         )
 
         # Run in thread pool to avoid blocking the event loop
@@ -722,7 +743,7 @@ async def _resolve_source_file(source_id: str) -> tuple[str, str]:
     if not file_path:
         raise HTTPException(status_code=404, detail="Source has no file to download")
 
-    safe_root = os.path.realpath(UPLOADS_FOLDER)
+    safe_root = os.path.realpath(uploads_folder())
     resolved_path = os.path.realpath(file_path)
 
     if resolved_path != safe_root and not resolved_path.startswith(safe_root + os.sep):
@@ -731,6 +752,9 @@ async def _resolve_source_file(source_id: str) -> tuple[str, str]:
         )
         raise HTTPException(status_code=403, detail="Access to file denied")
 
+    from open_notebook.storage import local_file
+
+    await asyncio.to_thread(local_file, resolved_path)
     if not os.path.exists(resolved_path):
         raise HTTPException(status_code=404, detail="File not found on server")
 
@@ -743,13 +767,18 @@ def _is_source_file_available(source: Source) -> Optional[bool]:
         return None
 
     file_path = source.asset.file_path
-    safe_root = os.path.realpath(UPLOADS_FOLDER)
+    safe_root = os.path.realpath(uploads_folder())
     resolved_path = os.path.realpath(file_path)
 
     if resolved_path != safe_root and not resolved_path.startswith(safe_root + os.sep):
         return False
 
-    return os.path.exists(resolved_path)
+    if os.path.exists(resolved_path):
+        return True
+    from open_notebook.storage import cloud_enabled
+
+    # A missing local cache does not disable downloading a retained cloud original.
+    return None if cloud_enabled() else False
 
 
 @router.get("/sources/{source_id}", response_model=SourceResponse)
@@ -1159,3 +1188,7 @@ async def create_source_insight(source_id: str, request: CreateSourceInsightRequ
     except Exception as e:
         logger.error(f"Error starting insight generation for source {source_id}: {e}")
         raise HTTPException(status_code=500, detail="Error starting insight generation")
+
+
+def uploads_folder() -> str:
+    return account_uploads_folder() if current_workspace() else UPLOADS_FOLDER

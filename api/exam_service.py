@@ -208,7 +208,24 @@ async def grade_attempt(exam: Exam | ChatQuiz, answers: Dict[str, Any]) -> ExamA
             raise InvalidInputError(
                 "Image answers are supported only for open-ended questions."
             )
-    semaphore = asyncio.Semaphore(GRADING_CONCURRENCY)
+    from open_notebook.storage import retain_images
+    from open_notebook.usage import policy_for
+    from open_notebook.workspaces import current_workspace
+
+    images = [
+        image
+        for question in questions
+        if question.type == "open"
+        for image in open_answer(answers.get(question.id)).images
+    ]
+    await asyncio.to_thread(retain_images, images)
+    workspace = current_workspace()
+    concurrency = (
+        min(GRADING_CONCURRENCY, policy_for(workspace.uid)["concurrent_calls"])
+        if workspace
+        else GRADING_CONCURRENCY
+    )
+    semaphore = asyncio.Semaphore(concurrency)
 
     async def grade(question: ExamQuestion) -> QuestionResult:
         answer = answers.get(question.id)

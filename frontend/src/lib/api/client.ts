@@ -70,7 +70,7 @@ apiClient.interceptors.response.use(
       // Clear auth and redirect to login
       if (typeof window !== 'undefined') {
         localStorage.removeItem('auth-storage')
-        window.location.href = '/login'
+        window.location.href = error.response?.headers?.['x-account-required'] === 'true' ? '/account/login' : '/login'
       }
     }
     return Promise.reject(error)

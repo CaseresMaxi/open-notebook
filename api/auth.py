@@ -2,12 +2,16 @@ import secrets
 from typing import Optional
 
 from fastapi import Request
+from starlette.concurrency import run_in_threadpool
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.responses import JSONResponse, Response
 from starlette.types import ASGIApp
 
 from api import firebase_auth
+from open_notebook.usage import policy_for, register_account
 from open_notebook.utils.encryption import get_secret_from_env
+from open_notebook.workspace_provisioning import ensure_workspace
+from open_notebook.workspaces import Workspace, platform_scope, workspace_scope
 
 
 class PasswordAuthMiddleware(BaseHTTPMiddleware):
@@ -34,7 +38,14 @@ class PasswordAuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(
         self, request: Request, call_next: RequestResponseEndpoint
     ) -> Response:
-        if firebase_auth.enabled():
+        if (
+            firebase_auth.enabled()
+            or (
+                bool(request.cookies.get(firebase_auth.SESSION_COOKIE))
+                and firebase_auth.configured()
+            )
+            or request.url.path.startswith(("/api/admin", "/api/account"))
+        ):
             if (
                 request.method == "OPTIONS"
                 or request.url.path in self.excluded_paths
@@ -53,19 +64,67 @@ class PasswordAuthMiddleware(BaseHTTPMiddleware):
                 user = await firebase_auth.session_user(cookie)
             except Exception:
                 return JSONResponse(
-                    status_code=401, content={"detail": "Authentication required"}
+                    status_code=401,
+                    content={"detail": "Authentication required"},
+                    headers={"X-Account-Required": "true"},
                 )
             request.state.user = user
-            # Legacy records have no tenant scope. Protect them until the storage cutover.
-            owner_uid = firebase_auth.legacy_owner_uid()
-            if not user["admin"] or (
-                owner_uid is not None and owner_uid != user["uid"]
-            ):
+            if request.method not in {"GET", "HEAD", "OPTIONS"}:
+                from api.routers.auth import check_origin
+
+                try:
+                    check_origin(request)
+                except Exception:
+                    return JSONResponse(
+                        status_code=403, content={"detail": "Invalid request origin"}
+                    )
+            await run_in_threadpool(register_account, user)
+            policy = await run_in_threadpool(policy_for, user["uid"])
+            if policy["disabled"]:
                 return JSONResponse(
-                    status_code=403,
-                    content={"detail": "Workspace provisioning pending"},
+                    status_code=403, content={"detail": "Account disabled"}
                 )
-            return await call_next(request)
+            path = request.url.path
+            operator_paths = (
+                "/api/admin",
+                "/api/credentials",
+                "/api/embedding/rebuild",
+                "/api/embedding-rebuild",
+                "/api/rebuild",
+                "/api/embedding",
+                "/api/podcasts",
+                "/api/speaker-profiles",
+                "/api/episode-profiles",
+                "/api/models/discover",
+                "/api/models/count",
+                "/api/models/providers",
+            )
+            platform_paths = (
+                "/api/models",
+                "/api/providers",
+                "/api/settings",
+                "/api/config",
+            )
+            operator_only = (
+                path.startswith(operator_paths)
+                or (path.startswith(platform_paths) and request.method != "GET")
+                or path.startswith("/api/commands/registry")
+                or (path == "/api/commands/jobs" and request.method == "POST")
+            )
+            if operator_only and not user["admin"]:
+                return JSONResponse(
+                    status_code=403, content={"detail": "Administrator access required"}
+                )
+            owner_uid = firebase_auth.legacy_owner_uid()
+            workspace = Workspace(user["uid"], user["admin"], owner_uid == user["uid"])
+            with workspace_scope(workspace):
+                await ensure_workspace(workspace)
+                if path.startswith(platform_paths) or path.startswith(
+                    "/api/credentials"
+                ):
+                    with platform_scope():
+                        return await call_next(request)
+                return await call_next(request)
 
         # Skip authentication if no password is set
         if not self.password:

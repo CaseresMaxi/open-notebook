@@ -40,7 +40,7 @@ npx -y firebase-tools@15.33.0 emulators:exec --project demo-nextnootbook --only 
 ```
 
 La cuenta de prueba se crea exclusivamente en el emulador local; no se crean usuarios cloud.
-- El registro/login de cuentas, recuperación de contraseña y sesiones de servidor ya están implementados como integración opcional en local. El modo Firebase obligatorio protege el almacén compartido para staging privado; el aislamiento multiusuario completo y la migración operativa todavía faltan antes de activar SaaS.
+- El registro/login de cuentas, recuperación de contraseña y sesiones de servidor ya están implementados como integración opcional en local. Las cuentas verificadas tienen espacios privados, archivos propios y cuotas administrables. Firebase obligatorio protege el acceso público; el modo local continúa por defecto. Ver [cuentas privadas](private-study-accounts.md) para la topología y el alcance operativo.
 - Se provisionó una identidad de servidor dedicada con `roles/firebaseauth.admin`; su clave de desarrollo se conserva solo en `.firebase/`, con permisos privados y excluida de Git/Docker. Producción deberá usar una identidad de carga de trabajo.
 - La instalación sigue leyendo/escribiendo sus datos localmente por decisión del propietario. Inventario, respaldo y herramienta de copia verificada: [migración de datos personales](personal-data-migration.md).
 

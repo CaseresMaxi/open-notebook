@@ -1,5 +1,6 @@
 'use client'
 
+import { useAuthStore } from '@/lib/stores/auth-store'
 import { WorkspaceBackdrop } from './WorkspaceBackdrop'
 import { RecordMotion } from './RecordMotion'
 import { BrandMark } from './BrandMark'
@@ -27,6 +28,7 @@ import { useTranslation } from '@/lib/hooks/use-translation'
 
 const ShellContext = createContext(false)
 export function WorkspaceNavigation({ onNavigate }: { onNavigate: () => void }) {
+  const { user } = useAuthStore()
   const { t } = useTranslation()
   const pathname = usePathname()
   const links = [
@@ -37,6 +39,7 @@ export function WorkspaceNavigation({ onNavigate }: { onNavigate: () => void }) 
     ['/settings', 'navigation.settings', Settings],
   ] as const
   return <nav aria-label={t('product.studyNavigation')} className="grid gap-1">
+    {user?.admin && <Link href="/admin/accounts" onClick={onNavigate} className="flex min-h-11 items-center gap-3 rounded-lg p-3 hover:bg-accent"><UserRound className="size-4" />{t('commercial.accounts')}</Link>}
     {links.map(([href, label, Icon]) => <Link key={href} href={href} onClick={onNavigate}
       aria-current={pathname === href ? 'page' : undefined}
       className="flex min-h-11 items-center gap-3 rounded-lg p-3 hover:bg-accent">

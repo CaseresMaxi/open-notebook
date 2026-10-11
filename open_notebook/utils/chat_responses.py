@@ -1,3 +1,5 @@
+from contextvars import copy_context
+
 """Materialize private quiz payloads into persistent, positioned chat widgets."""
 
 import asyncio
@@ -260,4 +262,4 @@ def run_chat_response(
     except RuntimeError:
         return run()
     with concurrent.futures.ThreadPoolExecutor() as executor:
-        return executor.submit(run).result()
+        return executor.submit(copy_context().run, run).result()

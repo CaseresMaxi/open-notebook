@@ -285,7 +285,12 @@ class TestSourceDomain:
         assert "command" in save_data
 
     @pytest.mark.asyncio
-    async def test_source_delete_cleans_up_file(self):
+    @patch(
+        "open_notebook.domain.notebook.repo_query",
+        new_callable=AsyncMock,
+        return_value=[],
+    )
+    async def test_source_delete_cleans_up_file(self, query):
         """Test that deleting a source removes the associated file."""
         # Create a temporary file
         with tempfile.NamedTemporaryFile(delete=False, suffix=".txt") as tmp_file:
@@ -342,7 +347,12 @@ class TestSourceDomain:
             mock_delete.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_source_delete_continues_on_file_error(self):
+    @patch(
+        "open_notebook.domain.notebook.repo_query",
+        new_callable=AsyncMock,
+        return_value=[],
+    )
+    async def test_source_delete_continues_on_file_error(self, query):
         """Test that source deletion continues even if file deletion fails."""
         # Create source with non-existent file
         source = Source(

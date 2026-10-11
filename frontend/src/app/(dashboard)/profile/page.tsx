@@ -1,5 +1,6 @@
 'use client'
 
+import { AccountUsage } from '@/components/auth/AccountUsage'
 import { useAuthStore } from '@/lib/stores/auth-store'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
@@ -38,6 +39,7 @@ export default function ProfilePage() {
       <h2 className="text-xl font-medium">{user.name || user.email}</h2>
       <dl className="space-y-4"><div><dt className="text-sm text-muted-foreground">{t('product.email')}</dt><dd className="break-words">{user.email}</dd>{user.emailVerified && <dd className="text-sm text-muted-foreground">{t('account.verifiedEmail')}</dd>}</div>
         <div><dt className="text-sm text-muted-foreground">{t('account.accountRole')}</dt><dd>{t(user.admin ? 'account.administrator' : 'account.member')}</dd></div></dl>
+      <AccountUsage />
       <div className="flex items-center gap-3"><ThemeToggle /><LanguageToggle /></div>
     </section>
   </div></AppShell>

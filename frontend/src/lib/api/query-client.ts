@@ -18,6 +18,8 @@ export const queryClient = new QueryClient({
 })
 
 export const QUERY_KEYS = {
+  accountUsage: ["account", "usage"] as const,
+  managedAccounts: ["admin", "accounts"] as const,
   notebooks: ['notebooks'] as const,
   notebook: (id: string) => ['notebooks', id] as const,
   notes: (notebookId?: string) => ['notes', notebookId] as const,

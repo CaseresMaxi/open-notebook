@@ -1,4 +1,5 @@
 import os
+from functools import wraps
 from typing import Any, ClassVar, Dict, Optional, Sequence, Union
 
 from esperanto import (
@@ -15,6 +16,19 @@ from open_notebook.ai.connection_tester import normalize_anthropic_compatible_ba
 from open_notebook.database.repository import ensure_record_id, repo_query
 from open_notebook.domain.base import ObjectModel, RecordModel
 from open_notebook.exceptions import ConfigurationError
+from open_notebook.usage import policy_for
+from open_notebook.workspaces import current_workspace, platform_scope
+
+
+def platform_models(function):
+    @wraps(function)
+    async def scoped(*args, **kwargs):
+        with platform_scope():
+            return await function(*args, **kwargs)
+
+    return scoped
+
+
 from open_notebook.utils.url_validation import validate_url
 
 ModelType = Union[LanguageModel, EmbeddingModel, SpeechToTextModel, TextToSpeechModel]
@@ -174,6 +188,7 @@ class DefaultModels(RecordModel):
     default_tools_model: Optional[str] = None
 
     @classmethod
+    @platform_models
     async def get_instance(cls) -> "DefaultModels":
         """Always fetch fresh defaults from database (override parent caching behavior)"""
         result = await repo_query(
@@ -202,6 +217,7 @@ class ModelManager:
     def __init__(self):
         pass  # No caching needed
 
+    @platform_models
     async def get_model(self, model_id: str, **kwargs) -> Optional[ModelType]:
         """Get a model by ID. Esperanto will cache the actual model instance."""
         if not model_id:
@@ -219,6 +235,29 @@ class ModelManager:
             "text_to_speech",
         ]:
             raise ConfigurationError(f"Invalid model type: {model.type}")
+
+        workspace = current_workspace()
+        if workspace:
+            if model.type == "language":
+                # Students cannot override operator model selection in request payloads.
+                policy = policy_for(workspace.uid)
+                defaults = await DefaultModels.get_instance()
+                selected = policy.get("model_id") or defaults.default_chat_model
+                if not selected:
+                    raise ConfigurationError(
+                        "The administrator must configure a study model"
+                    )
+                model = await Model.get(selected)
+                if model.type != "language":
+                    raise ConfigurationError("Study model must be a language model")
+                kwargs["max_tokens"] = min(int(kwargs.get("max_tokens") or 8192), 8192)
+                kwargs["max_retries"] = 0
+            elif model.type == "embedding":
+                defaults = await DefaultModels.get_instance()
+                if model.id != defaults.default_embedding_model:
+                    raise ConfigurationError(
+                        "Embedding model is selected by the administrator"
+                    )
 
         # Build config from credential if linked, otherwise fall back to env vars
         config: dict = {}

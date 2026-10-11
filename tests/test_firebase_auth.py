@@ -13,7 +13,9 @@ from api.routers.auth import router
 
 
 @pytest.fixture
-def app(monkeypatch):
+def app(monkeypatch, tmp_path):
+    monkeypatch.setenv("NEXTNOOTBOOK_USAGE_DB", str(tmp_path / "usage.sqlite"))
+    monkeypatch.setattr("api.auth.ensure_workspace", AsyncMock())
     monkeypatch.setenv("NEXTNOOTBOOK_AUTH_MODE", "firebase")
     monkeypatch.setenv("FIREBASE_PROJECT_ID", "test")
     monkeypatch.setenv("FIREBASE_WEB_CONFIG", "{}")
@@ -25,7 +27,12 @@ def app(monkeypatch):
 
     @app.get("/api/notebooks")
     async def notebooks():
-        return [{"title": "private material"}]
+        from open_notebook.workspaces import current_workspace
+
+        workspace = current_workspace()
+        return (
+            [{"title": "private material"}] if not workspace or workspace.legacy else []
+        )
 
     return app
 
@@ -93,7 +100,8 @@ async def test_members_cannot_read_the_legacy_shared_data(app, monkeypatch):
         assert (await client.get("/api/notebooks")).status_code == 401
         client.cookies.set(firebase_auth.SESSION_COOKIE, "session")
         response = await client.get("/api/notebooks")
-        assert response.status_code == 403
+        assert response.status_code == 200
+        assert response.json() == []
         assert "private material" not in response.text
         assert (await client.get("/api/auth/me")).status_code == 200
 
@@ -187,3 +195,27 @@ def test_legacy_owner_binding_is_immutable(monkeypatch, tmp_path):
         firebase_auth.bind_legacy_owner("different-uid", "owner@example.com")
     assert firebase_auth.legacy_owner_uid() == "owner-uid"
     assert path.stat().st_mode & 0o777 == 0o600
+
+
+@pytest.mark.asyncio
+async def test_optional_accounts_scope_members_without_replacing_local_default(
+    app, monkeypatch
+):
+    monkeypatch.setenv("NEXTNOOTBOOK_AUTH_MODE", "legacy")
+    monkeypatch.setattr(
+        firebase_auth,
+        "session_user",
+        AsyncMock(return_value={"uid": "member", "admin": False}),
+    )
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="https://study.example"
+    ) as client:
+        assert (await client.get("/api/notebooks")).json() == [
+            {"title": "private material"}
+        ]
+        client.cookies.set(firebase_auth.SESSION_COOKIE, "session")
+        assert (await client.get("/api/notebooks")).json() == []
+        client.cookies.clear()
+        assert (await client.get("/api/notebooks")).json() == [
+            {"title": "private material"}
+        ]

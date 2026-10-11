@@ -315,7 +315,14 @@ class RecordModel(BaseModel):
     @classmethod
     async def get_instance(cls) -> "RecordModel":
         """Get or create the singleton instance and load from DB"""
-        instance = cls()
+        from open_notebook.workspaces import current_workspace
+
+        if current_workspace():
+            instance = object.__new__(cls)
+            object.__setattr__(instance, "__dict__", {})
+            super(RecordModel, instance).__init__()
+        else:
+            instance = cls()
         await instance._load_from_db()
         return instance
 

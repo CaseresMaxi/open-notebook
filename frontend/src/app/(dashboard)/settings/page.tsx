@@ -1,5 +1,6 @@
 'use client'
 
+import { useAuthStore } from '@/lib/stores/auth-store'
 import Link from 'next/link'
 import { ThemeToggle } from '@/components/common/ThemeToggle'
 import { LanguageToggle } from '@/components/common/LanguageToggle'
@@ -11,6 +12,8 @@ import { RefreshCw } from 'lucide-react'
 import { useTranslation } from '@/lib/hooks/use-translation'
 
 export default function SettingsPage() {
+  const { mode, user } = useAuthStore()
+  const operator = (mode !== "firebase" && !user) || !!user?.admin
   const { t } = useTranslation()
   const { refetch } = useSettings()
 
@@ -27,7 +30,7 @@ export default function SettingsPage() {
             </div>
 
             <div className="flex flex-wrap gap-3 mb-6"><ThemeToggle /><LanguageToggle /></div>
-            <details className="mt-8">
+            {operator && <details className="mt-8">
               <summary>{t('navigation.advanced')}</summary>
             <div className="flex flex-wrap gap-4 my-6 text-sm">
               <Link className="product-link" href="/settings/models">{t('navigation.models')}</Link>
@@ -35,7 +38,7 @@ export default function SettingsPage() {
               <Link className="product-link" href="/advanced">{t('navigation.advanced')}</Link>
             </div>
             <SettingsForm />
-            </details>
+            </details>}
           </div>
         </div>
       </div>

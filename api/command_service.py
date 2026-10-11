@@ -1,7 +1,8 @@
 from typing import Any, Dict, List, Optional
 
 from loguru import logger
-from surreal_commands import get_command_status, submit_command
+
+from open_notebook.workspace_commands import get_command_status, submit_command
 
 
 class CommandService:
@@ -85,6 +86,7 @@ class CommandService:
         try:
             # Implementation depends on surreal-commands cancellation support
             # For now, just log the attempt
+            await get_command_status(job_id)
             logger.info(f"Attempting to cancel job: {job_id}")
             return True
         except Exception as e:

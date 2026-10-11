@@ -66,6 +66,17 @@ async def validate_url(url: str, provider: str) -> None:
         return  # Empty URLs handled elsewhere
 
     try:
+        from open_notebook.workspaces import current_workspace
+
+        if current_workspace() and provider == "source":
+            hostname = urlparse(url.strip()).hostname
+            if hostname:
+                addresses = await asyncio.to_thread(socket.getaddrinfo, hostname, None)
+                if any(
+                    not ipaddress.ip_address(address[4][0]).is_global
+                    for address in addresses
+                ):
+                    raise ValueError("Sources must use public internet addresses")
         parsed = urlparse(url.strip())
 
         # Validate scheme - only http/https allowed

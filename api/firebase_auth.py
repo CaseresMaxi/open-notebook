@@ -115,6 +115,9 @@ async def create_session(id_token: str):
         expires_in=timedelta(seconds=SESSION_SECONDS),
         app=app,
     )
+    from open_notebook.usage import register_account
+
+    await run_in_threadpool(register_account, public_user(user, claims))
     return cookie, public_user(user, claims)
 
 
@@ -128,3 +131,64 @@ async def session_user(cookie: str):
         raise ValueError("Verified account required")
     # Read current claims, so role removal takes effect without waiting five days.
     return public_user(user)
+
+
+def validate_runtime_configuration():
+    """Refuse an accidentally anonymous or insecure account-mode configuration."""
+    from urllib.parse import urlparse
+
+    from open_notebook.exceptions import ConfigurationError
+    from open_notebook.utils.encryption import get_secret_from_env
+
+    mode = os.getenv("NEXTNOOTBOOK_AUTH_MODE", "legacy")
+    if mode not in {"legacy", "firebase"}:
+        raise ConfigurationError("NEXTNOOTBOOK_AUTH_MODE must be legacy or firebase")
+    if mode != "firebase":
+        return
+    if not configured() or not get_secret_from_env("OPEN_NOTEBOOK_ENCRYPTION_KEY"):
+        raise ConfigurationError(
+            "Account mode requires Firebase configuration and an encryption key"
+        )
+    config = json.loads(os.environ["FIREBASE_WEB_CONFIG"])
+    if config.get("projectId") != os.environ["FIREBASE_PROJECT_ID"]:
+        raise ConfigurationError("Firebase client and server project must match")
+    origins = {
+        x.strip()
+        for x in os.getenv("NEXTNOOTBOOK_ALLOWED_ORIGINS", "").split(",")
+        if x.strip()
+    }
+    cors = {x.strip() for x in os.getenv("CORS_ORIGINS", "").split(",") if x.strip()}
+    if (
+        not origins
+        or not cors
+        or "*" in origins
+        or "*" in cors
+        or not cors.issubset(origins)
+    ):
+        raise ConfigurationError(
+            "Account mode requires explicit matching allowed origins and CORS"
+        )
+    insecure = os.getenv("NEXTNOOTBOOK_INSECURE_LOCAL_COOKIES") == "true"
+    for origin in origins:
+        parsed = urlparse(origin)
+        if (
+            parsed.username
+            or parsed.password
+            or parsed.path not in {"", "/"}
+            or parsed.query
+            or parsed.fragment
+        ):
+            raise ConfigurationError(
+                "Origins must contain only a scheme, host and optional port"
+            )
+        if insecure:
+            if parsed.hostname not in {"localhost", "127.0.0.1", "::1"}:
+                raise ConfigurationError(
+                    "Insecure cookies are allowed only on loopback origins"
+                )
+        if parsed.scheme not in {"http", "https"}:
+            raise ConfigurationError("Origins require HTTP or HTTPS")
+        if not insecure and parsed.scheme != "https":
+            raise ConfigurationError(
+                "Account mode requires HTTPS outside local development"
+            )

@@ -1,6 +1,32 @@
 import type { TranslationShape } from '../en-US';
 
 export const esES = {
+  commercial: {
+    "accounts": "Cuentas",
+    "adminRequired": "Se requiere acceso de administrador",
+    "loadError": "No se pudo cargar el consumo. Volvé a intentarlo.",
+    "noAccounts": "Todavía no hay cuentas registradas",
+    "tokens": "Tokens de IA este mes",
+    "status": "Estado",
+    "paused": "En pausa",
+    "active": "Activa",
+    "studyModel": "Modelo para estudiar",
+    "operatorDefault": "Usar el modelo de la plataforma",
+    "monthly_tokens": "Tokens de IA por mes",
+    "monthly_calls": "Llamadas de IA por mes",
+    "monthly_images": "Imágenes generadas por mes",
+    "concurrent_calls": "Llamadas simultáneas de IA",
+    "storage_bytes": "Almacenamiento de archivos en bytes",
+    "pauseAccount": "Pausar esta cuenta",
+    "saveError": "No se pudieron guardar los límites. Revisá los valores e intentá de nuevo.",
+    "saveLimits": "Guardar límites",
+    "saved": "Límites guardados",
+    "loadingUsage": "Cargando tu capacidad disponible…",
+    "studyAllowance": "Tu capacidad para estudiar",
+    "storage": "Almacenamiento de archivos",
+    "allowancePeriod": "Período de consumo: {{month}}. Incluye todas las herramientas de estudio."
+},
+
   product: {
     "sortBy": "Ordenar por {{column}}",
     "ascending": "Ascendente",

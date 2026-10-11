@@ -1,5 +1,6 @@
 import asyncio
 import sqlite3
+from contextvars import copy_context
 from typing import Annotated, Optional
 
 from ai_prompter import Prompter
@@ -77,7 +78,7 @@ def call_model_with_messages(state: ThreadState, config: RunnableConfig) -> dict
             import concurrent.futures
 
             with concurrent.futures.ThreadPoolExecutor() as executor:
-                future = executor.submit(run_in_new_loop)
+                future = executor.submit(copy_context().run, run_in_new_loop)
                 model = future.result()
         except RuntimeError:
             # No event loop running, safe to use asyncio.run()
@@ -113,7 +114,7 @@ def call_model_with_messages(state: ThreadState, config: RunnableConfig) -> dict
             import concurrent.futures
 
             with concurrent.futures.ThreadPoolExecutor() as executor:
-                source_ids = executor.submit(get_ids).result()
+                source_ids = executor.submit(copy_context().run, get_ids).result()
             ai_message = run_visual_chat(model, payload, source_ids, model_id)
         else:
             ai_message = model.invoke(payload)
@@ -157,4 +158,8 @@ agent_state = StateGraph(ThreadState)
 agent_state.add_node("agent", call_model_with_messages)
 agent_state.add_edge(START, "agent")
 agent_state.add_edge("agent", END)
-graph = agent_state.compile(checkpointer=memory)
+_legacy_graph = agent_state.compile(checkpointer=memory)
+
+from open_notebook.graphs.workspace_graph import WorkspaceGraph
+
+graph = WorkspaceGraph(agent_state, _legacy_graph)

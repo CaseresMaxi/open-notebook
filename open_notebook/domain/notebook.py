@@ -1,11 +1,8 @@
-import os
 from datetime import datetime
-from pathlib import Path
 from typing import Any, ClassVar, Dict, List, Literal, Optional, Union
 
 from loguru import logger
 from pydantic import BaseModel, ConfigDict, Field, field_validator
-from surreal_commands import submit_command
 from surrealdb import RecordID
 
 from open_notebook.database.repository import ensure_record_id, repo_query
@@ -15,6 +12,7 @@ from open_notebook.exceptions import (
     InvalidInputError,
     NotFoundError,
 )
+from open_notebook.workspace_commands import submit_command
 
 
 class Notebook(ObjectModel):
@@ -440,7 +438,7 @@ class Source(ObjectModel):
             return None
 
         try:
-            from surreal_commands import get_command_status
+            from open_notebook.workspace_commands import get_command_status
 
             status = await get_command_status(str(self.command))
             return status.status if status else "unknown"
@@ -454,7 +452,7 @@ class Source(ObjectModel):
             return None
 
         try:
-            from surreal_commands import get_command_status
+            from open_notebook.workspace_commands import get_command_status
 
             status_result = await get_command_status(str(self.command))
             if not status_result:
@@ -649,23 +647,6 @@ class Source(ObjectModel):
 
     async def delete(self) -> bool:
         """Delete source and clean up associated file, embeddings, and insights."""
-        # Clean up uploaded file if it exists
-        if self.asset and self.asset.file_path:
-            file_path = Path(self.asset.file_path)
-            if file_path.exists():
-                try:
-                    os.unlink(file_path)
-                    logger.info(f"Deleted file for source {self.id}: {file_path}")
-                except Exception as e:
-                    logger.warning(
-                        f"Failed to delete file {file_path} for source {self.id}: {e}. "
-                        "Continuing with database deletion."
-                    )
-            else:
-                logger.debug(
-                    f"File {file_path} not found for source {self.id}, skipping cleanup"
-                )
-
         # Delete associated embeddings and insights to prevent orphaned records
         try:
             source_id = ensure_record_id(self.id)
@@ -684,8 +665,22 @@ class Source(ObjectModel):
                 "Continuing with source deletion."
             )
 
-        # Call parent delete to remove database record
-        return await super().delete()
+        # Remove metadata before its file, and preserve files referenced by another source.
+        deleted = await super().delete()
+        if deleted and self.asset and self.asset.file_path:
+            try:
+                references = await repo_query(
+                    "SELECT id FROM source WHERE asset.file_path = $path LIMIT 1;",
+                    {"path": self.asset.file_path},
+                )
+                if not references:
+                    from open_notebook.storage import delete_file
+
+                    delete_file(self.asset.file_path)
+            except Exception as error:
+                # If ownership/reference lookup fails, retain the file for later cleanup.
+                logger.warning(f"File cleanup deferred after source deletion: {error}")
+        return deleted
 
 
 class Note(ObjectModel):

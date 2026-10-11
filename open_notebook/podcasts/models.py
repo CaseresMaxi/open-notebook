@@ -255,7 +255,7 @@ class PodcastEpisode(ObjectModel):
             return None
 
         try:
-            from surreal_commands import get_command_status
+            from open_notebook.workspace_commands import get_command_status
 
             status = await get_command_status(str(self.command))
             return status.status if status else "unknown"
@@ -268,7 +268,7 @@ class PodcastEpisode(ObjectModel):
             return {"status": None, "error_message": None}
 
         try:
-            from surreal_commands import get_command_status
+            from open_notebook.workspace_commands import get_command_status
 
             status = await get_command_status(str(self.command))
             if not status:

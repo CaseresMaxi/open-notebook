@@ -4,12 +4,18 @@ import os
 
 from openai import AsyncOpenAI
 
-from open_notebook.ai.models import Model, _revalidate_config_urls, model_manager
+from open_notebook.ai.models import (
+    Model,
+    _revalidate_config_urls,
+    model_manager,
+    platform_models,
+)
 from open_notebook.domain.credential import Credential
 from open_notebook.exceptions import ConfigurationError, ExternalServiceError
 from open_notebook.utils.chat_images import ChatImage
 
 
+@platform_models
 async def generate_chat_image(
     prompt: str, caption: str, model_id: str | None
 ) -> ChatImage:
@@ -48,18 +54,30 @@ async def generate_chat_image(
     async with AsyncOpenAI(
         api_key=api_key, base_url=base_url, timeout=180, max_retries=0
     ) as client:
-        response = await client.images.generate(
-            model=os.environ.get("OPEN_NOTEBOOK_IMAGE_MODEL", "gpt-image-1.5"),
-            prompt=prompt,
-            size="1024x1024",
-            quality="low",
-            output_format="png",
-            n=1,
-        )
+        from open_notebook.usage import metered
+
+        with metered(
+            os.environ.get("OPEN_NOTEBOOK_IMAGE_MODEL", "gpt-image-1.5"), 8192, "image"
+        ):
+            response = await client.images.generate(
+                model=os.environ.get("OPEN_NOTEBOOK_IMAGE_MODEL", "gpt-image-1.5"),
+                prompt=prompt,
+                size="1024x1024",
+                quality="low",
+                output_format="png",
+                n=1,
+            )
     if not response.data or not response.data[0].b64_json:
         raise ExternalServiceError("The image provider returned no image.")
-    return ChatImage(
+    result = ChatImage(
         name=caption[:255] or "image.png",
         data_url=f"data:image/png;base64,{response.data[0].b64_json}",
         kind="generated",
     )
+
+    import asyncio
+
+    from open_notebook.storage import retain_images
+
+    await asyncio.to_thread(retain_images, [result])
+    return result

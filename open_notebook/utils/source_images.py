@@ -13,6 +13,8 @@ from open_notebook.config import UPLOADS_FOLDER
 from open_notebook.domain.notebook import Source
 from open_notebook.exceptions import InvalidInputError
 from open_notebook.utils.chat_images import ChatImage
+from open_notebook.workspaces import current_workspace
+from open_notebook.workspaces import uploads_folder as account_uploads_folder
 
 # PDFium is not thread-safe, even for distinct documents.
 _PDF_LOCK = threading.Lock()
@@ -21,8 +23,10 @@ _PDF_LOCK = threading.Lock()
 def source_file(source: Source) -> Path:
     if not source.asset or not source.asset.file_path:
         raise InvalidInputError("This source has no retained PDF or image file.")
-    path = Path(source.asset.file_path).resolve()
-    if not path.is_relative_to(Path(UPLOADS_FOLDER).resolve()):
+    from open_notebook.storage import local_file
+
+    path = local_file(source.asset.file_path).resolve()
+    if not path.is_relative_to(Path(uploads_folder()).resolve()):
         raise InvalidInputError("Source file is outside the uploads directory.")
     if not path.is_file():
         raise InvalidInputError(
@@ -124,3 +128,7 @@ def render_source_image(
         source_title=source.title,
         page=page_number,
     )
+
+
+def uploads_folder() -> str:
+    return account_uploads_folder() if current_workspace() else UPLOADS_FOLDER

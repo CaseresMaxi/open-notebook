@@ -58,4 +58,19 @@ async def provision_langchain_model(
             f"Please check that the model configured for '{default_type}' is a language model, not an embedding or speech model."
         )
 
-    return model.to_langchain()
+    result = model.to_langchain()
+    from open_notebook.workspaces import current_workspace
+
+    if current_workspace():
+        from open_notebook.ai.usage_callback import UsageCallback
+
+        # Esperanto may cache clients. Never mutate a cached instance's callbacks.
+        result = result.model_copy(deep=False)
+        result.callbacks = [
+            *(result.callbacks or []),
+            UsageCallback(
+                model_id or default_type,
+                min(int(kwargs.get("max_tokens") or 8192), 8192),
+            ),
+        ]
+    return result

@@ -159,6 +159,12 @@ def _extraction_error(error: "cc.ContentCoreError", url: str) -> ValueError:
 
 async def content_process(state: SourceState) -> dict:
     content_state: Dict[str, Any] = state["content_state"]
+    if content_state.get("file_path"):
+        from starlette.concurrency import run_in_threadpool
+
+        from open_notebook.storage import local_file
+
+        await run_in_threadpool(local_file, content_state["file_path"])
 
     # content-core 2.x takes engine/model overrides via ContentCoreConfig
     # (keyword-only), not inside the input dict.
@@ -199,7 +205,10 @@ async def content_process(state: SourceState) -> dict:
         model_manager = ModelManager()
         defaults = await model_manager.get_defaults()
         if defaults.default_speech_to_text_model:
-            stt_model = await Model.get(defaults.default_speech_to_text_model)
+            from open_notebook.workspaces import platform_scope
+
+            with platform_scope():
+                stt_model = await Model.get(defaults.default_speech_to_text_model)
             if stt_model:
                 config_kwargs["audio_provider"] = stt_model.provider
                 config_kwargs["audio_model"] = stt_model.name

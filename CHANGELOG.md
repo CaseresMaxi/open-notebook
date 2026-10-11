@@ -8,9 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Personal fork adds Firebase registration, Google/email login, email verification, password recovery and server sessions, with verified-email administrator bootstrap and immutable binding of existing local study data to the verified owner UID. Accounts are optional in the default local installation. Private staging protects legacy study data from newly registered accounts; public multiuser cutover is still pending.
+- Private study workspaces for verified Firebase accounts: isolated SurrealDB databases, files, chat checkpoints and signed background jobs, with automatic provisioning and study defaults enabled.
+- Private Firebase Storage for originals and image attachments, operator-selected study models, durable per-account AI/file allowances, and administrator account management.
+- Personal fork adds Firebase registration, Google/email login, email verification, password recovery and server sessions, with verified-email administrator bootstrap and immutable binding of existing local study data to the verified owner UID. Accounts are optional in the default local installation. Signed-in users receive private workspaces; public hosting remains separately configured.
 - Firebase migration tooling inventories all study records/files, checks source paths and conversation integrity, creates an account-scoped immutable cloud copy and verifies file hashes and record counts without deleting originals or switching the runtime.
-- Personal fork has a dedicated Firebase development project and web app with email/password and Google providers enabled, local Auth/Storage emulator configuration and deny-by-default object rules. Application account integration and cloud Storage setup remain pending.
+- Personal fork has a dedicated Firebase development project and web app with email/password and Google providers enabled, local Auth/Storage emulator configuration and deny-by-default object rules. Account integration and private Storage are configured; application hosting remains local.
 - NextNootbook adds a subtle animated dot-wave backdrop adapted from the Instasent effects lab, capped at 20 fps/1.5 DPR and paused offscreen, in hidden tabs and with reduced motion.
 - Personal study product adds browser-local profile and billing preview pages, notebook note/summary libraries, source-grounded saved summaries, a conversation launcher, and free Arc UI components. Billing remains explicitly unavailable until a provider and plans are defined.
 - Notebook chat context controls show selected sources/notes and estimated history tokens, limit remembered exchanges, restart memory while keeping the transcript, or permanently clear all conversation checkpoints. Memory settings persist per chat; destructive cleanup requires confirmation.
@@ -24,7 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Practice exams.** Generate an exam from a notebook's sources (and optionally its notes) with multiple-choice, multiple-select (several correct options), fill-in-the-blank and open questions, configurable difficulty, language, instructions and model; take it in the new Create → Exams page (or from the notebook header) and get it graded. Multiple choice, multiple select (with partial credit) and exact blank matches are graded deterministically; non-exact blanks and open answers are graded by the LLM against a reference answer and rubric, with partial credit and feedback. Attempts are stored and can be reviewed or retaken, and the answer key is only returned once an attempt is being reviewed. New `exam`/`exam_attempt` tables (migration 26) and `/api/exams` endpoints (#1150)
 
 ### Changed
-- Personal product roadmap specifies Firebase accounts and private storage, workspace isolation, operator-controlled AI policies and per-user budgets, interchangeable billing providers and a study-first commercial experience. These integrations remain planned, not active.
+- Personal product roadmap specifies Firebase accounts and private storage, workspace isolation, operator-controlled AI policies and per-user budgets, interchangeable billing providers and a study-first commercial experience. Accounts, private storage and AI/file budgets are implemented; commercial billing is still planned.
 - New notes start with a localized mandatory title. Successful record creation and deletion share a subtle monochrome pop across notebooks, notes, summaries, sources, exams, sessions and settings, respecting reduced motion and keeping failed operations visible.
 - Note editing keeps a live rendered preview visible by default, with a hide/show control, responsive stacked mobile panes and centered glass formatting buttons.
 - Notes and summaries open as rendered Markdown documents, with explicit editing and draft preview. The themed editor uses one column and a compact formatting toolbar, with responsive titles and a single reading viewport.
@@ -64,6 +66,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `make start-all` starts SurrealDB again (it pointed to a compose file removed long ago)
 - The legacy `SURREAL_ADDRESS` / `SURREAL_PORT` fallback builds a valid database URL (`ws://host:port/rpc`, was `ws://host/rpc:port`); an address that already includes the port is kept as is
 - `.env.example` names the chunking variables Open Notebook actually reads (`OPEN_NOTEBOOK_CHUNK_SIZE` / `OPEN_NOTEBOOK_CHUNK_OVERLAP`)
+
+### Security
+- Account mode now requires explicit allowed origins and secure sessions; authenticated optional accounts are also isolated in local mode. Operator APIs, model configuration and credentials are restricted to administrators.
 
 ## [1.15.0] - 2026-10-04
 

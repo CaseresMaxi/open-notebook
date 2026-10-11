@@ -1,12 +1,12 @@
 # ADR-024: Firebase, cuentas comerciales y consumo de IA
 
-Fecha: 2026-10-10. Estado: propuesta para el fork personal, pendiente de implementación.
+Fecha: 2026-10-10. Estado: aceptada para el fork personal. Cuentas, aislamiento, archivos y cuotas implementados en ADR-026; facturación pendiente de integrar.
 
 ## Contexto
 
 El usuario quiere NextNootbook como producto comercial: Firebase para cuentas, gestión de archivos, pagos intercambiables y control del uso de modelos por usuario. La instalación actual usa contraseña compartida, archivos locales y datos sin aislamiento de cuentas. Perfil y pagos son maquetas.
 
-## Decisión propuesta
+## Decisión
 
 - Firebase Authentication identifica usuarios; sesión de servidor con cookie HttpOnly verificada por FastAPI. SurrealDB conserva datos de producto con workspace obligatorio; el trabajador y los checkpoints también validan propiedad.
 - Archivos privados mediante una interfaz de almacenamiento con Firebase/GCS inicial y local para desarrollo. Incluir originales, figuras, adjuntos y respuestas de exámenes.
@@ -19,4 +19,4 @@ El usuario quiere NextNootbook como producto comercial: Firebase para cuentas, g
 
 Firebase no sustituye el aislamiento ni las cuotas de backend. El modo SaaS exige migrar propiedad, archivos y checkpoints antes de aceptar cuentas públicas. La instancia local y los datos existentes no se modifican por aprobar esta arquitectura. La beta medida determina precios/capacidad; no se promete IA ilimitada.
 
-El [plan completo](../nextnootbook-backend-plan.md) define pantallas, contratos, etapas, migración y criterios de aceptación. Este documento no anuncia servicios ya integrados.
+El [plan completo](../nextnootbook-backend-plan.md) define pantallas, contratos, etapas, migración y criterios de aceptación. El alcance implementado y sus límites están en [ADR-026](ADR-026-private-study-workspaces.md); los adaptadores de pagos siguen pendientes de credenciales y configuración comercial.

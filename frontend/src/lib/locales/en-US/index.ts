@@ -1,4 +1,30 @@
 export const enUS = {
+  commercial: {
+    "accounts": "Accounts",
+    "adminRequired": "Administrator access required",
+    "loadError": "Could not load account usage. Try again.",
+    "noAccounts": "No registered accounts yet",
+    "tokens": "AI tokens this month",
+    "status": "Status",
+    "paused": "Paused",
+    "active": "Active",
+    "studyModel": "Study model",
+    "operatorDefault": "Use platform default",
+    "monthly_tokens": "Monthly AI tokens",
+    "monthly_calls": "Monthly AI calls",
+    "monthly_images": "Monthly generated images",
+    "concurrent_calls": "Concurrent AI calls",
+    "storage_bytes": "File storage in bytes",
+    "pauseAccount": "Pause this account",
+    "saveError": "Could not save limits. Check the values and try again.",
+    "saveLimits": "Save limits",
+    "saved": "Limits saved",
+    "loadingUsage": "Loading your allowance…",
+    "studyAllowance": "Your study allowance",
+    "storage": "File storage",
+    "allowancePeriod": "Usage period: {{month}}. All study tools are included."
+},
+
   product: {
     "sortBy": "Sort by {{column}}",
     "ascending": "Ascending",

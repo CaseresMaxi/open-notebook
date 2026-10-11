@@ -9,6 +9,7 @@ from surrealdb import AsyncSurreal, RecordID  # type: ignore
 from surrealdb.data.types.table import Table  # type: ignore
 
 from open_notebook.utils.proxy import ensure_internal_no_proxy
+from open_notebook.workspaces import current_workspace, platform_selected
 
 # Keep the internal SurrealDB websocket out of any configured HTTP proxy
 # (issue #1160). Runs at import time - i.e. before any db_connection() can be
@@ -63,6 +64,9 @@ def get_database_namespace() -> str:
 
 def get_database_name() -> str:
     """Get configured SurrealDB database name."""
+    workspace = current_workspace()
+    if workspace and not workspace.legacy and not platform_selected():
+        return workspace.database
     return _get_env_or_default("SURREAL_DATABASE", "open_notebook")
 
 

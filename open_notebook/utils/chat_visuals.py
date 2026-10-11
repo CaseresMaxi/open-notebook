@@ -1,3 +1,5 @@
+from contextvars import copy_context
+
 """Bounded visual tool orchestration shared by notebook and source chats."""
 
 import asyncio
@@ -510,4 +512,4 @@ def run_visual_chat(
     except RuntimeError:
         return run()
     with concurrent.futures.ThreadPoolExecutor() as executor:
-        return executor.submit(run).result()
+        return executor.submit(copy_context().run, run).result()

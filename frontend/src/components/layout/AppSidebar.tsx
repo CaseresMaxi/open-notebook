@@ -1,5 +1,6 @@
 'use client'
 
+import { useAuthStore } from '@/lib/stores/auth-store'
 import { BrandMark } from './BrandMark'
 
 import Link from 'next/link'
@@ -27,6 +28,7 @@ import { useCreateDialogs } from '@/lib/hooks/use-create-dialogs'
 import { useTranslation } from '@/lib/hooks/use-translation'
 
 export function AppSidebar() {
+  const { user } = useAuthStore()
   const { t } = useTranslation()
   const pathname = usePathname()
   const { logout } = useAuth()
@@ -39,6 +41,7 @@ export function AppSidebar() {
     { label: t('navigation.sources'), href: '/sources', icon: FileText },
     { label: t('product.profile'), href: '/profile', icon: UserRound },
     { label: t('product.payments'), href: '/payments', icon: CreditCard },
+    ...(user?.admin ? [{label:t('commercial.accounts'),href:'/admin/accounts',icon:UserRound}] : []),
   ]
   return (
     <aside

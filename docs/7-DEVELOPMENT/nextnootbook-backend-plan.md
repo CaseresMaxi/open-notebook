@@ -1,6 +1,6 @@
 # NextNootbook: producto, cuentas y operación comercial
 
-Fecha: 2026-10-10. Estado: propuesta concreta para implementar en el fork personal; no hay Firebase, aislamiento multiusuario ni cobros activos todavía. Sustituye la propuesta inicial de backend. La instancia local sigue funcionando con sus datos actuales.
+Fecha: 2026-10-10. Estado: cuentas Firebase, espacios privados, Storage y límites por usuario implementados en ADR-026. Hosting, dominio y facturación comercial siguen pendientes. Sustituye la propuesta inicial de backend. La instancia local sigue funcionando con sus datos actuales.
 
 ## 1. Producto y propuesta de valor
 
@@ -38,7 +38,7 @@ Conservar los materiales neutrales, Liquid Glass en controles, lectura opaca, an
 
 ## 2. Arquitectura elegida
 
-Mantener Next.js, FastAPI, SurrealDB y el worker. Añadir Firebase Authentication para identidad y Cloud Storage for Firebase para objetos privados. La base de dominio permanece en SurrealDB; no duplicar fuentes/chats en Firestore. Extraer interfaces pequeñas para almacenamiento y facturación; no introducir microservicios para el MVP.
+Mantener Next.js, FastAPI, SurrealDB y el worker. Añadir Firebase Authentication para identidad y Cloud Storage for Firebase para objetos privados. La base de dominio permanece en SurrealDB; Firestore conserva una copia histórica verificada para recuperación; las consultas de estudio siguen usando SurrealDB. Extraer interfaces pequeñas para almacenamiento y facturación; no introducir microservicios para el MVP.
 
 ```mermaid
 flowchart LR

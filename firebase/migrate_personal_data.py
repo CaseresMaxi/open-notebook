@@ -153,6 +153,11 @@ def migrate(snapshot: Path, project: str, bucket_name: str, email: str, execute:
         # Large records stay in the verified JSON archive (Firestore has a 1 MiB document limit).
         for table, rows in records.items():
             target = migration.collection(table)
+            existing = {doc.id: doc.to_dict() for doc in target.stream()}
+            expected = {}
+            batch = db.batch()
+            pending = 0
+            pending_bytes = 0
             for row in rows:
                 payload = json.dumps(row, sort_keys=True, ensure_ascii=False)
                 record_hash = hashlib.sha256(payload.encode()).hexdigest()
@@ -166,12 +171,27 @@ def migrate(snapshot: Path, project: str, bucket_name: str, email: str, execute:
                     doc["payloadJson"] = payload
                 else:
                     doc["archiveObject"] = f"{prefix}/records.json"
-                target.document(identifier).set(doc)
-                actual = target.document(identifier).get().to_dict()
-                if actual != doc:
-                    raise ValueError(f"Record verification failed: {row['id']}")
-            if target.count().get()[0][0].value != len(rows):
-                raise ValueError(f"Record count mismatch: {table}")
+                expected[identifier] = doc
+                if identifier in existing:
+                    if existing[identifier] != doc:
+                        raise ValueError(f"Immutable record conflicts: {row['id']}")
+                    continue
+                size = len(json.dumps(doc).encode())
+                if pending and (pending >= 200 or pending_bytes + size > 4_000_000):
+                    batch.commit()
+                    batch = db.batch()
+                    pending = pending_bytes = 0
+                batch.create(target.document(identifier), doc)
+                pending += 1
+                pending_bytes += size
+            if pending:
+                batch.commit()
+            actual = {doc.id: doc.to_dict() for doc in target.stream()}
+            if actual != expected:
+                raise ValueError(f"Record verification failed: {table}")
+            print(
+                json.dumps({"verifiedTable": table, "records": len(rows)}), flush=True
+            )
         report.update({"ownerUid": uid, "status": "verified-copy", "files": copied})
         encoded = json.dumps(report, sort_keys=True).encode()
         final = bucket.blob(f"{prefix}/verified-manifest.json")

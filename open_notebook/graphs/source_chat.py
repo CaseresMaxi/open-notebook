@@ -1,5 +1,6 @@
 import asyncio
 import sqlite3
+from contextvars import copy_context
 from typing import Annotated, Dict, List, Optional
 
 from ai_prompter import Prompter
@@ -107,7 +108,7 @@ def _call_model_with_source_context_inner(
         import concurrent.futures
 
         with concurrent.futures.ThreadPoolExecutor() as executor:
-            future = executor.submit(build_context)
+            future = executor.submit(copy_context().run, build_context)
             context_data = future.result()
     except RuntimeError:
         # No event loop running, safe to create a new one
@@ -189,7 +190,7 @@ def _call_model_with_source_context_inner(
         import concurrent.futures
 
         with concurrent.futures.ThreadPoolExecutor() as executor:
-            future = executor.submit(run_in_new_loop)
+            future = executor.submit(copy_context().run, run_in_new_loop)
             model = future.result()
     except RuntimeError:
         # No event loop running, safe to use asyncio.run()
@@ -261,4 +262,8 @@ source_chat_state = StateGraph(SourceChatState)
 source_chat_state.add_node("source_chat_agent", call_model_with_source_context)
 source_chat_state.add_edge(START, "source_chat_agent")
 source_chat_state.add_edge("source_chat_agent", END)
-source_chat_graph = source_chat_state.compile(checkpointer=memory)
+_legacy_graph = source_chat_state.compile(checkpointer=memory)
+
+from open_notebook.graphs.workspace_graph import WorkspaceGraph
+
+source_chat_graph = WorkspaceGraph(source_chat_state, _legacy_graph)

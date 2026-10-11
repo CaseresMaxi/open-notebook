@@ -4,6 +4,7 @@ import type { AccountUser } from '@/lib/firebase'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import apiClient from '@/lib/api/client'
+import { queryClient } from '@/lib/api/query-client'
 import { getApiUrl } from '@/lib/config'
 
 interface AuthState {
@@ -34,6 +35,7 @@ export const useAuthStore = create<AuthState>()(
       accountEpoch: 0, mode: 'legacy', firebaseConfig: null, user: null,
       finishAccountLogin: async (idToken) => {
         const { data } = await apiClient.post<{ user: AccountUser }>('/auth/session', { idToken })
+        queryClient.clear()
         set({ user: data.user, isAuthenticated: true, token: get().mode === 'firebase' ? null : get().token, accountEpoch: get().accountEpoch + 1, lastAuthCheck: Date.now(), error: null })
         return data.user
       },
@@ -163,6 +165,7 @@ export const useAuthStore = create<AuthState>()(
       
       logout: async () => {
         if (get().mode === 'firebase' || get().firebaseConfig) await apiClient.post('/auth/logout')
+        queryClient.clear()
         const local = get().mode === 'legacy' && get().authRequired === false
         set({
           isAuthenticated: local,

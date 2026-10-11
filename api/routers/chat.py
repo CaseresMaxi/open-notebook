@@ -367,6 +367,9 @@ async def _execute_chat(request: ExecuteChatRequest):
 
         # Add user message to state
         # Explicit id so a failed turn can remove it from the checkpoint.
+        from open_notebook.storage import retain_images
+
+        await asyncio.to_thread(retain_images, request.images)
         user_message = build_user_message(request.message, request.images)
         state_values["messages"].append(user_message)
 

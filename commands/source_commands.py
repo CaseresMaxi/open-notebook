@@ -15,6 +15,7 @@ from open_notebook.exceptions import (
     InvalidInputError,
     NotFoundError,
 )
+from open_notebook.workspace_commands import workspace_command
 
 try:
     from open_notebook.graphs.source import source_graph
@@ -61,6 +62,7 @@ class SourceProcessingOutput(CommandOutput):
         "retry_log_level": "debug",  # Avoid log noise during transaction conflicts
     },
 )
+@workspace_command
 async def process_source_command(
     input_data: SourceProcessingInput,
 ) -> SourceProcessingOutput:
@@ -225,6 +227,7 @@ class RunTransformationOutput(CommandOutput):
         "retry_log_level": "warning",
     },
 )
+@workspace_command
 async def run_transformation_command(
     input_data: RunTransformationInput,
 ) -> RunTransformationOutput:
