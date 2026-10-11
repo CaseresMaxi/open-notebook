@@ -128,8 +128,8 @@ async def search(params, *, vector):
                 (
                     r,
                     r["id"],
-                    r.get("title", ""),
-                    (r.get("full_text") or "") + " " + r.get("title", ""),
+                    (r.get("title") or ""),
+                    (r.get("full_text") or "") + " " + (r.get("title") or ""),
                 )
                 for r in sources.values()
                 if source_ids is None or r["id"] in source_ids
@@ -141,13 +141,13 @@ async def search(params, *, vector):
                     source_ids is not None and parent["id"] not in source_ids
                 ):
                     continue
-                title = parent.get("title", "")
+                title = parent.get("title") or ""
                 if table == "source_insight":
-                    title = r.get("insight_type", "") + " - " + title
-                candidates.append((r, parent["id"], title, r.get("content", "")))
+                    title = (r.get("insight_type") or "") + " - " + title
+                candidates.append((r, parent["id"], title, (r.get("content") or "")))
     if params.get("note"):
         candidates.extend(
-            (r, r["id"], r.get("title", ""), r.get("content", ""))
+            (r, r["id"], (r.get("title") or ""), (r.get("content") or ""))
             for r in await store.records("note")
             if note_ids is None or r["id"] in note_ids
         )
