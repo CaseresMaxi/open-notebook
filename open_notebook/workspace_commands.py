@@ -37,6 +37,12 @@ def submit_command(app, command, args, context=None):
             "legacy": workspace.legacy,
         }
         context = {"workspace": payload, "signature": _signature(payload)}
+    from open_notebook.database.firestore_store import enabled
+
+    if enabled():
+        from open_notebook.cloud_commands import submit
+
+        return submit(app, command, args, context)
     return original_submit(app, command, args, context=context)
 
 
@@ -57,6 +63,12 @@ async def get_command_status(job_id):
                 rows and rows[0].get("context", {}).get("workspace")
             ):
                 raise NotFoundError("Job not found")
+    from open_notebook.database.firestore_store import enabled
+
+    if enabled():
+        from open_notebook.cloud_commands import status
+
+        return await status(job_id)
     return await original_status(job_id)
 
 

@@ -40,6 +40,11 @@ def admin_email() -> str:
 
 def bind_legacy_owner(uid: str, email: str):
     """Bind the existing local installation once, without rewriting study records."""
+    cloud_owner = os.getenv("NEXTNOOTBOOK_OWNER_UID")
+    if cloud_owner:
+        if uid != cloud_owner:
+            raise ValueError("Existing study data is already bound to another account")
+        return
     target = os.environ.get("NEXTNOOTBOOK_LEGACY_OWNER_FILE")
     if not target:
         return
@@ -68,6 +73,8 @@ def bind_legacy_owner(uid: str, email: str):
 
 
 def legacy_owner_uid():
+    if os.getenv("NEXTNOOTBOOK_OWNER_UID"):
+        return os.environ["NEXTNOOTBOOK_OWNER_UID"]
     target = os.environ.get("NEXTNOOTBOOK_LEGACY_OWNER_FILE")
     if not target:
         return None
@@ -141,6 +148,12 @@ def validate_runtime_configuration():
     from open_notebook.utils.encryption import get_secret_from_env
 
     mode = os.getenv("NEXTNOOTBOOK_AUTH_MODE", "legacy")
+    if os.getenv("NEXTNOOTBOOK_DATABASE_BACKEND") == "firestore" and (
+        mode != "firebase" or os.getenv("NEXTNOOTBOOK_STORAGE_BACKEND") != "firebase"
+    ):
+        raise ConfigurationError(
+            "Firestore runtime requires Firebase accounts and Storage"
+        )
     if mode not in {"legacy", "firebase"}:
         raise ConfigurationError("NEXTNOOTBOOK_AUTH_MODE must be legacy or firebase")
     if mode != "firebase":

@@ -29,6 +29,11 @@ services:
       - "8502:8502"  # Web UI
       - "5055:5055"  # REST API
     environment:
+      # Local development is the default. Cloud hosting uses Dockerfile.cloud
+      # and a separate environment file; never load Firebase credentials here.
+      - NEXTNOOTBOOK_DATABASE_BACKEND=surrealdb
+      - NEXTNOOTBOOK_STORAGE_BACKEND=local
+      - NEXTNOOTBOOK_AUTH_MODE=legacy
       # REQUIRED: Change this to your own secret string
       # This encrypts your API keys in the database
       - OPEN_NOTEBOOK_ENCRYPTION_KEY=change-me-to-a-secret-string

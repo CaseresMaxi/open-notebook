@@ -1,10 +1,11 @@
 """Durable atomic per-account budgets shared by the API and background workers."""
 
+import asyncio
 import json
 import os
 import sqlite3
 import uuid
-from contextlib import contextmanager
+from contextlib import asynccontextmanager, contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -20,6 +21,18 @@ DEFAULT_POLICY = {
     "model_id": None,
     "disabled": False,
 }
+
+
+@asynccontextmanager
+async def ametered(model, units, kind="language"):
+    reservation = await asyncio.to_thread(reserve, model, units, kind)
+    try:
+        yield reservation
+    except BaseException:
+        await asyncio.shield(asyncio.to_thread(settle, reservation, state="failed"))
+        raise
+    else:
+        await asyncio.to_thread(settle, reservation)
 
 
 @contextmanager
@@ -193,3 +206,35 @@ def release_file(path):
             db.execute(
                 "DELETE FROM files WHERE uid=? AND path=?", (workspace.uid, str(path))
             )
+
+
+# Keep local SQLite defaults. Cloud deployments explicitly select a shared
+# transactional Firestore ledger so replicas cannot independently spend quotas.
+def _cloud_dispatch(name, local):
+    from functools import wraps
+
+    @wraps(local)
+    def selected(*args, **kwargs):
+        from open_notebook.database.firestore_store import enabled
+
+        if enabled():
+            from open_notebook import firestore_usage
+
+            return getattr(firestore_usage, name)(*args, **kwargs)
+        return local(*args, **kwargs)
+
+    return selected
+
+
+for _name in (
+    "register_account",
+    "policy_for",
+    "set_policy",
+    "accounts",
+    "summary",
+    "reserve",
+    "settle",
+    "claim_file",
+    "release_file",
+):
+    globals()[_name] = _cloud_dispatch(_name, globals()[_name])

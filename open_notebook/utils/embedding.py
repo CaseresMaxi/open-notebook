@@ -173,9 +173,9 @@ async def generate_embeddings(
 
         for attempt in range(1, EMBEDDING_MAX_RETRIES + 1):
             try:
-                from open_notebook.usage import metered
+                from open_notebook.usage import ametered
 
-                with metered(
+                async with ametered(
                     model_name, sum(token_count(text) for text in batch), "embedding"
                 ):
                     batch_embeddings = await embedding_model.aembed(batch)

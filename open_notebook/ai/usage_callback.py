@@ -10,7 +10,7 @@ from open_notebook.utils.token_utils import token_count
 
 class UsageCallback(BaseCallbackHandler):
     raise_error = True
-    run_inline = True
+    run_inline = False
 
     def __init__(self, model, max_output):
         self.model = model

@@ -251,11 +251,15 @@ def _format_source_context(context_data: Dict) -> str:
 
 
 # Create SQLite checkpointer
-conn = sqlite3.connect(
-    LANGGRAPH_CHECKPOINT_FILE,
-    check_same_thread=False,
-)
-memory = SqliteSaver(conn)
+from open_notebook.database.firestore_store import enabled as firestore_enabled
+
+if firestore_enabled():
+    # Every authenticated graph receives its durable account checkpointer.
+    memory = None
+else:
+    conn = sqlite3.connect(LANGGRAPH_CHECKPOINT_FILE, check_same_thread=False)
+    memory = SqliteSaver(conn)
+
 
 # Create the StateGraph
 source_chat_state = StateGraph(SourceChatState)

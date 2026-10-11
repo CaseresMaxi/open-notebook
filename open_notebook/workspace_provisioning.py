@@ -21,8 +21,11 @@ async def ensure_workspace(workspace: Workspace) -> None:
         with platform_scope():
             templates = await repo_query("SELECT * FROM transformation;")
         with workspace_scope(workspace):
-            manager = AsyncMigrationManager()
-            await manager.run_migration_up()
+            from open_notebook.database.firestore_store import enabled
+
+            if not enabled():
+                manager = AsyncMigrationManager()
+                await manager.run_migration_up()
             existing = await repo_query("SELECT * FROM workspace:owner;")
             if existing and existing[0].get("uid") != workspace.uid:
                 raise ValueError("Workspace owner mismatch")

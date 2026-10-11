@@ -1,0 +1,22 @@
+runConfig:
+  minInstances: 0
+  maxInstances: 1
+  concurrency: 20
+  cpu: 1
+  memoryMiB: 512
+env:
+  - variable: NEXTNOOTBOOK_AUTH_MODE
+    value: firebase
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: INTERNAL_API_URL
+    secret: nextnootbook-api-url
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: API_URL
+    value: ""
+    availability:
+      - BUILD
+      - RUNTIME

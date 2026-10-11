@@ -23,9 +23,20 @@ def bucket():
     import firebase_admin
     from firebase_admin import credentials, storage
 
+    if os.getenv("FIRESTORE_EMULATOR_HOST") and not os.getenv("STORAGE_EMULATOR_HOST"):
+        raise ConfigurationError("Firestore emulator requires a Storage emulator")
+
     name = os.getenv("FIREBASE_STORAGE_BUCKET")
     if not name:
         raise ConfigurationError("Firebase Storage bucket is not configured")
+    if os.getenv("STORAGE_EMULATOR_HOST"):
+        from google.auth.credentials import AnonymousCredentials
+        from google.cloud.storage import Client as EmulatorStorageClient
+
+        return EmulatorStorageClient(
+            project=os.environ["FIREBASE_PROJECT_ID"],
+            credentials=AnonymousCredentials(),
+        ).bucket(name)
     certificate = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
     credential = credentials.Certificate(certificate) if certificate else None
     app = firebase_admin.initialize_app(

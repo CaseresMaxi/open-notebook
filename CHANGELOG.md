@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Optional Firebase serverless runtime: private Firestore records and chat checkpoints, verified Storage payloads, transactional account allowances, signed Cloud Tasks jobs, Cloud Run containers and a non-destructive operational migration tool. Local installations remain the default.
 - Private study workspaces for verified Firebase accounts: isolated SurrealDB databases, files, chat checkpoints and signed background jobs, with automatic provisioning and study defaults enabled.
 - Private Firebase Storage for originals and image attachments, operator-selected study models, durable per-account AI/file allowances, and administrator account management.
 - Personal fork adds Firebase registration, Google/email login, email verification, password recovery and server sessions, with verified-email administrator bootstrap and immutable binding of existing local study data to the verified owner UID. Accounts are optional in the default local installation. Signed-in users receive private workspaces; public hosting remains separately configured.
@@ -26,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Practice exams.** Generate an exam from a notebook's sources (and optionally its notes) with multiple-choice, multiple-select (several correct options), fill-in-the-blank and open questions, configurable difficulty, language, instructions and model; take it in the new Create → Exams page (or from the notebook header) and get it graded. Multiple choice, multiple select (with partial credit) and exact blank matches are graded deterministically; non-exact blanks and open answers are graded by the LLM against a reference answer and rubric, with partial credit and feedback. Attempts are stored and can be reviewed or retaken, and the answer key is only returned once an attempt is being reviewed. New `exam`/`exam_attempt` tables (migration 26) and `/api/exams` endpoints (#1150)
 
 ### Changed
+- Local development explicitly uses SurrealDB, local files and personal authentication. Cloud deployment configuration is separate and paused while product development continues.
 - Personal product roadmap specifies Firebase accounts and private storage, workspace isolation, operator-controlled AI policies and per-user budgets, interchangeable billing providers and a study-first commercial experience. Accounts, private storage and AI/file budgets are implemented; commercial billing is still planned.
 - New notes start with a localized mandatory title. Successful record creation and deletion share a subtle monochrome pop across notebooks, notes, summaries, sources, exams, sessions and settings, respecting reduced motion and keeping failed operations visible.
 - Note editing keeps a live rendered preview visible by default, with a hide/show control, responsive stacked mobile panes and centered glass formatting buttons.

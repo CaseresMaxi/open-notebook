@@ -1160,7 +1160,8 @@ async def create_source_insight(source_id: str, request: CreateSourceInsightRequ
             raise HTTPException(status_code=404, detail="Transformation not found")
 
         # Submit transformation as background job (fire-and-forget)
-        command_id = submit_command(
+        command_id = await asyncio.to_thread(
+            submit_command,
             "open_notebook",
             "run_transformation",
             {

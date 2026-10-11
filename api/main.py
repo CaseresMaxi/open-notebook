@@ -166,6 +166,11 @@ async def _wait_for_database(migration_manager: AsyncMigrationManager) -> None:
 
 async def _run_database_migrations() -> None:
     """Run startup database migrations after SurrealDB is reachable."""
+    from open_notebook.database import firestore_store
+
+    if firestore_store.enabled():
+        await firestore_store.client().document("product_platform/default").get()
+        return
     migration_manager = AsyncMigrationManager()
     await _wait_for_database(migration_manager)
 

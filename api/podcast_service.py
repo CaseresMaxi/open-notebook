@@ -1,3 +1,4 @@
+import asyncio
 from typing import Any, Dict, Optional
 
 from fastapi import HTTPException
@@ -94,7 +95,9 @@ class PodcastService:
                 raise ValueError("Podcast commands not available")
 
             # Submit command to surreal-commands
-            job_id = submit_command("open_notebook", "generate_podcast", command_args)
+            job_id = await asyncio.to_thread(
+                submit_command, "open_notebook", "generate_podcast", command_args
+            )
 
             # Convert RecordID to string if needed
             if not job_id:

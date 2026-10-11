@@ -148,11 +148,15 @@ def call_model_with_messages(state: ThreadState, config: RunnableConfig) -> dict
         raise error_class(user_message) from e
 
 
-conn = sqlite3.connect(
-    LANGGRAPH_CHECKPOINT_FILE,
-    check_same_thread=False,
-)
-memory = SqliteSaver(conn)
+from open_notebook.database.firestore_store import enabled as firestore_enabled
+
+if firestore_enabled():
+    # Every authenticated graph receives its durable account checkpointer.
+    memory = None
+else:
+    conn = sqlite3.connect(LANGGRAPH_CHECKPOINT_FILE, check_same_thread=False)
+    memory = SqliteSaver(conn)
+
 
 agent_state = StateGraph(ThreadState)
 agent_state.add_node("agent", call_model_with_messages)

@@ -19,6 +19,22 @@ class WorkspaceGraph:
 
     def selected(self):
         workspace = current_workspace()
+        from open_notebook.database.firestore_store import enabled
+
+        if enabled():
+            if workspace is None:
+                raise ValueError("Cloud chat requires an authenticated workspace")
+            key = "firestore:" + workspace.key
+            with self._lock:
+                if key not in self._graphs:
+                    from open_notebook.graphs.firestore_checkpoint import FirestoreSaver
+
+                    self._graphs[key] = self.builder.compile(
+                        checkpointer=FirestoreSaver(workspace)
+                    )
+                    if len(self._graphs) > 128:
+                        self._graphs.popitem(last=False)
+                return self._graphs[key]
         if not workspace or workspace.legacy:
             return self.legacy_graph
         key = workspace.key

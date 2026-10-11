@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime
 from typing import Any, ClassVar, Dict, List, Literal, Optional, Union
 
@@ -558,7 +559,8 @@ class Source(ObjectModel):
                 raise ValueError(f"Source {self.id} has no text to vectorize")
 
             # Submit the embed_source command
-            command_id = submit_command(
+            command_id = await asyncio.to_thread(
+                submit_command,
                 "open_notebook",
                 "embed_source",
                 {"source_id": str(self.id)},
@@ -614,7 +616,8 @@ class Source(ObjectModel):
         try:
             # Submit create_insight command (fire-and-forget)
             # Command handles retries internally for transaction conflicts
-            command_id = submit_command(
+            command_id = await asyncio.to_thread(
+                submit_command,
                 "open_notebook",
                 "create_insight",
                 {
@@ -721,7 +724,8 @@ class Note(ObjectModel):
         # save with a 500. Best-effort: log and move on.
         if self.id and self.content and self.content.strip():
             try:
-                command_id = submit_command(
+                command_id = await asyncio.to_thread(
+                    submit_command,
                     "open_notebook",
                     "embed_note",
                     {"note_id": str(self.id)},

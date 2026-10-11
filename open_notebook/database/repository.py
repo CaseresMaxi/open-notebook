@@ -8,6 +8,7 @@ from loguru import logger
 from surrealdb import AsyncSurreal, RecordID  # type: ignore
 from surrealdb.data.types.table import Table  # type: ignore
 
+from open_notebook.database import firestore_store
 from open_notebook.utils.proxy import ensure_internal_no_proxy
 from open_notebook.workspaces import current_workspace, platform_selected
 
@@ -90,6 +91,10 @@ def ensure_record_id(value: Union[str, RecordID]) -> RecordID:
 
 @asynccontextmanager
 async def db_connection():
+    if firestore_store.enabled():
+        raise RuntimeError(
+            "Direct SurrealDB connections are unavailable in Firestore mode"
+        )
     db = AsyncSurreal(get_database_url())
     await db.signin(
         {
@@ -109,6 +114,11 @@ async def repo_query(
 ) -> List[Dict[str, Any]]:
     """Execute a SurrealQL query and return the results"""
 
+    if firestore_store.enabled():
+        from open_notebook.database.firestore_queries import query
+
+        return await query(query_str, vars)
+
     async with db_connection() as connection:
         try:
             result = parse_record_ids(await connection.query(query_str, vars))
@@ -126,6 +136,10 @@ async def repo_query(
 
 async def repo_create(table: str, data: Dict[str, Any]) -> Dict[str, Any]:
     """Create a new record in the specified table"""
+    if firestore_store.enabled():
+        return await firestore_store.create(
+            table, {k: v for k, v in data.items() if k != "id"}
+        )
     # Remove 'id' attribute if it exists in data
     data.pop("id", None)
     data["created"] = datetime.now(timezone.utc)
@@ -214,6 +228,9 @@ async def repo_update(
 async def repo_delete(record_id: Union[str, RecordID]):
     """Delete a record by record id"""
 
+    if firestore_store.enabled():
+        return await firestore_store.delete(str(record_id))
+
     try:
         async with db_connection() as connection:
             return await connection.delete(ensure_record_id(record_id))
@@ -231,6 +248,22 @@ async def repo_insert(
     """Insert records in bounded batches using a single database connection."""
     if not data:
         return []
+    if isinstance(data, dict):
+        data = [data]
+    if batch_size <= 0:
+        raise ValueError("batch_size must be greater than zero")
+    if firestore_store.enabled():
+        results = []
+        for record in data:
+            if record.get("id"):
+                if ignore_duplicates and await firestore_store.get(str(record["id"])):
+                    continue
+                results.append(
+                    await firestore_store.put(str(record["id"]), record, create=True)
+                )
+            else:
+                results.append(await firestore_store.create(table, record))
+        return results
     if isinstance(data, dict):
         data = [data]
 

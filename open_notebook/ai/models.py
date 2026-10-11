@@ -240,7 +240,9 @@ class ModelManager:
         if workspace:
             if model.type == "language":
                 # Students cannot override operator model selection in request payloads.
-                policy = policy_for(workspace.uid)
+                import asyncio
+
+                policy = await asyncio.to_thread(policy_for, workspace.uid)
                 defaults = await DefaultModels.get_instance()
                 selected = policy.get("model_id") or defaults.default_chat_model
                 if not selected:

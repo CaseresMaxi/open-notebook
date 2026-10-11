@@ -1,3 +1,4 @@
+import asyncio
 from typing import Any, Dict, List, Optional
 
 from loguru import logger
@@ -26,7 +27,8 @@ class CommandService:
                 raise ValueError("Command modules not available")
 
             # surreal-commands expects: submit_command(app_name, command_name, args)
-            cmd_id = submit_command(
+            cmd_id = await asyncio.to_thread(
+                submit_command,
                 module_name,  # This is actually the app name (e.g., "open_notebook")
                 command_name,  # Command name (e.g., "generate_podcast")
                 command_args,  # Input data
@@ -87,6 +89,12 @@ class CommandService:
             # Implementation depends on surreal-commands cancellation support
             # For now, just log the attempt
             await get_command_status(job_id)
+            from open_notebook.database.firestore_store import enabled
+
+            if enabled():
+                from open_notebook.cloud_commands import cancel
+
+                return await cancel(job_id)
             logger.info(f"Attempting to cancel job: {job_id}")
             return True
         except Exception as e:

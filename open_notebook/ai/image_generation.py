@@ -54,9 +54,9 @@ async def generate_chat_image(
     async with AsyncOpenAI(
         api_key=api_key, base_url=base_url, timeout=180, max_retries=0
     ) as client:
-        from open_notebook.usage import metered
+        from open_notebook.usage import ametered
 
-        with metered(
+        async with ametered(
             os.environ.get("OPEN_NOTEBOOK_IMAGE_MODEL", "gpt-image-1.5"), 8192, "image"
         ):
             response = await client.images.generate(
