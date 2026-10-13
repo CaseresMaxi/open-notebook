@@ -608,3 +608,6 @@
   .product-shell.note-dialog[data-state=open] { animation-name: note-document-in; }
   .product-shell.note-dialog[data-state=closed] { animation-name: note-document-out; }
 }
+@media (prefers-reduced-motion: reduce) {
+  .product-shell.note-dialog { animation: none !important; transition: none !important; }
+}

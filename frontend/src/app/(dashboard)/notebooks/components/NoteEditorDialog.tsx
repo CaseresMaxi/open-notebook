@@ -131,7 +131,7 @@ export function NoteEditorDialog({ open, onOpenChange, notebookId, note }: NoteE
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="product-shell note-dialog">
+      <DialogContent className="product-shell note-dialog translate-x-0 translate-y-0 md:-translate-x-1/2 md:-translate-y-1/2">
         <DialogTitle className="sr-only">
           {isEditing ? t('sources.editNote') : t('sources.createNote')}
         </DialogTitle>
