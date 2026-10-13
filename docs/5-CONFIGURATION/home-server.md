@@ -46,7 +46,7 @@ Account mode normally requires HTTPS. `NEXTNOOTBOOK_LAN_HTTP=true` together with
 
 Tailscale gives the computer a private HTTPS name reachable only by your devices; no router port is opened.
 
-1. Install and sign in on the server: `sudo pacman -S tailscale && sudo systemctl enable --now tailscaled && sudo tailscale up`.
+1. Install and sign in on the server. Without root, run it as a container: add `-f docker-compose.tailscale.yml` to the compose command and open the login link from `docker compose logs tailscale` (state persists in `./tailscale_state`, the UI is served by `firebase/tailscale-serve.json`, step 3 is then automatic). Or natively: `sudo pacman -S tailscale && sudo systemctl enable --now tailscaled && sudo tailscale up`.
 2. In the Tailscale admin console → DNS, enable **MagicDNS** and **HTTPS certificates**.
 3. Publish the UI inside the tailnet: `sudo tailscale serve --bg 8502`. `tailscale serve status` prints the address, e.g. `https://<hostname>.<tailnet>.ts.net`.
 4. Add that `https://…ts.net` origin to `NEXTNOOTBOOK_ALLOWED_ORIGINS` and `CORS_ORIGINS`, and the hostname to Firebase **Authorized domains**. Restart the stack.

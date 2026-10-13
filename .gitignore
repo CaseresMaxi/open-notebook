@@ -165,3 +165,4 @@ firebase-debug.log*
 ui-debug.log*
 firebase.auth.local.json
 backups/
+tailscale_state/
