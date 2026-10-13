@@ -1,10 +1,11 @@
 'use client'
 
 import Link from 'next/link'
+import { formatDistanceToNow } from 'date-fns'
 import { NotebookResponse } from '@/lib/types/api'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { LiquidSurface } from '@/components/layout/LiquidSurface'
 import { MoreHorizontal, Archive, ArchiveRestore, Trash2, FileText, StickyNote } from 'lucide-react'
 import {
   DropdownMenu,
@@ -14,16 +15,31 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useUpdateNotebook } from '@/lib/hooks/use-notebooks'
 import { NotebookDeleteDialog } from './NotebookDeleteDialog'
-import { useState } from 'react'
+import { useState, type CSSProperties } from 'react'
 import { useTranslation } from '@/lib/hooks/use-translation'
-interface NotebookCardProps {
-  notebook: NotebookResponse
+import { getDateLocale } from '@/lib/utils/date-locale'
+
+// A stable accent per notebook, always from the theme's own hues, so the glass
+// has colour to refract and notebooks are recognisable at a glance.
+const ACCENTS = ['--teal', '--fern', '--violet', '--clay', '--type-pdf', '--type-video', '--type-web', '--type-audio']
+
+export function notebookAccent(id: string) {
+  let hash = 0
+  for (const char of id) hash = (hash * 31 + char.charCodeAt(0)) >>> 0
+  return `var(${ACCENTS[hash % ACCENTS.length]})`
 }
 
-export function NotebookCard({ notebook }: NotebookCardProps) {
-  const { t } = useTranslation()
+interface NotebookCardProps {
+  notebook: NotebookResponse
+  index?: number
+}
+
+export function NotebookCard({ notebook, index = 0 }: NotebookCardProps) {
+  const { t, language } = useTranslation()
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const updateNotebook = useUpdateNotebook()
+  const initial = (notebook.name.trim()[0] || '·').toLocaleUpperCase()
+  const updated = new Date(notebook.updated)
 
   const handleArchiveToggle = (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -35,28 +51,38 @@ export function NotebookCard({ notebook }: NotebookCardProps) {
 
   return (
     <>
-      <Card data-record-id={notebook.id}
-        className="group card-hover relative"
+      <article
+        data-record-id={notebook.id}
+        className="notebook-tile group"
+        style={{ '--nb-accent': notebookAccent(notebook.id), '--nb-delay': `${Math.min(index, 8) * 55}ms` } as CSSProperties}
       >
-          <CardHeader className="pb-3">
-            <div className="flex items-start justify-between">
-              <div className="flex-1 min-w-0">
-                <CardTitle className="text-base truncate">
-                  <Link href={`/notebooks/${encodeURIComponent(notebook.id)}`} className="after:absolute after:inset-0 after:rounded-2xl" title={notebook.name}>{notebook.name}</Link>
-                </CardTitle>
+        <span className="notebook-tile-halo" aria-hidden="true" />
+        <LiquidSurface className="notebook-tile-glass" radius={26}>
+          <div className="notebook-tile-body">
+            <div className="flex items-start gap-3">
+              <span className="notebook-tile-mark" aria-hidden="true">{initial}</span>
+              <div className="min-w-0 flex-1 pt-0.5">
+                <h3 className="notebook-tile-title">
+                  <Link
+                    href={`/notebooks/${encodeURIComponent(notebook.id)}`}
+                    className="after:absolute after:inset-0 after:rounded-[26px]"
+                    title={notebook.name}
+                  >
+                    {notebook.name}
+                  </Link>
+                </h3>
                 {notebook.archived && (
                   <Badge variant="secondary" className="mt-1">
                     {t('notebooks.archived')}
                   </Badge>
                 )}
               </div>
-              
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
-                    size="sm"
-                    className="relative z-10"
+                    size="icon"
+                    className="relative z-10 -mr-2 -mt-1 size-10 rounded-full"
                     aria-label={t('product.notebookActions')}
                     onClick={(e) => e.stopPropagation()}
                   >
@@ -90,26 +116,31 @@ export function NotebookCard({ notebook }: NotebookCardProps) {
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
-          </CardHeader>
-          
-          <CardContent>
-            <CardDescription className="line-clamp-2 text-sm">
-              {notebook.description}
-            </CardDescription>
 
-            {/* Item counts footer */}
-            <div className="mt-3 flex items-center gap-3 border-t pt-3 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <FileText className="h-3 w-3" />
+            {notebook.description && (
+              <p className="notebook-tile-description">{notebook.description}</p>
+            )}
+
+            <div className="notebook-tile-footer">
+              <span className="notebook-tile-chip" title={t('navigation.sources')}>
+                <FileText className="size-3.5" aria-hidden="true" />
                 <span>{notebook.source_count}</span>
+                <span className="sr-only">{t('navigation.sources')}</span>
               </span>
-              <span className="flex items-center gap-1">
-                <StickyNote className="h-3 w-3" />
+              <span className="notebook-tile-chip" title={t('common.notes')}>
+                <StickyNote className="size-3.5" aria-hidden="true" />
                 <span>{notebook.note_count}</span>
+                <span className="sr-only">{t('common.notes')}</span>
               </span>
+              {!Number.isNaN(updated.getTime()) && (
+                <time className="notebook-tile-time" dateTime={notebook.updated} title={`${t('notebooks.updated')} ${updated.toLocaleString(language)}`}>
+                  {formatDistanceToNow(updated, { addSuffix: true, locale: getDateLocale(language) })}
+                </time>
+              )}
             </div>
-          </CardContent>
-      </Card>
+          </div>
+        </LiquidSurface>
+      </article>
 
       <NotebookDeleteDialog
         open={showDeleteDialog}

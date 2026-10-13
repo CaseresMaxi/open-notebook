@@ -60,8 +60,8 @@ export default function NotebooksPage() {
             <h1>{t('notebooks.title')}</h1>
 
           </div>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-            <GlassSegmentedControl value={viewMode} onValueChange={value => setViewMode(value as 'tile' | 'list')} label={t('notebooks.title')} options={[{ value: 'tile', label: t('notebooks.tileView') }, { value: 'list', label: t('notebooks.listView') }]} />
+          <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center sm:gap-4">
+            <GlassSegmentedControl className="notebook-view-toggle" value={viewMode} onValueChange={value => setViewMode(value as 'tile' | 'list')} label={t('notebooks.title')} options={[{ value: 'tile', label: t('notebooks.tileView') }, { value: 'list', label: t('notebooks.listView') }]} />
             <Input
               id="notebook-search"
               name="notebook-search"

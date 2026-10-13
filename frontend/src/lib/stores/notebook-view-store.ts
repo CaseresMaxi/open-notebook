@@ -16,6 +16,9 @@ export const useNotebookViewStore = create<NotebookViewState>()(
     }),
     {
       name: 'notebook-view-storage',
+      // v1: tiles became the default; earlier saved choices start from tiles again.
+      version: 1,
+      migrate: () => ({ viewMode: 'tile' as NotebookViewMode }),
     }
   )
 )

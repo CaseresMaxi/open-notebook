@@ -92,9 +92,9 @@ export function NotebookList({
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {notebooks.map((notebook) => (
-              <NotebookCard key={notebook.id} notebook={notebook} />
+          <div className="notebook-tiles">
+            {notebooks.map((notebook, index) => (
+              <NotebookCard key={notebook.id} notebook={notebook} index={index} />
             ))}
           </div>
         )
