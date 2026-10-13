@@ -136,6 +136,7 @@ async def get_note(note_id: str):
             if isinstance(getattr(note, "summary", None), str)
             else None,
             content=note.content,
+            images=note.images,
             note_type=note.note_type,
             created=str(note.created),
             updated=str(note.updated),
@@ -179,6 +180,7 @@ async def update_note(note_id: str, note_update: NoteUpdate):
             if isinstance(getattr(note, "summary", None), str)
             else None,
             content=note.content,
+            images=note.images,
             note_type=note.note_type,
             created=str(note.created),
             updated=str(note.updated),

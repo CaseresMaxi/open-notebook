@@ -47,6 +47,7 @@ from api.routers import (
     sources,
     speaker_profiles,
     speech,
+    study_summaries,
     transformations,
 )
 from api.routers import commands as commands_router
@@ -417,6 +418,7 @@ app.include_router(languages.router, prefix="/api", tags=["languages"])
 app.include_router(exams.router, prefix="/api", tags=["exams"])
 app.include_router(chat_quizzes.router, prefix="/api", tags=["chat-quizzes"])
 app.include_router(speech.router, prefix="/api", tags=["speech"])
+app.include_router(study_summaries.router, prefix="/api", tags=["study-summaries"])
 
 
 @app.get("/")

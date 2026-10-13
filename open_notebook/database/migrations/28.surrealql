@@ -1,0 +1,2 @@
+-- Study summaries keep genuine source crops next to their [[image:N]] markers.
+DEFINE FIELD IF NOT EXISTS images ON TABLE note FLEXIBLE TYPE option<array<object>>;
