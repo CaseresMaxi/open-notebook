@@ -443,36 +443,34 @@ function SourceDetailContentInner({
     <div className="source-reading-surface flex flex-col h-full min-h-0">
       {/* Header */}
       <div className="source-reading-heading shrink-0">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
+        <div className="source-reading-heading-row">
+          <span className="source-reading-type" title={getSourceType() === 'file' ? t('sources.uploadFile') : getSourceType() === 'link' ? t('sources.addUrl') : t('sources.enterText')}>
+            {getSourceIcon()}
+          </span>
+          <div className="source-reading-title">
             <InlineEdit
               value={source.title || ''}
               onSave={handleUpdateTitle}
-              className="text-xl font-medium break-words"
-              inputClassName="text-xl font-medium"
+              className="font-medium"
+              inputClassName="font-medium"
               placeholder={t('sources.titlePlaceholder')}
               emptyText={t('sources.untitledSource')}
             />
-
           </div>
-          <div className="flex items-center gap-2">
-            {getSourceIcon()}
-            <Badge variant="secondary" className="text-sm">
-              {getSourceType() === 'file' ? t('sources.uploadFile') : getSourceType() === 'link' ? t('sources.addUrl') : t('sources.enterText')}
-            </Badge>
-
+          <div className="source-reading-actions">
             {/* Chat with source button - only in modal */}
             {showChatButton && onChatClick && (
-              <Button variant="outline" size="sm" onClick={onChatClick}>
-                <MessageSquare className="h-4 w-4 mr-2" />
-                {t('chat.chatWith', { name: t('navigation.sources') })}
+              <Button variant="ghost" size="icon" onClick={onChatClick}
+                aria-label={t('chat.chatWith', { name: t('navigation.sources') })}
+                title={t('chat.chatWith', { name: t('navigation.sources') })}>
+                <MessageSquare className="h-5 w-5" />
               </Button>
             )}
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" aria-label={t('common.actions')}>
-                  <MoreVertical className="h-4 w-4" />
+                  <MoreVertical className="h-5 w-5" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">

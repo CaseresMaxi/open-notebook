@@ -59,6 +59,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Development:** `architecture.md`, `testing.md`, `api-reference.md` and `code-standards.md` are rewritten from the code. A new playbook covers adding an AI provider. Dev setup lives on one page. The AGENTS files agree with the docs. Contributor conventions (Conventional Commits, CHANGELOG sections, pre-PR checks that match CI) are documented
 
 ### Fixed
+- Source details open with a compact one-row heading on every screen: a type icon, the title clamped to two lines, and icon buttons for chat and actions. On phones the add button in the study tab bar now matches the options button in size and alignment.
 - On phones the add-source and write-note actions sit as icon buttons in the free corner of the study tab bar, and the heading that repeated the active tab is gone. Source rows show their insight count again instead of the raw `sources.insightsCount` key.
 - On phones the notebook title row is gone: its options button now leads the floating study tab bar, and the tabs scroll sideways when they do not fit, so the workspace gains a full row of height.
 - Choosing "Take a test in chat" no longer posts a visible message: the choice is sent as an internal turn that the model receives but transcripts never show.

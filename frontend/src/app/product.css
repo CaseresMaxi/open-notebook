@@ -571,8 +571,6 @@
 .product-shell .source-workspace-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 16px; flex-shrink: 0; }
 .product-shell .source-reading-surface { overflow: hidden; border: 1px solid var(--nn-edge); border-radius: 28px; background: var(--surface); }
 .product-shell .source-reading-heading { padding: 24px 24px 12px; }
-.product-shell .source-reading-heading > div { gap: 12px; }
-.product-shell .source-reading-heading > div > div:first-child { min-width: 0; }
 .product-shell .source-reading-navigation { display: flex; justify-content: center; padding: 0 16px 12px; flex-shrink: 0; }
 .product-shell .source-reading-scroll { padding: 0 28px 28px; overscroll-behavior: contain; scrollbar-gutter: stable; }
 .product-shell .source-reading-scroll > [data-slot=tabs-content] { max-width: 800px; margin-inline: auto; overflow-wrap: anywhere; }
@@ -584,7 +582,6 @@
   .product-shell .source-workspace-toolbar { flex-wrap: wrap; gap: 8px; padding-bottom: 8px; }
   .product-shell .source-reading-surface { border-radius: 22px; }
   .product-shell .source-reading-heading { padding: 16px 16px 8px; }
-  .product-shell .source-reading-heading > div { flex-wrap: wrap; }
   .product-shell .source-reading-scroll { padding: 0 16px 20px; }
   .product-shell.source-detail-dialog { height: calc(100dvh - 16px); max-width: calc(100vw - 16px); }
 }
@@ -648,15 +645,38 @@
 .product-shell .study-action-icon { margin-right: 8px; }
 @media (max-width: 767px) {
   .product-shell .study-library-workspace .study-materials { position: relative; }
+  /* Same size and glass as the options button, centred on the tab bar. */
   .product-shell .study-library-workspace .study-materials .study-library-actions {
-    position: absolute; top: 10px; right: 8px; z-index: 21; border-radius: 16px;
+    position: absolute; top: 14px; right: 8px; z-index: 21; border-radius: 16px;
   }
-  .product-shell .study-library-workspace .study-library-actions .ql-content { padding: 0; }
-  .product-shell .study-library-workspace .study-library-actions [data-slot=button] { width: 44px; height: 44px; padding: 0; }
+  .product-shell .study-library-workspace .study-materials .study-library-actions .ql-content { padding: 0; gap: 0; }
+  .product-shell .study-library-workspace .study-materials .study-library-actions button {
+    width: 44px; height: 44px; min-height: 44px; padding: 0; border-radius: 16px; justify-content: center;
+  }
   .product-shell .study-library-workspace .study-action-label { display: none; }
   .product-shell .study-library-workspace .study-action-icon { margin: 0; width: 20px; height: 20px; }
   .product-shell .study-library-workspace .study-materials .study-column-heading { display: none; }
   .product-shell .study-library-workspace .study-materials > [data-slot=card-header] { padding: 64px 0 0; }
   .product-shell .study-summary-heading h2 { display: none; }
   .product-shell .study-summary-heading { padding: 64px 0 0; }
+}
+
+/* Source reading heading: one compact row — type icon, a title clamped to two
+   lines, then icon actions. Type and metadata live in the Details tab. */
+.product-shell .source-reading-heading-row { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.product-shell .source-reading-type { display: inline-flex; flex-shrink: 0; color: var(--ink-soft); }
+.product-shell .source-reading-type svg { width: 18px; height: 18px; }
+.product-shell .source-reading-title { flex: 1; min-width: 0; }
+.product-shell .source-reading-title > button {
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
+  word-break: normal; overflow-wrap: anywhere; font-size: var(--text-lg); line-height: 1.3;
+}
+.product-shell .source-reading-actions { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
+.product-shell .source-reading-actions [data-slot=button] { width: 44px; height: 44px; border-radius: 14px; }
+@media (max-width: 767px) {
+  .product-shell .source-reading-heading { padding: 10px 8px 6px 16px; }
+  .product-shell.source-detail-dialog .source-reading-heading { padding-right: 52px; }
+  .product-shell .source-reading-title > button { font-size: var(--text-base); }
+  .product-shell .source-reading-navigation { padding: 0 8px 8px; }
+  .product-shell .source-reading-navigation [data-slot=tabs-trigger] { min-height: 40px; padding-inline: 12px; font-size: var(--text-sm); }
 }
