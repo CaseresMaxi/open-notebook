@@ -105,9 +105,21 @@ export const esES = {
     "sourceLink": "Fuente original",
     "retry": "Intentar de nuevo",
     "summaryStatus": "Generando un resumen de la fuente seleccionada…",
+    "topicPlaceholder": "Tema, p. ej. métricas de evaluación",
+    "generateTopicSummary": "Resumir tema",
+    "topicSummaryTitle": "Resumen: {{topic}}",
+    "topicSummaryInstructions": "Write a study summary in {{language}} about \"{{topic}}\" using only this notebook's sources. Explain the key ideas, definitions, formulas and examples in plain language, in an order that is easy to follow when read aloud. Use short headings and bullet points. Say clearly if the sources barely cover the topic.",
+    "topicSummaryStatus": "Buscando en tus fuentes y redactando un resumen sobre este tema…",
+    "topicSummaryNoModel": "El administrador debe configurar un modelo de chat antes de generar resúmenes por tema.",
     "study": "Estudiar",
 },
 
+  speech: {
+    listen: "Escuchar",
+    stop: "Detener lectura",
+    preparing: "Preparando audio…",
+    failed: "No se pudo leer en voz alta",
+  },
   common: {
     search: "Buscar...",
     create: "Nuevo",

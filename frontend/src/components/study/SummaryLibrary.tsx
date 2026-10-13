@@ -13,13 +13,17 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { EmptyState } from '@/components/common/EmptyState'
-import { LoadingSpinner } from '@/components/common/LoadingSpinner'
+import { ListSkeleton } from '@/components/common/LoadingSkeletons'
 import { useNotebookSources } from '@/lib/hooks/use-sources'
 import { useNotes } from '@/lib/hooks/use-notes'
-import { generateStudySummary } from '@/lib/api/study'
+import { generateStudySummary, generateTopicSummary } from '@/lib/api/study'
 import { transformationsApi } from '@/lib/api/transformations'
 import { useTranslation } from '@/lib/hooks/use-translation'
-import { isStudySummary } from '@/lib/utils/study-summary'
+import { isStudySummary, summaryContent } from '@/lib/utils/study-summary'
+import { useModelDefaults } from '@/lib/hooks/use-models'
+import { ListenButton } from '@/components/common/ListenButton'
+import { Input } from '@/components/ui/input'
+import axios from 'axios'
 import { NoteEditorDialog } from '@/app/(dashboard)/notebooks/components/NoteEditorDialog'
 import type { NoteResponse } from '@/lib/types/api'
 
@@ -42,7 +46,9 @@ export function SummaryLibrary({ notebookId, standalone = false }: { notebookId:
     queryKey: ['transformations'],
     queryFn: transformationsApi.list,
   })
+  const defaults = useModelDefaults()
   const [sourceId, setSourceId] = useState('')
+  const [topic, setTopic] = useState('')
   const [editing, setEditing] = useState<NoteResponse | undefined>()
   const [status, setStatus] = useState('')
   const summaries = notes.filter(isStudySummary)
@@ -76,6 +82,31 @@ export function SummaryLibrary({ notebookId, standalone = false }: { notebookId:
         error instanceof Error ? error.message : t('product.summaryFailed')
       ),
   })
+  const topicSummary = useMutation({
+    retry: false,
+    mutationFn: async (subject: string) => {
+      const modelId = defaults.data?.default_chat_model
+      if (!modelId) throw new Error(t('product.topicSummaryNoModel'))
+      return generateTopicSummary({
+        notebookId,
+        modelId,
+        question: t('product.topicSummaryInstructions', { topic: subject, language }),
+        title: t('product.topicSummaryTitle', { topic: subject }),
+        outputError: t('product.summaryFailed'),
+      })
+    },
+    onSuccess: () => {
+      setTopic('')
+      client.invalidateQueries({ queryKey: ['notes'] })
+      client.invalidateQueries({ queryKey: ['notebooks'] })
+      setStatus(t('product.summarySaved'))
+    },
+    onError: (error) => {
+      const detail = axios.isAxiosError(error) ? (error.response?.data as { detail?: string } | undefined)?.detail : undefined
+      setStatus(detail || (error instanceof Error ? error.message : t('product.summaryFailed')))
+    },
+  })
+  const busy = generate.isPending || topicSummary.isPending
   return (
     <div className={`summary-library ${standalone ? 'study-materials study-summaries' : ''}`}>
       {standalone && <header className="study-summary-heading"><h2>{t('product.summaries')}</h2></header>}
@@ -88,7 +119,7 @@ export function SummaryLibrary({ notebookId, standalone = false }: { notebookId:
             setSourceId(value)
             setStatus('')
           }}
-          disabled={generate.isPending}
+          disabled={busy}
         >
           <SelectTrigger
             className="w-full min-h-11"
@@ -117,7 +148,7 @@ export function SummaryLibrary({ notebookId, standalone = false }: { notebookId:
           variant="outline"
           disabled={
             !sourceId ||
-            generate.isPending ||
+            busy ||
             templates.isLoading ||
             !templates.data
           }
@@ -132,6 +163,31 @@ export function SummaryLibrary({ notebookId, standalone = false }: { notebookId:
         </Button>
       </div>
       </LiquidSurface>
+      <LiquidSurface className="summary-create-glass">
+        <form
+          className="summary-create-controls"
+          onSubmit={(event) => {
+            event.preventDefault()
+            const subject = topic.trim()
+            if (!subject || busy) return
+            setStatus('')
+            topicSummary.mutate(subject)
+          }}
+        >
+          <Input
+            value={topic}
+            onChange={(event) => setTopic(event.target.value)}
+            placeholder={t('product.topicPlaceholder')}
+            aria-label={t('product.topicPlaceholder')}
+            maxLength={200}
+            disabled={busy}
+            className="summary-topic-input min-h-11 flex-1"
+          />
+          <Button type="submit" variant="outline" disabled={!topic.trim() || busy || defaults.isLoading}>
+            {topicSummary.isPending ? t('product.generatingSummary') : t('product.generateTopicSummary')}
+          </Button>
+        </form>
+      </LiquidSurface>
         {templates.isError && (
           <div role="alert" className="text-sm">
             <p>{t('product.summaryTemplateMissing')}</p>
@@ -140,13 +196,13 @@ export function SummaryLibrary({ notebookId, standalone = false }: { notebookId:
             </Button>
           </div>
         )}
-        {generate.isPending && (
+        {busy && (
           <p className="text-sm text-muted-foreground" role="status">
-            {t('product.summaryStatus')}
+            {topicSummary.isPending ? t('product.topicSummaryStatus') : t('product.summaryStatus')}
           </p>
         )}
         {status && <p
-          role={generate.isError ? 'alert' : 'status'}
+          role={generate.isError || topicSummary.isError ? 'alert' : 'status'}
           className="product-inline-status break-words"
         >
           {status}
@@ -161,7 +217,7 @@ export function SummaryLibrary({ notebookId, standalone = false }: { notebookId:
           </Button>
         </div>
       ) : isLoading ? (
-        <LoadingSpinner />
+        <ListSkeleton rows={3} />
       ) : summaries.length === 0 ? (
         <EmptyState
           icon={AlignLeft}
@@ -171,19 +227,24 @@ export function SummaryLibrary({ notebookId, standalone = false }: { notebookId:
       ) : (
         <div className="study-library-list grid gap-2">
           {summaries.map((note) => (
-            <button
+            <div
               key={note.id}
               data-record-id={note.id}
-              className="summary-record min-h-14 p-4 text-left"
-              onClick={() => setEditing(note)}
+              className="summary-record flex items-center gap-1 pr-2"
             >
-              <span className="flex items-center gap-2 text-sm font-medium">
-                <AlignLeft className="size-4 text-teal shrink-0" />
-                <span className="break-words">
-                  {note.title || t('common.untitled')}
+              <button
+                className="min-h-14 min-w-0 flex-1 p-4 text-left"
+                onClick={() => setEditing(note)}
+              >
+                <span className="flex items-center gap-2 text-sm font-medium">
+                  <AlignLeft className="size-4 text-teal shrink-0" />
+                  <span className="break-words">
+                    {note.title || t('common.untitled')}
+                  </span>
                 </span>
-              </span>
-            </button>
+              </button>
+              <ListenButton id={`summary:${note.id}`} text={summaryContent(note.content || '')} className="size-11 shrink-0 p-0" />
+            </div>
           ))}
         </div>
       )}

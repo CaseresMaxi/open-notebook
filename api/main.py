@@ -46,6 +46,7 @@ from api.routers import (
     source_chat,
     sources,
     speaker_profiles,
+    speech,
     transformations,
 )
 from api.routers import commands as commands_router
@@ -415,6 +416,7 @@ app.include_router(capabilities.router, prefix="/api", tags=["capabilities"])
 app.include_router(languages.router, prefix="/api", tags=["languages"])
 app.include_router(exams.router, prefix="/api", tags=["exams"])
 app.include_router(chat_quizzes.router, prefix="/api", tags=["chat-quizzes"])
+app.include_router(speech.router, prefix="/api", tags=["speech"])
 
 
 @app.get("/")

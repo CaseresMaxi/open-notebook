@@ -7,13 +7,15 @@ import { Save, Copy, Loader2, Check } from 'lucide-react'
 import { useCreateNote } from '@/lib/hooks/use-notes'
 import { toast } from 'sonner'
 import { useTranslation } from '@/lib/hooks/use-translation'
+import { ListenButton } from '@/components/common/ListenButton'
 
 interface MessageActionsProps {
   content: string
   notebookId?: string
+  messageId?: string
 }
 
-export function MessageActions({ content, notebookId }: MessageActionsProps) {
+export function MessageActions({ content, notebookId, messageId }: MessageActionsProps) {
   const { t } = useTranslation()
   const [copySuccess, setCopySuccess] = useState(false)
   const createNote = useCreateNote()
@@ -71,6 +73,7 @@ export function MessageActions({ content, notebookId }: MessageActionsProps) {
   return (
     <TooltipProvider>
       <div className="flex gap-1">
+        <ListenButton id={`message:${messageId ?? content.slice(0, 64)}`} text={content} />
         {notebookId && (
           <Tooltip>
             <TooltipTrigger asChild>

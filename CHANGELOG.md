@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Read aloud: chat answers and saved summaries have a Listen button that speaks them with the configured default text-to-speech model (`POST /api/speech`, Markdown and citations stripped, long text chunked, usage metered, one reading at a time with recent audio reused). Voice via `NEXTNOOTBOOK_TTS_VOICE` (default `nova`).
+- Topic summaries: the Summaries library can summarize a free-text topic across a notebook's sources with the existing Ask pipeline and save it as a study summary that can be read aloud.
 - NextNootbook is an installable web app: manifest, home-screen icons (including maskable and Apple touch icons) and theme colors. Install is offered over HTTPS, e.g. the Tailscale address; plain LAN HTTP allows a home-screen shortcut.
 - `./nextnootbook` launcher with one command per environment (`local`, `lan`, `remote`, `prod`, plus `status`, `logs`, `backup`, `stop`) and a tracked `docker-compose.nextnootbook.yml`, so a fresh clone runs the NextNootbook build without personal override files.
 - Home server accepts HTTPS origins such as a Tailscale `ts.net` name alongside LAN HTTP, with `Secure` session cookies for HTTPS visitors, so the same instance works at home and remotely over a private tailnet.

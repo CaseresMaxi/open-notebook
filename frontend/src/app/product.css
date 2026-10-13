@@ -417,6 +417,7 @@
 .product-shell .summary-create { min-width: 0; }
 .product-shell .study-summaries .summary-create { padding: 0 28px 20px; }
 .product-shell .summary-create-glass { max-width: 760px; }
+.product-shell .summary-create-glass + .summary-create-glass { margin-top: 8px; }
 .product-shell .summary-create-controls { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; padding: 8px; }
 .product-shell .summary-create-controls > [data-slot=select-trigger] { width: auto; flex: 1; min-width: 0; background: transparent; border: 0; }
 .product-shell .summary-create-controls > [data-slot=button] { min-height: 44px; flex-shrink: 0; }

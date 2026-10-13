@@ -105,9 +105,21 @@ export const plPL = {
     "sourceLink": "Original source",
     "retry": "Try again",
     "summaryStatus": "Generating a summary from the selected source…",
+    "topicPlaceholder": "Topic, e.g. evaluation metrics",
+    "generateTopicSummary": "Summarize topic",
+    "topicSummaryTitle": "Summary: {{topic}}",
+    "topicSummaryInstructions": "Write a study summary in {{language}} about \"{{topic}}\" using only this notebook's sources. Explain the key ideas, definitions, formulas and examples in plain language, in an order that is easy to follow when read aloud. Use short headings and bullet points. Say clearly if the sources barely cover the topic.",
+    "topicSummaryStatus": "Searching your sources and writing a summary about this topic…",
+    "topicSummaryNoModel": "The administrator must configure a chat model before generating topic summaries.",
     "study": "Study",
 },
 
+  speech: {
+    listen: "Listen",
+    stop: "Stop reading",
+    preparing: "Preparing audio…",
+    failed: "Could not read this aloud",
+  },
   common: {
     search: "Szukaj...",
     create: "Nowy",

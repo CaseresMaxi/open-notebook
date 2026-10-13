@@ -460,6 +460,7 @@ const ChatMessage = memo(function ChatMessage({
           <MessageActions
             content={exportContent}
             notebookId={notebookId}
+            messageId={message.id}
           />
         )}
       </div>
