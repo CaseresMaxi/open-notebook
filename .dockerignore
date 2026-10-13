@@ -62,4 +62,3 @@ ui-debug.log*
 .harness
 .maintainer
 .env.*
-tailscale_state

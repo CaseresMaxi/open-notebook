@@ -1,3 +1,5 @@
+**NextNootbook:** run with `./nextnootbook local | lan | remote` — see [docs/5-CONFIGURATION/running-nextnootbook.md](docs/5-CONFIGURATION/running-nextnootbook.md).
+
 # Developer Guide
 
 Developer documentation lives in [docs/7-DEVELOPMENT/](docs/7-DEVELOPMENT/index.md).

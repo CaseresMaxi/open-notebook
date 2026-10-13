@@ -1,0 +1,23 @@
+# NextNootbook build of the app, reachable only from this computer.
+# Base layer for every mode of ./nextnootbook (local, lan, remote).
+# Secrets come from .env (git-ignored): OPEN_NOTEBOOK_ENCRYPTION_KEY.
+services:
+  open_notebook:
+    image: open_notebook:local
+    build:
+      context: .
+      target: runtime
+    pull_policy: build
+    ports: !override
+      - "127.0.0.1:8502:8502"
+      - "127.0.0.1:5055:5055"
+    environment:
+      - OPEN_NOTEBOOK_ENCRYPTION_KEY=${OPEN_NOTEBOOK_ENCRYPTION_KEY:?Set OPEN_NOTEBOOK_ENCRYPTION_KEY in .env}
+      - NEXTNOOTBOOK_AUTH_MODE=legacy
+      - NEXTNOOTBOOK_DATABASE_BACKEND=surrealdb
+      - NEXTNOOTBOOK_STORAGE_BACKEND=local
+      - NEXTNOOTBOOK_DATA_ROOT=/app/data
+      - NEXTNOOTBOOK_LEGACY_OWNER_FILE=/app/data/account-owner.json
+      # OCR for scanned study material, CPU runtime
+      - OPEN_NOTEBOOK_ENABLE_DOCLING=true
+      - UV_TORCH_BACKEND=cpu

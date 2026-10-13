@@ -1,0 +1,110 @@
+#!/usr/bin/env bash
+# One entry point for every way of running NextNootbook.
+#
+#   ./nextnootbook local    this computer only, no sign-in   http://localhost:8502
+#   ./nextnootbook lan      home network, Firebase accounts  http://<this-ip>:8502
+#   ./nextnootbook remote   lan + private HTTPS anywhere via Tailscale
+#   ./nextnootbook prod     cloud deployment status (Firebase / Cloud Run)
+#   ./nextnootbook stop | status | logs | backup | build
+#
+# All local modes share the same data (./surreal_data, ./notebook_data).
+set -euo pipefail
+cd "$(dirname "$0")"
+
+die() { echo "error: $*" >&2; exit 1; }
+
+files=(-f docker-compose.yml -f docker-compose.nextnootbook.yml)
+# Personal, git-ignored tweaks (e.g. patched providers) apply to every mode.
+[[ -f docker-compose.override.yml ]] && files+=(-f docker-compose.override.yml)
+
+compose() { docker compose "${files[@]}" "$@"; }
+
+require_env() {
+  [[ -f .env ]] && grep -q '^OPEN_NOTEBOOK_ENCRYPTION_KEY=.\+' .env \
+    || die "create .env with OPEN_NOTEBOOK_ENCRYPTION_KEY=<your existing key> (see .env.example)"
+}
+
+require_home() {
+  [[ -f .firebase/home-runtime.env ]] \
+    || die "missing .firebase/home-runtime.env (copy firebase/home-runtime.env.example)"
+  [[ -f .firebase/runtime-service-account.json ]] \
+    || die "missing .firebase/runtime-service-account.json (Firebase service account key)"
+  files+=(-f docker-compose.home.yml)
+}
+
+wait_ready() {
+  local url=$1
+  printf 'waiting for %s ' "$url"
+  for _ in $(seq 1 60); do
+    curl -sf -o /dev/null "$url/api/auth/status" && { echo ok; return; }
+    printf .; sleep 5
+  done
+  echo; die "not responding; see ./nextnootbook logs"
+}
+
+lan_ip() { ip -4 route get 1.1.1.1 2>/dev/null | awk '{for(i=1;i<NF;i++) if($i=="src") print $(i+1)}'; }
+
+tailscale_info() {
+  local json
+  json=$(docker exec open-notebook-tailscale-1 tailscale status --json 2>/dev/null) || return 0
+  if grep -q '"BackendState": "Running"' <<<"$json"; then
+    local name
+    name=$(python3 -c 'import json,sys; print(json.load(sys.stdin)["Self"]["DNSName"].rstrip("."))' <<<"$json")
+    echo "anywhere:  https://$name   (devices signed in to your Tailscale)"
+    grep -q "https://$name" .firebase/home-runtime.env \
+      || echo "  -> add https://$name to NEXTNOOTBOOK_ALLOWED_ORIGINS and CORS_ORIGINS in .firebase/home-runtime.env, and $name to Firebase authorized domains, then run ./nextnootbook remote again"
+  else
+    echo "Tailscale needs sign-in: $(docker logs open-notebook-tailscale-1 2>&1 | grep -o 'https://login.tailscale.com/a/[^ ]*' | tail -1)"
+  fi
+}
+
+mode=${1:-help}
+case "$mode" in
+  local)
+    require_env
+    compose up -d --remove-orphans
+    wait_ready http://localhost:8502
+    echo "open:      http://localhost:8502   (this computer only, no sign-in)"
+    ;;
+  lan|remote)
+    require_env
+    require_home
+    [[ $mode == remote ]] && files+=(-f docker-compose.tailscale.yml)
+    compose up -d --remove-orphans
+    wait_ready http://localhost:8502
+    echo "this PC:   http://localhost:8502"
+    echo "home:      http://$(lan_ip):8502   (also http://$(hostname).local:8502)"
+    [[ $mode == remote ]] && tailscale_info
+    ;;
+  build)
+    require_env
+    compose build open_notebook
+    ;;
+  stop)
+    docker compose "${files[@]}" -f docker-compose.home.yml -f docker-compose.tailscale.yml down
+    ;;
+  status)
+    docker compose "${files[@]}" -f docker-compose.home.yml -f docker-compose.tailscale.yml ps
+    docker exec open-notebook-open_notebook-1 printenv NEXTNOOTBOOK_AUTH_MODE 2>/dev/null \
+      | sed 's/^legacy$/mode: local (no sign-in)/; s/^firebase$/mode: lan (Firebase accounts)/'
+    tailscale_info
+    ;;
+  logs)
+    shift; docker compose "${files[@]}" -f docker-compose.home.yml -f docker-compose.tailscale.yml logs -f --tail=100 "$@"
+    ;;
+  backup)
+    shift; scripts/home-backup.sh "$@"
+    ;;
+  prod)
+    cat <<'MSG'
+Production (Firebase Auth + Firestore + Storage on Cloud Run) is prepared but
+NOT provisioned: no cloud services, queue, secrets or billing exist yet.
+Guide: docs/5-CONFIGURATION/firebase-serverless.md
+Image: docker build -f Dockerfile.cloud -t nextnootbook-cloud .
+Settings template: firebase/cloud-runtime.env.example
+MSG
+    ;;
+  *)
+    sed -n '2,10p' "$0" | sed 's/^# \{0,1\}//'
+    ;;
+esac

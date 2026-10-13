@@ -19,6 +19,9 @@ services:
       - TS_USERSPACE=true
       - TS_SERVE_CONFIG=/config/serve.json
     volumes:
-      - ./tailscale_state:/var/lib/tailscale
+      - tailscale_state:/var/lib/tailscale
       - ./firebase/tailscale-serve.json:/config/serve.json:ro
     restart: always
+
+volumes:
+  tailscale_state:
