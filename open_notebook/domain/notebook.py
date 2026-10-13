@@ -691,6 +691,7 @@ class Note(ObjectModel):
     title: Optional[str] = None
     note_type: Optional[Literal["human", "ai"]] = None
     content: Optional[str] = None
+    summary: Optional[str] = None
 
     @field_validator("content")
     @classmethod
@@ -711,7 +712,12 @@ class Note(ObjectModel):
                 otherwise (either no content to embed, or submission failed)
         """
         # Every persisted note has a readable title, including generated notes.
-        self.title = (self.title or "").strip() or "New note"
+        from open_notebook.utils.note_metadata import DEFAULT_TITLES, note_metadata
+
+        generated_title, self.summary = note_metadata(self.content)
+        self.title = (self.title or "").strip()
+        if self.title.casefold() in DEFAULT_TITLES:
+            self.title = generated_title
 
         # Call parent save (without embedding)
         await super().save()

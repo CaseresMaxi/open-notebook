@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Notes automatically derive a readable title and description from their content when saved, preserving custom titles without additional AI calls.
 - Read aloud: chat answers and saved summaries have a Listen button that speaks them with the configured default text-to-speech model (`POST /api/speech`, Markdown and citations stripped, long text chunked, usage metered, one reading at a time with recent audio reused). Voice via `NEXTNOOTBOOK_TTS_VOICE` (default `nova`).
 - Topic summaries: the Summaries library can summarize a free-text topic across a notebook's sources with the existing Ask pipeline and save it as a study summary that can be read aloud.
 - NextNootbook is an installable web app: manifest, home-screen icons (including maskable and Apple touch icons) and theme colors. Install is offered over HTTPS, e.g. the Tailscale address; plain LAN HTTP allows a home-screen shortcut.
@@ -33,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Practice exams.** Generate an exam from a notebook's sources (and optionally its notes) with multiple-choice, multiple-select (several correct options), fill-in-the-blank and open questions, configurable difficulty, language, instructions and model; take it in the new Create → Exams page (or from the notebook header) and get it graded. Multiple choice, multiple select (with partial credit) and exact blank matches are graded deterministically; non-exact blanks and open answers are graded by the LLM against a reference answer and rubric, with partial credit and feedback. Attempts are stored and can be reviewed or retaken, and the answer key is only returned once an attempt is being reviewed. New `exam`/`exam_attempt` tables (migration 26) and `/api/exams` endpoints (#1150)
 
 ### Changed
+- Mobile study views and note documents use the screen without desktop window frames. Note actions share a quieter, integrated footer.
 - Local development explicitly uses SurrealDB, local files and personal authentication. Cloud deployment configuration is separate and paused while product development continues.
 - Personal product roadmap specifies Firebase accounts and private storage, workspace isolation, operator-controlled AI policies and per-user budgets, interchangeable billing providers and a study-first commercial experience. Accounts, private storage and AI/file budgets are implemented; commercial billing is still planned.
 - New notes start with a localized mandatory title. Successful record creation and deletion share a subtle monochrome pop across notebooks, notes, summaries, sources, exams, sessions and settings, respecting reduced motion and keeping failed operations visible.

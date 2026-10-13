@@ -47,6 +47,9 @@ async def get_notes(
             NoteResponse(
                 id=note.id or "",
                 title=note.title,
+                description=note.summary
+                if isinstance(getattr(note, "summary", None), str)
+                else None,
                 content=note.content,
                 note_type=note.note_type,
                 created=str(note.created),
@@ -69,21 +72,7 @@ async def get_notes(
 async def create_note(note_data: NoteCreate):
     """Create a new note."""
     try:
-        # Auto-generate title if not provided and it's an AI note
         title = (note_data.title or "").strip()
-        if not title and note_data.note_type == "ai" and note_data.content:
-            from open_notebook.graphs.prompt import graph as prompt_graph
-
-            prompt = "Based on the Note below, please provide a Title for this content, with max 15 words"
-            # LangGraph accepts a partial state dict at runtime, but its typed
-            # overloads require the full state type (langgraph typing limitation).
-            result = await prompt_graph.ainvoke(  # type: ignore[call-overload]
-                {
-                    "input_text": note_data.content,
-                    "prompt": prompt,
-                }
-            )
-            title = result.get("output", "Untitled Note")
 
         # Validate note_type
         note_type: Optional[Literal["human", "ai"]] = None
@@ -112,6 +101,9 @@ async def create_note(note_data: NoteCreate):
         return NoteResponse(
             id=new_note.id or "",
             title=new_note.title,
+            description=new_note.summary
+            if isinstance(getattr(new_note, "summary", None), str)
+            else None,
             content=new_note.content,
             note_type=new_note.note_type,
             created=str(new_note.created),
@@ -140,6 +132,9 @@ async def get_note(note_id: str):
         return NoteResponse(
             id=note.id or "",
             title=note.title,
+            description=note.summary
+            if isinstance(getattr(note, "summary", None), str)
+            else None,
             content=note.content,
             note_type=note.note_type,
             created=str(note.created),
@@ -180,6 +175,9 @@ async def update_note(note_id: str, note_update: NoteUpdate):
         return NoteResponse(
             id=note.id or "",
             title=note.title,
+            description=note.summary
+            if isinstance(getattr(note, "summary", None), str)
+            else None,
             content=note.content,
             note_type=note.note_type,
             created=str(note.created),

@@ -240,6 +240,7 @@ class NoteResponse(BaseModel):
     created: str
     updated: str
     command_id: Optional[str] = None
+    description: Optional[str] = None
 
 
 # Embedding API models
