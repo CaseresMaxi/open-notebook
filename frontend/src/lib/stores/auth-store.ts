@@ -185,6 +185,11 @@ export const useAuthStore = create<AuthState>()(
         }
 
         if (state.mode === 'firebase') {
+          // Components mounting under the spinner re-check auth; a recent
+          // check must not toggle loading again or the shell remounts forever.
+          if (isAuthenticated && lastAuthCheck && Date.now() - lastAuthCheck < 30000) {
+            return true
+          }
           set({ isCheckingAuth: true })
           try {
             const { data } = await apiClient.get<{ user: AccountUser }>('/auth/me')

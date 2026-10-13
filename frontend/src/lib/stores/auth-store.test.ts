@@ -41,4 +41,10 @@ describe('Account session logout', () => {
     await useAuthStore.getState().logout()
     expect(api.post).not.toHaveBeenCalled()
   })
+  it('does not re-enter loading for a fresh Firebase session check', async () => {
+    useAuthStore.setState({ mode: 'firebase', isAuthenticated: true, lastAuthCheck: Date.now(), isCheckingAuth: false })
+    expect(await useAuthStore.getState().checkAuth()).toBe(true)
+    expect(api.get).not.toHaveBeenCalled()
+    expect(useAuthStore.getState().isCheckingAuth).toBe(false)
+  })
 })
