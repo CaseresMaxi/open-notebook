@@ -19,6 +19,18 @@ files=(-f docker-compose.yml -f docker-compose.nextnootbook.yml)
 
 compose() { docker compose "${files[@]}" "$@"; }
 
+# Remember the mode for plain `docker compose ...` commands run by hand, which
+# would otherwise fall back to docker-compose.yml + override (local only).
+remember_mode() {
+  local joined
+  joined=$(printf '%s\n' "${files[@]}" | grep -v '^-f$' | paste -sd: -)
+  if grep -q '^COMPOSE_FILE=' .env; then
+    sed -i "s|^COMPOSE_FILE=.*|COMPOSE_FILE=$joined|" .env
+  else
+    printf 'COMPOSE_FILE=%s\n' "$joined" >> .env
+  fi
+}
+
 require_env() {
   [[ -f .env ]] && grep -q '^OPEN_NOTEBOOK_ENCRYPTION_KEY=.\+' .env \
     || die "create .env with OPEN_NOTEBOOK_ENCRYPTION_KEY=<your existing key> (see .env.example)"
@@ -63,6 +75,7 @@ case "$mode" in
   local)
     require_env
     compose up -d --remove-orphans
+    remember_mode
     wait_ready http://localhost:8502
     echo "open:      http://localhost:8502   (this computer only, no sign-in)"
     ;;
@@ -71,6 +84,7 @@ case "$mode" in
     require_home
     [[ $mode == remote ]] && files+=(-f docker-compose.tailscale.yml)
     compose up -d --remove-orphans
+    remember_mode
     wait_ready http://localhost:8502
     echo "this PC:   http://localhost:8502"
     echo "home:      http://$(lan_ip):8502   (also http://$(hostname).local:8502)"
