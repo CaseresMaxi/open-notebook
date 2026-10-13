@@ -494,6 +494,20 @@
 }
 
 .product-shell .notebook-mobile-navigation { display: none; }
+
+/* Phones fold the notebook heading into the floating study tab bar: the options
+   button leads the row and the tabs scroll sideways when they do not fit. */
+.product-shell .notebook-tab-menu { display: none; }
+@media (max-width: 767px) {
+  .product-shell .notebook-heading-wrap { display: none; }
+  .product-shell .notebook-tab-menu { display: block; flex-shrink: 0; pointer-events: auto; }
+  .product-shell .notebook-tab-menu .notebook-heading-control { border-radius: 16px; background: var(--nn-glass); box-shadow: inset 0 0 0 1px var(--nn-edge); }
+  .product-shell .study-library-workspace .study-view-switch { gap: 6px; align-items: center; }
+  .product-shell .study-view-switch .glass-tabs { min-width: 0; flex: 0 1 auto; }
+  .product-shell .study-view-switch .glass-tabs [data-slot=tabs-list] { overflow-x: auto; scrollbar-width: none; justify-content: flex-start; }
+  .product-shell .study-view-switch .glass-tabs [data-slot=tabs-list]::-webkit-scrollbar { display: none; }
+  .product-shell .study-view-switch .glass-tabs [data-slot=tabs-trigger] { flex-shrink: 0; }
+}
 @media (max-width: 767px) {
   .product-shell .notebook-mobile-navigation { display: block; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
 }

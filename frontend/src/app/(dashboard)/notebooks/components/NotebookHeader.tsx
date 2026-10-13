@@ -16,9 +16,11 @@ import { useTranslation } from '@/lib/hooks/use-translation'
 
 interface NotebookHeaderProps {
   notebook: NotebookResponse
+  /** Only the options button, for the phone's study tab bar. */
+  menuOnly?: boolean
 }
 
-export function NotebookHeader({ notebook }: NotebookHeaderProps) {
+export function NotebookHeader({ notebook, menuOnly = false }: NotebookHeaderProps) {
   const { t } = useTranslation()
   const [optionsOpen, setOptionsOpen] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
@@ -52,11 +54,11 @@ export function NotebookHeader({ notebook }: NotebookHeaderProps) {
 
   return (
     <>
-      <div className="notebook-heading-bar">
-        <div data-record-id={notebook.id} className="notebook-heading-title">
+      <div className={menuOnly ? 'notebook-tab-menu' : 'notebook-heading-bar'}>
+        {!menuOnly && <div data-record-id={notebook.id} className="notebook-heading-title">
           <h1 title={notebook.name}>{notebook.name}</h1>
           {notebook.archived && <Badge variant="secondary">{t('notebooks.archived')}</Badge>}
-        </div>
+        </div>}
         <div className="notebook-heading-utilities">
         <Drawer open={optionsOpen} onOpenChange={setOptionsOpen}>
           <LiquidSurface className="notebook-heading-control" radius={16}>
