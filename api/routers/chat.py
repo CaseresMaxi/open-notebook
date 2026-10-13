@@ -370,7 +370,9 @@ async def _execute_chat(request: ExecuteChatRequest):
         from open_notebook.storage import retain_images
 
         await asyncio.to_thread(retain_images, request.images)
-        user_message = build_user_message(request.message, request.images)
+        user_message = build_user_message(
+            request.message, request.images, hidden=request.hidden
+        )
         state_values["messages"].append(user_message)
 
         # Execute chat graph in a thread so the synchronous LangGraph invoke

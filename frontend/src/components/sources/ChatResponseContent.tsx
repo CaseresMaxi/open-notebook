@@ -15,7 +15,7 @@ export function ChatResponseContent({ content, images = [], quizzes = [], follow
   quizzes?: string[]
   followups?: ChatFollowup[]
   disabled?: boolean
-  onReply?: (message: string) => void | boolean | Promise<void | boolean>
+  onReply?: (message: string, options?: { hidden?: boolean }) => void | boolean | Promise<void | boolean>
   onCreateExam?: () => void
   onReferenceClick: (type: string, id: string) => void
 }) {

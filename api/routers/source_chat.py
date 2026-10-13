@@ -356,6 +356,7 @@ async def stream_source_chat_response(
     model_override: Optional[str] = None,
     images: Optional[list[ChatImage]] = None,
     visual_tools: bool = True,
+    hidden: bool = False,
 ) -> AsyncGenerator[str, None]:
     """Stream the source chat response as Server-Sent Events."""
     try:
@@ -378,12 +379,17 @@ async def stream_source_chat_response(
         from open_notebook.storage import retain_images
 
         await asyncio.to_thread(retain_images, images or [])
-        user_message = build_user_message(message, images or [])
+        user_message = build_user_message(message, images or [], hidden=hidden)
         state_values["messages"].append(user_message)
 
-        # Send user message event
-        user_event = {"type": "user_message", "content": message, "timestamp": None}
-        yield f"data: {json.dumps(user_event)}\n\n"
+        # Send user message event (internal turns stay invisible)
+        if not hidden:
+            user_event = {
+                "type": "user_message",
+                "content": message,
+                "timestamp": None,
+            }
+            yield f"data: {json.dumps(user_event)}\n\n"
 
         # Run the synchronous LangGraph invoke in a thread so it doesn't block the
         # event loop. While blocked, even the already-yielded SSE events can't
@@ -481,6 +487,7 @@ async def send_message_to_source_chat(
                 model_override=model_override,
                 images=request.images,
                 visual_tools=request.visual_tools,
+                hidden=request.hidden,
             ),
             media_type="text/event-stream",
             headers={

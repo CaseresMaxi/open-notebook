@@ -27,7 +27,7 @@ import { ChatResponseContent } from './ChatResponseContent'
 import { readChatImages, CHAT_IMAGE_TYPES } from '@/lib/utils/chat-images'
 import { ChatSkeleton } from '@/components/common/LoadingSkeletons'
 
-type SendChatMessage = (message: string, modelOverride?: string, images?: ChatImage[], visualTools?: boolean) => void | boolean | Promise<void | boolean>
+type SendChatMessage = (message: string, modelOverride?: string, images?: ChatImage[], visualTools?: boolean, options?: { hidden?: boolean }) => void | boolean | Promise<void | boolean>
 
 interface NotebookContextStats {
   sourcesInsights: number
@@ -193,7 +193,7 @@ export function ChatPanel({
                   notebookId={notebookId}
                   onReferenceClick={handleReferenceClick}
                   followupsDisabled={isStreaming || message.id !== messages[messages.length - 1]?.id}
-                  onReply={text => onSendMessage(text, modelOverride)}
+                  onReply={(text, options) => onSendMessage(text, modelOverride, undefined, true, options)}
                   onCreateExam={() => {
                     const position = messages.findIndex(item => item.id === message.id)
                     const request = messages.slice(0, position).reverse().find(item => item.type === 'human')
@@ -405,7 +405,7 @@ interface ChatMessageProps {
   message: SourceChatMessage
   notebookId?: string
   followupsDisabled?: boolean
-  onReply?: (message: string) => void | boolean | Promise<void | boolean>
+  onReply?: (message: string, options?: { hidden?: boolean }) => void | boolean | Promise<void | boolean>
   onCreateExam?: () => void
   onReferenceClick: (type: string, id: string) => void
 }

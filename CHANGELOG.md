@@ -59,6 +59,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Development:** `architecture.md`, `testing.md`, `api-reference.md` and `code-standards.md` are rewritten from the code. A new playbook covers adding an AI provider. Dev setup lives on one page. The AGENTS files agree with the docs. Contributor conventions (Conventional Commits, CHANGELOG sections, pre-PR checks that match CI) are documented
 
 ### Fixed
+- Choosing "Take a test in chat" no longer posts a visible message: the choice is sent as an internal turn that the model receives but transcripts never show.
+- On phones the notebook screen fills the display without the outer frame, border and rounded corners; the frame remains on desktop.
 - Lists no longer show their empty state before the first load: notebook and source chats keep a conversation skeleton until the existing transcript arrives, exam attempts wait for their data, and notebooks, notebook sources/notes, exams, the source library and accounts show content-shaped skeletons. Failed loads show a retryable error instead of claiming there is nothing, and search no longer flashes the missing-embedding warning while models load.
 - Reloading the page keeps a Firebase account signed in instead of returning to the login form.
 - The signed-in profile page scrolls on mobile and its preferences wrap instead of being clipped.

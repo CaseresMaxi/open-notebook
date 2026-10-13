@@ -210,6 +210,8 @@ export interface UpdateSourceChatSessionRequest {
 
 export interface SendMessageRequest {
   visual_tools?: boolean
+  /** Internal turn: the model receives it, the transcript never shows it. */
+  hidden?: boolean
   message: string
   images?: ChatImage[]
   model_override?: string
@@ -255,6 +257,8 @@ export interface UpdateNotebookChatSessionRequest {
 
 export interface SendNotebookChatMessageRequest {
   visual_tools?: boolean
+  /** Internal turn: the model receives it, the transcript never shows it. */
+  hidden?: boolean
   session_id: string
   message: string
   images?: ChatImage[]

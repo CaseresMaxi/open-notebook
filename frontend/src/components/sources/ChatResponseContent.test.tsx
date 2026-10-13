@@ -44,7 +44,7 @@ it('offers two study paths and sends the selected continuation', async () => {
   fireEvent.click(screen.getByRole('button', { name: 'chat.separateExam' }))
   expect(onCreateExam).toHaveBeenCalledOnce()
   fireEvent.click(screen.getByRole('button', { name: 'chat.testInChat' }))
-  expect(onReply).toHaveBeenCalledWith('chat.inlineTestReply')
+  expect(onReply).toHaveBeenCalledWith('chat.inlineTestReply', { hidden: true })
 })
 
 it('disables historical followups and hides forged markers', () => {

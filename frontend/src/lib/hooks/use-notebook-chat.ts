@@ -206,7 +206,7 @@ export function useNotebookChat({ notebookId, sources, notes, contextSelections 
   }, [notebookId, sources, notes, contextSelections])
 
   // Send message (synchronous, no streaming)
-  const sendMessage = useCallback(async (message: string, modelOverride?: string, images?: ChatImage[], visualTools = true) => {
+  const sendMessage = useCallback(async (message: string, modelOverride?: string, images?: ChatImage[], visualTools = true, options?: { hidden?: boolean }) => {
     let sessionId = currentSessionId
 
     // Auto-create session if none exists
@@ -243,7 +243,8 @@ export function useNotebookChat({ notebookId, sources, notes, contextSelections 
       images,
       timestamp: new Date().toISOString()
     }
-    setMessages(prev => [...prev, userMessage])
+    // Internal turns (e.g. choosing an in-chat test) are never shown.
+    if (!options?.hidden) setMessages(prev => [...prev, userMessage])
     setIsSending(true)
 
     try {
@@ -255,7 +256,8 @@ export function useNotebookChat({ notebookId, sources, notes, contextSelections 
         images,
         visual_tools: visualTools,
         context,
-        model_override: modelOverride ?? (currentSession?.model_override ?? undefined)
+        model_override: modelOverride ?? (currentSession?.model_override ?? undefined),
+        hidden: options?.hidden || undefined
       })
 
       // Update messages with API response

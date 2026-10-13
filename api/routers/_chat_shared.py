@@ -19,7 +19,7 @@ from pydantic import BaseModel, Field
 
 from open_notebook.database.repository import ensure_record_id, repo_query
 from open_notebook.domain.notebook import ChatSession, Source
-from open_notebook.utils.chat_images import ChatVisual, message_images
+from open_notebook.utils.chat_images import ChatVisual, is_hidden, message_images
 from open_notebook.utils.text_utils import extract_text_content
 
 
@@ -88,6 +88,8 @@ def extract_chat_messages(raw_messages: Iterable[Any]) -> List[ChatMessage]:
     """Convert LangGraph/LangChain state messages into `ChatMessage` models."""
     messages: List[ChatMessage] = []
     for msg in raw_messages:
+        if is_hidden(msg):
+            continue
         messages.append(
             ChatMessage(
                 id=getattr(msg, "id", f"msg_{len(messages)}"),

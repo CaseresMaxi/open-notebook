@@ -122,6 +122,9 @@ class ChatInput(BaseModel):
     images: list[ChatImage] = Field(default_factory=list, max_length=MAX_CHAT_IMAGES)
     model_override: str | None = None
     visual_tools: bool = True
+    # Internal turn sent on the user's behalf (e.g. choosing an in-chat test):
+    # the model receives it, but transcripts never show it.
+    hidden: bool = False
 
     @model_validator(mode="after")
     def require_content(self) -> "ChatInput":
@@ -130,9 +133,15 @@ class ChatInput(BaseModel):
         return self
 
 
-def build_user_message(message: str, images: list[ChatImage]) -> HumanMessage:
+def build_user_message(
+    message: str, images: list[ChatImage], *, hidden: bool = False
+) -> HumanMessage:
     if not images:
-        return HumanMessage(content=message, id=str(uuid4()))
+        return HumanMessage(
+            content=message,
+            id=str(uuid4()),
+            additional_kwargs={"hidden": True} if hidden else {},
+        )
     blocks: list[str | dict[Any, Any]] = []
     if message.strip():
         blocks.append({"type": "text", "text": message})
@@ -142,8 +151,15 @@ def build_user_message(message: str, images: list[ChatImage]) -> HumanMessage:
     return HumanMessage(
         content=blocks,
         id=str(uuid4()),
-        additional_kwargs={"image_names": [image.name for image in images]},
+        additional_kwargs={
+            "image_names": [image.name for image in images],
+            **({"hidden": True} if hidden else {}),
+        },
     )
+
+
+def is_hidden(message: Any) -> bool:
+    return bool(getattr(message, "additional_kwargs", {}).get("hidden"))
 
 
 def message_images(message: Any, *, public: bool = False) -> list[ChatVisual]:

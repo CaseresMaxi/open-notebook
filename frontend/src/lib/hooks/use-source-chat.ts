@@ -106,7 +106,7 @@ export function useSourceChat(sourceId: string) {
   })
 
   // Send message with streaming
-  const sendMessage = useCallback(async (message: string, modelOverride?: string, images?: ChatImage[], visualTools = true) => {
+  const sendMessage = useCallback(async (message: string, modelOverride?: string, images?: ChatImage[], visualTools = true, options?: { hidden?: boolean }) => {
     let sessionId = currentSessionId
     const effectiveModel = modelOverride ?? currentSession?.model_override ?? pendingModelOverride ?? undefined
 
@@ -135,7 +135,8 @@ export function useSourceChat(sourceId: string) {
       images,
       timestamp: new Date().toISOString()
     }
-    setMessages(prev => [...prev, userMessage])
+    // Internal turns (e.g. choosing an in-chat test) are never shown.
+    if (!options?.hidden) setMessages(prev => [...prev, userMessage])
     setIsStreaming(true)
 
     try {
@@ -143,7 +144,8 @@ export function useSourceChat(sourceId: string) {
         message,
         images,
         visual_tools: visualTools,
-        model_override: effectiveModel
+        model_override: effectiveModel,
+        hidden: options?.hidden || undefined
       })
 
       if (!response) {
