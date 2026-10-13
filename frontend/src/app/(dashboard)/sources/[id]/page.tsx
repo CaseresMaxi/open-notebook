@@ -7,8 +7,6 @@ import { ArrowLeft } from 'lucide-react'
 import { useSourceChat } from '@/lib/hooks/use-source-chat'
 import { ChatPanel } from '@/components/sources/ChatPanel'
 import { useNavigation } from '@/lib/hooks/use-navigation'
-import { Tabs } from '@/components/ui/tabs'
-import { GlassTabsList } from '@/components/layout/GlassTabsList'
 import { useTranslation } from '@/lib/hooks/use-translation'
 import { AppShell } from '@/components/layout/AppShell'
 import { SourceDetailContent } from '@/components/sources/SourceDetailContent'
@@ -33,25 +31,24 @@ export default function SourceDetailPage() {
   return (
     <AppShell>
     <div className="source-workspace flex flex-col flex-1 min-h-0">
-      <div className="source-workspace-toolbar">
-        <Button variant="ghost" size="sm" onClick={handleBack}>
-          <ArrowLeft className="h-4 w-4" />{navigation.getReturnLabel()}
-        </Button>
-        <Tabs value={panel} onValueChange={setPanel}>
-          <GlassTabsList value={panel} label={t('sources.detailsTitle')} options={[
-            { value: 'source', label: t('sources.content') },
-            { value: 'chat', label: t('common.chat') },
-          ]} />
-        </Tabs>
-      </div>
+      {panel === 'chat' && (
+        <div className="source-workspace-toolbar">
+          <Button variant="ghost" size="sm" onClick={() => setPanel('source')}>
+            <ArrowLeft className="h-4 w-4" />{t('sources.content')}
+          </Button>
+        </div>
+      )}
       {/* Main content: Source detail + Chat */}
       <div className="source-detail-grid flex-1 min-h-0 grid overflow-hidden">
         {/* Left column - Source detail */}
         <div className={`min-h-0 overflow-hidden ${panel === 'source' ? 'flex' : 'hidden'} flex-col`}>
           <SourceDetailContent
             sourceId={sourceId}
-            showChatButton={false}
+            showChatButton
+            onChatClick={() => setPanel('chat')}
             onClose={handleBack}
+            onBack={handleBack}
+            backLabel={navigation.getReturnLabel()}
           />
         </div>
 

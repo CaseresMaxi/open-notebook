@@ -58,6 +58,7 @@ import {
   Database,
   AlertCircle,
   MessageSquare,
+  ArrowLeft,
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { getDateLocale } from '@/lib/utils/date-locale'
@@ -73,6 +74,9 @@ interface SourceDetailContentProps {
   showChatButton?: boolean
   onChatClick?: () => void
   onClose?: () => void
+  /** Full-page view: a back button beside the title. */
+  onBack?: () => void
+  backLabel?: string
 }
 
 const safeExternalHref = (url: string | null | undefined): string | null => {
@@ -98,7 +102,9 @@ function SourceDetailContentInner({
   sourceId,
   showChatButton = false,
   onChatClick,
-  onClose
+  onClose,
+  onBack,
+  backLabel,
 }: SourceDetailContentProps) {
   const { t, language } = useTranslation()
   const queryClient = useQueryClient()
@@ -428,6 +434,11 @@ function SourceDetailContentInner({
       {/* Header */}
       <div className="source-reading-heading shrink-0">
         <div className="source-reading-heading-row">
+          {onBack && (
+            <Button variant="ghost" size="icon" className="source-reading-back" onClick={onBack} aria-label={backLabel} title={backLabel}>
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+          )}
           <div className="source-reading-title">
             <InlineEdit
               value={source.title || ''}
