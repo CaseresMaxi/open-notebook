@@ -32,17 +32,42 @@ export default function ProfilePage() {
     setStatus(null)
     setDraft((prev) => ({ ...prev, [key]: value }))
   }
-  if (user) return <AppShell><div className="product-page">
-    <div className="product-heading"><h1>{t('product.profile')}</h1></div>
-    <section className="product-form space-y-6">
-      <Avatar name={user.name || user.email} size="xl" />
-      <h2 className="text-xl font-medium">{user.name || user.email}</h2>
-      <dl className="space-y-4"><div><dt className="text-sm text-muted-foreground">{t('product.email')}</dt><dd className="break-words">{user.email}</dd>{user.emailVerified && <dd className="text-sm text-muted-foreground">{t('account.verifiedEmail')}</dd>}</div>
-        <div><dt className="text-sm text-muted-foreground">{t('account.accountRole')}</dt><dd>{t(user.admin ? 'account.administrator' : 'account.member')}</dd></div></dl>
-      <AccountUsage />
-      <div className="flex items-center gap-3"><ThemeToggle /><LanguageToggle /></div>
-    </section>
-  </div></AppShell>
+  if (user) return (
+    <AppShell>
+      <div className="flex-1 min-h-0 overflow-y-auto">
+        <div className="product-page">
+          <div className="product-heading"><h1>{t('product.profile')}</h1></div>
+          <div className="product-form">
+            <section className="product-panel product-fields" aria-label={t('product.profile')}>
+              <div className="flex min-w-0 items-center gap-4">
+                <Avatar name={user.name || user.email} size="xl" />
+                <h2 className="min-w-0 break-words text-xl font-medium">{user.name || user.email}</h2>
+              </div>
+              <dl className="grid gap-4 sm:grid-cols-2">
+                <div className="min-w-0">
+                  <dt className="text-sm text-muted-foreground">{t('product.email')}</dt>
+                  <dd className="break-all">{user.email}</dd>
+                  {user.emailVerified && <dd className="text-sm text-muted-foreground">{t('account.verifiedEmail')}</dd>}
+                </div>
+                <div>
+                  <dt className="text-sm text-muted-foreground">{t('account.accountRole')}</dt>
+                  <dd>{t(user.admin ? 'account.administrator' : 'account.member')}</dd>
+                </div>
+              </dl>
+            </section>
+            <section className="product-panel"><AccountUsage /></section>
+            <section className="product-panel" aria-labelledby="profile-preferences">
+              <h2 id="profile-preferences">{t('product.preferences')}</h2>
+              <div className="flex flex-wrap gap-3">
+                <ThemeToggle />
+                <LanguageToggle />
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+    </AppShell>
+  )
   return (
     <AppShell>
       <div className="flex-1 min-h-0 overflow-y-auto">
