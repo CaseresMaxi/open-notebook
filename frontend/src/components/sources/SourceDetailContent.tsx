@@ -441,14 +441,13 @@ function SourceDetailContentInner({
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="source-reading-tabs flex-1 min-h-0">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="source-reading-tabs relative flex-1 min-h-0">
         <div className="source-reading-navigation">
           <GlassTabsList value={activeTab} label={t('sources.detailsTitle')} options={[
             { value: 'content', label: t('sources.content') },
             { value: 'insights', label: `${t('common.insights')}${insights.length ? ` (${insights.length})` : ''}` },
             { value: 'details', label: t('sources.details') },
-          ]} />
-          <div className="source-reading-actions">
+          ]} trailing={<>
             {/* Chat with source button - only in modal */}
             {showChatButton && onChatClick && (
               <Button variant="ghost" size="icon" onClick={onChatClick}
@@ -498,7 +497,7 @@ function SourceDetailContentInner({
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-          </div>
+          </>} />
         </div>
         <div className="source-reading-scroll flex-1 min-h-0 overflow-y-auto">
           <TabsContent value="content" className="mt-5">
