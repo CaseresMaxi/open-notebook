@@ -11,7 +11,7 @@ import { ChatColumn } from '../components/ChatColumn'
 import { useNotebook } from '@/lib/hooks/use-notebooks'
 import { useNotebookSources } from '@/lib/hooks/use-sources'
 import { useNotes } from '@/lib/hooks/use-notes'
-import { LoadingSpinner } from '@/components/common/LoadingSpinner'
+import { ListSkeleton } from '@/components/common/LoadingSkeletons'
 import { useTranslation } from '@/lib/hooks/use-translation'
 import { GlassTabsList } from '@/components/layout/GlassTabsList'
 import { Tabs, TabsContent } from '@/components/ui/tabs'
@@ -45,8 +45,9 @@ export default function NotebookPage() {
     hasNextPage,
     isFetchingNextPage,
     fetchNextPage,
+    error: sourcesError,
   } = useNotebookSources(notebookId)
-  const { data: notes, isLoading: notesLoading } = useNotes(notebookId)
+  const { data: notes, isLoading: notesLoading, isError: notesError, refetch: refetchNotes } = useNotes(notebookId)
 
   // Get collapse states for dynamic layout
 
@@ -132,9 +133,11 @@ export default function NotebookPage() {
 
   if (notebookLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <LoadingSpinner size="lg" />
-      </div>
+      <AppShell>
+        <div className="product-page">
+          <ListSkeleton rows={6} />
+        </div>
+      </AppShell>
     )
   }
 
@@ -150,7 +153,7 @@ export default function NotebookPage() {
   }
 
   const sourcesPanel = <SourcesColumn
-    sources={sources} isLoading={sourcesLoading} notebookId={notebookId} notebookName={notebook.name}
+    sources={sources} isLoading={sourcesLoading} isError={!!sourcesError} onRetry={refetchSources} notebookId={notebookId} notebookName={notebook.name}
     onRefresh={refetchSources} contextSelections={contextSelections.sources}
     onContextModeChange={handleSourceContextModeChange} onBulkContextModeChange={handleBulkSourceContext}
     hasNextPage={hasNextPage} isFetchingNextPage={isFetchingNextPage} fetchNextPage={fetchNextPage}
@@ -176,7 +179,7 @@ export default function NotebookPage() {
           <TabsContent value="sources" className="study-focus study-pane flex-1 min-h-0 overflow-hidden">{sourcesPanel}</TabsContent>
           <TabsContent value="chat" forceMount className="study-focus study-pane flex-1 min-h-0 overflow-hidden data-[state=inactive]:hidden">{chatPanel}</TabsContent>
           <TabsContent value="notes" className="study-focus study-pane flex-1 min-h-0 overflow-hidden">
-            <NotesColumn notes={notes} isLoading={notesLoading} notebookId={notebookId}
+            <NotesColumn notes={notes} isLoading={notesLoading} isError={notesError} onRetry={() => refetchNotes()} notebookId={notebookId}
               contextSelections={contextSelections.notes} onContextModeChange={handleNoteContextModeChange}
               onBulkContextModeChange={handleBulkNoteContext} standalone />
           </TabsContent>

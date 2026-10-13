@@ -123,6 +123,7 @@ export const itIT = {
     dark: "Scuro",
     system: "Sistema",
     loading: "Caricamento...",
+    loadFailed: "Impossibile caricare. Riprova.",
     note: "Nota",
     insight: "Approfondimento",
     newSource: "Nuova fonte",

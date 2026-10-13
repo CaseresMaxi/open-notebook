@@ -4,7 +4,7 @@ import { NotebookResponse } from '@/lib/types/api'
 import { NotebookCard } from './NotebookCard'
 import { NotebookRow } from './NotebookRow'
 import { useNotebookViewStore } from '@/lib/stores/notebook-view-store'
-import { LoadingSpinner } from '@/components/common/LoadingSpinner'
+import { CardGridSkeleton, ListSkeleton, LoadError } from '@/components/common/LoadingSkeletons'
 import { EmptyState } from '@/components/common/EmptyState'
 import { Book, ChevronDown, ChevronRight, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -14,6 +14,8 @@ import { useTranslation } from '@/lib/hooks/use-translation'
 interface NotebookListProps {
   notebooks?: NotebookResponse[]
   isLoading: boolean
+  isError?: boolean
+  onRetry?: () => void
   title: string
   collapsible?: boolean
   emptyTitle?: string
@@ -25,6 +27,8 @@ interface NotebookListProps {
 export function NotebookList({ 
   notebooks, 
   isLoading, 
+  isError = false,
+  onRetry,
   title, 
   collapsible = false,
   emptyTitle,
@@ -37,11 +41,11 @@ export function NotebookList({
   const [isExpanded, setIsExpanded] = useState(!collapsible)
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <LoadingSpinner size="lg" />
-      </div>
-    )
+    return viewMode === 'list' ? <ListSkeleton rows={6} /> : <CardGridSkeleton />
+  }
+
+  if (isError && !notebooks?.length) {
+    return <LoadError onRetry={onRetry} />
   }
 
   if (!notebooks || notebooks.length === 0) {

@@ -123,6 +123,7 @@ export const ptBR = {
     dark: "Escuro",
     system: "Sistema",
     loading: "Carregando...",
+    loadFailed: "Não foi possível carregar. Tente novamente.",
     note: "Nota",
     insight: "Insight",
     newSource: "Nova Fonte",

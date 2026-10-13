@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { EmptyState } from '@/components/common/EmptyState'
-import { LoadingSpinner } from '@/components/common/LoadingSpinner'
+import { CardGridSkeleton, LoadError } from '@/components/common/LoadingSkeletons'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import { useExams, useDeleteExam } from '@/lib/hooks/use-exams'
 import { useNotebooks } from '@/lib/hooks/use-notebooks'
@@ -29,7 +29,7 @@ function ExamsPageContent() {
   const [createOpen, setCreateOpen] = useState(!!notebookParam && searchParams?.get('new') === '1')
   const [examToDelete, setExamToDelete] = useState<Exam | null>(null)
 
-  const { data: exams = [], isLoading } = useExams(
+  const { data: exams = [], isLoading, isError, refetch } = useExams(
     notebookFilter === ALL_NOTEBOOKS ? undefined : notebookFilter
   )
   const { data: notebooks = [] } = useNotebooks()
@@ -72,9 +72,9 @@ function ExamsPageContent() {
           </div>
 
           {isLoading ? (
-            <div className="flex justify-center py-12">
-              <LoadingSpinner size="lg" />
-            </div>
+            <CardGridSkeleton count={4} />
+          ) : isError ? (
+            <LoadError onRetry={() => refetch()} />
           ) : exams.length === 0 ? (
             <EmptyState
               icon={GraduationCap}

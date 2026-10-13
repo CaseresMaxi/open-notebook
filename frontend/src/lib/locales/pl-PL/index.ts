@@ -123,6 +123,7 @@ export const plPL = {
     dark: "Ciemny",
     system: "Systemowy",
     loading: "Ładowanie...",
+    loadFailed: "Nie udało się wczytać. Spróbuj ponownie.",
     note: "Notatka",
     insight: "Wgląd",
     newSource: "Nowe źródło",

@@ -4,7 +4,6 @@ import { useMemo } from 'react'
 import { useNotebookChat } from '@/lib/hooks/use-notebook-chat'
 import { useNotes } from '@/lib/hooks/use-notes'
 import { ChatPanel } from '@/components/sources/ChatPanel'
-import { LoadingSpinner } from '@/components/common/LoadingSpinner'
 import { Card, CardContent } from '@/components/ui/card'
 import { AlertCircle } from 'lucide-react'
 import { ContextSelections } from '../[id]/page'
@@ -12,6 +11,7 @@ import { useTranslation } from '@/lib/hooks/use-translation'
 import { NotebookContextDialog } from '@/components/sources/NotebookContextDialog'
 import type { ContextMode, NoteContextMode } from '@/lib/types/notebook-context'
 import { SourceListResponse } from '@/lib/types/api'
+import { ChatSkeleton } from '@/components/common/LoadingSkeletons'
 
 interface ChatColumnProps {
   onSourceContextChange?: (id: string, mode: ContextMode) => void
@@ -74,8 +74,8 @@ export function ChatColumn({ notebookId, contextSelections, sources, sourcesLoad
   if (sourcesLoading || notesLoading) {
     return (
       <Card className="h-full flex flex-col">
-        <CardContent className="flex-1 flex items-center justify-center">
-          <LoadingSpinner size="lg" />
+        <CardContent className="flex-1 px-4">
+          <ChatSkeleton />
         </CardContent>
       </Card>
     )
@@ -121,6 +121,7 @@ export function ChatColumn({ notebookId, contextSelections, sources, sourcesLoad
       onUpdateSession={(sessionId, title) => chat.updateSession(sessionId, { title })}
       onDeleteSession={chat.deleteSession}
       loadingSessions={chat.loadingSessions}
+      loadingMessages={chat.loadingMessages}
       notebookContextStats={contextStats}
       notebookId={notebookId}
     />

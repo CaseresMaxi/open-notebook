@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import {
   Geist,
   Inter,
@@ -40,6 +40,23 @@ const splineSansMono = Spline_Sans_Mono({
 export const metadata: Metadata = {
   title: "NextNootbook",
   description: "Privacy-focused research and knowledge management",
+  applicationName: "NextNootbook",
+  // iOS reads these instead of the manifest when adding to the home screen.
+  appleWebApp: {
+    capable: true,
+    title: "NextNootbook",
+    statusBarStyle: "default",
+  },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f7f7f7" },
+    { media: "(prefers-color-scheme: dark)", color: "#0e0e0e" },
+  ],
 };
 
 export default function RootLayout({

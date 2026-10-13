@@ -121,6 +121,7 @@ export const enUS = {
     dark: "Dark",
     system: "System",
     loading: "Loading...",
+    loadFailed: "Could not load this. Try again.",
     note: "Note",
     insight: "Insight",
     newSource: "New Source",

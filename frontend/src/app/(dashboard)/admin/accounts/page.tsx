@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { LoadingSpinner } from '@/components/common/LoadingSpinner'
+import { TableSkeleton } from '@/components/common/LoadingSkeletons'
 export default function AccountsPage() {
   const { t } = useTranslation()
   const { user } = useAuthStore()
@@ -41,7 +41,7 @@ export default function AccountsPage() {
         <h1>{t('commercial.accounts')}</h1>
       </div>
       {accounts.isPending ? (
-        <LoadingSpinner />
+        <TableSkeleton columns={4} rows={4} />
       ) : accounts.isError ? (
         <div role="alert">
           <p>{t('commercial.loadError')}</p>

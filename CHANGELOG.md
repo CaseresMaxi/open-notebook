@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- NextNootbook is an installable web app: manifest, home-screen icons (including maskable and Apple touch icons) and theme colors. Install is offered over HTTPS, e.g. the Tailscale address; plain LAN HTTP allows a home-screen shortcut.
 - `./nextnootbook` launcher with one command per environment (`local`, `lan`, `remote`, `prod`, plus `status`, `logs`, `backup`, `stop`) and a tracked `docker-compose.nextnootbook.yml`, so a fresh clone runs the NextNootbook build without personal override files.
 - Home server accepts HTTPS origins such as a Tailscale `ts.net` name alongside LAN HTTP, with `Secure` session cookies for HTTPS visitors, so the same instance works at home and remotely over a private tailnet.
 - Home server mode (`docker-compose.home.yml`): one computer serves the local network with Firebase accounts while the database, files and chat history stay on that computer. Plain HTTP is accepted only for private-network origins (`NEXTNOOTBOOK_LAN_HTTP`). `NEXTNOOTBOOK_OWNER_EMAIL` keeps the original installation with its verified owner even if the Firebase account is recreated, and the owner is never disabled or limited. Includes `scripts/home-backup.sh`.
@@ -54,6 +55,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Development:** `architecture.md`, `testing.md`, `api-reference.md` and `code-standards.md` are rewritten from the code. A new playbook covers adding an AI provider. Dev setup lives on one page. The AGENTS files agree with the docs. Contributor conventions (Conventional Commits, CHANGELOG sections, pre-PR checks that match CI) are documented
 
 ### Fixed
+- Lists no longer show their empty state before the first load: notebook and source chats keep a conversation skeleton until the existing transcript arrives, exam attempts wait for their data, and notebooks, notebook sources/notes, exams, the source library and accounts show content-shaped skeletons. Failed loads show a retryable error instead of claiming there is nothing, and search no longer flashes the missing-embedding warning while models load.
 - Reloading the page keeps a Firebase account signed in instead of returning to the login form.
 - The signed-in profile page scrolls on mobile and its preferences wrap instead of being clipped.
 - Signing in with a Firebase account no longer leaves the app stuck loading: a recent session check is reused instead of re-entering the loading state on every remount.

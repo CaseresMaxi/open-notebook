@@ -123,6 +123,7 @@ export const zhTW = {
     dark: "暗色",
     system: "系統",
     loading: "載入中...",
+    loadFailed: "無法載入，請再試一次。",
     note: "筆記",
     insight: "洞察",
     newSource: "新增來源",

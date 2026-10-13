@@ -123,6 +123,7 @@ export const frFR = {
     dark: "Sombre",
     system: "Système",
     loading: "Chargement...",
+    loadFailed: "Impossible de charger. Réessayez.",
     note: "Note",
     insight: "Aperçu",
     newSource: "Nouvelle Source",

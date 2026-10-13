@@ -25,6 +25,7 @@ import { CreateExamDialog } from '@/app/(dashboard)/exams/components/CreateExamD
 import { ChatImages } from './ChatImages'
 import { ChatResponseContent } from './ChatResponseContent'
 import { readChatImages, CHAT_IMAGE_TYPES } from '@/lib/utils/chat-images'
+import { ChatSkeleton } from '@/components/common/LoadingSkeletons'
 
 type SendChatMessage = (message: string, modelOverride?: string, images?: ChatImage[], visualTools?: boolean) => void | boolean | Promise<void | boolean>
 
@@ -52,6 +53,8 @@ interface ChatPanelProps {
   onDeleteSession?: (sessionId: string) => void
   onUpdateSession?: (sessionId: string, title: string) => void
   loadingSessions?: boolean
+  // An existing transcript is still loading: never show the empty prompt yet
+  loadingMessages?: boolean
   // Generic props for reusability
   title?: string
   contextType?: 'source' | 'notebook'
@@ -75,6 +78,7 @@ export function ChatPanel({
   onDeleteSession,
   onUpdateSession,
   loadingSessions = false,
+  loadingMessages = false,
   title,
   contextType = 'source',
   notebookId
@@ -171,7 +175,9 @@ export function ChatPanel({
       <CardContent className="flex-1 flex flex-col min-h-0 p-0">
         <ScrollArea className="flex-1 min-h-0 px-4" ref={scrollAreaRef}>
           <div className="chat-transcript space-y-4 py-4">
-            {messages.length === 0 ? (
+            {messages.length === 0 && loadingMessages ? (
+              <ChatSkeleton />
+            ) : messages.length === 0 ? (
               <div className="text-center text-muted-foreground py-8">
                 <Bot className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 <p className="text-sm">

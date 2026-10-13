@@ -55,6 +55,7 @@ export function useNotebookChat({ notebookId, sources, notes, contextSelections 
   // Fetch current session with messages
   const {
     data: currentSession,
+    isPending: currentSessionPending,
     refetch: refetchCurrentSession
   } = useQuery({
     queryKey: QUERY_KEYS.notebookChatSession(currentSessionId!),
@@ -338,9 +339,18 @@ export function useNotebookChat({ notebookId, sources, notes, contextSelections 
     updateContextCounts()
   }, [buildContext])
 
+  // True until the existing transcript (if any) is on screen: sessions list,
+  // auto-selection of the latest session and its messages. Never while sending.
+  const loadingMessages = !isSending && messages.length === 0 && (
+    loadingSessions ||
+    (sessions.length > 0 && !currentSessionId) ||
+    (!!currentSessionId && currentSessionPending)
+  )
+
   return {
     // State
     sessions,
+    loadingMessages,
     currentSession: currentSession || sessions.find(s => s.id === currentSessionId),
     currentSessionId,
     messages,

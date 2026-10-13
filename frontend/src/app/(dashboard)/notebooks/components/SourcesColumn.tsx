@@ -12,8 +12,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Plus, FileText, Link2, ChevronDown, Loader2, ListChecks } from 'lucide-react'
-import { LoadingSpinner } from '@/components/common/LoadingSpinner'
 import { EmptyState } from '@/components/common/EmptyState'
+import { ListSkeleton, LoadError } from '@/components/common/LoadingSkeletons'
 import { AddSourceDialog } from '@/components/sources/AddSourceDialog'
 import { AddExistingSourceDialog } from '@/components/sources/AddExistingSourceDialog'
 import { SourceCard } from '@/components/sources/SourceCard'
@@ -30,6 +30,8 @@ interface SourcesColumnProps {
   standalone?: boolean
   sources?: SourceListResponse[]
   isLoading: boolean
+  isError?: boolean
+  onRetry?: () => void
   notebookId: string
   notebookName?: string
   onRefresh?: () => void
@@ -46,6 +48,8 @@ export function SourcesColumn({
   sources,
   standalone = false,
   isLoading,
+  isError = false,
+  onRetry,
   notebookId,
   onRefresh,
   onBulkContextModeChange,
@@ -211,9 +215,9 @@ export function SourcesColumn({
 
           <CardContent ref={scrollContainerRef} className="flex-1 overflow-y-auto min-h-0">
             {isLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <LoadingSpinner />
-              </div>
+              <ListSkeleton rows={5} className="py-2" />
+            ) : isError && !sources?.length ? (
+              <LoadError onRetry={onRetry} />
             ) : !sources || sources.length === 0 ? (
               <EmptyState
                 icon={FileText}

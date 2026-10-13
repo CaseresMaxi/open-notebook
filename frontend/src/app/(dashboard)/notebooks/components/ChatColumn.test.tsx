@@ -41,14 +41,13 @@ describe('ChatColumn', () => {
     sources: [],
   }
 
-  it('shows loading spinner when fetching data', () => {
+  it('shows a conversation skeleton when fetching data', () => {
     vi.mocked(useNotes).mockReturnValue(createNotesMock({ isLoading: true }))
     vi.mocked(useNotebookChat).mockReturnValue(createChatMock())
 
     render(<ChatColumn {...baseProps} sourcesLoading={true} />)
 
-    // Should show loading spinner
-    expect(screen.getByTestId('loading-spinner')).toBeInTheDocument()
+    expect(screen.getByTestId('loading-skeleton')).toBeInTheDocument()
   })
 
   it('renders chat panel when data is loaded', () => {

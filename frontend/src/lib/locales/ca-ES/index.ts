@@ -123,6 +123,7 @@ export const caES = {
     dark: "Fosc",
     system: "Sistema",
     loading: "S'està carregant...",
+    loadFailed: "No s'ha pogut carregar. Torna-ho a provar.",
     note: "Nota",
     insight: "Anàlisi",
     newSource: "Font nova",

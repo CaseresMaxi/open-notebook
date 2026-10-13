@@ -123,6 +123,7 @@ export const trTR = {
     dark: "Koyu",
     system: "Sistem",
     loading: "Yükleniyor...",
+    loadFailed: "Yüklenemedi. Tekrar deneyin.",
     note: "Not",
     insight: "İçgörü",
     newSource: "Yeni Kaynak",

@@ -123,6 +123,7 @@ export const zhCN = {
     dark: "深色",
     system: "系统",
     loading: "加载中...",
+    loadFailed: "无法加载，请重试。",
     note: "笔记",
     insight: "洞察",
     newSource: "新建来源",

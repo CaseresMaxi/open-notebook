@@ -33,7 +33,7 @@ export function useSourceChat(sourceId: string) {
   })
 
   // Fetch current session with messages
-  const { data: currentSession, refetch: refetchCurrentSession } = useQuery({
+  const { data: currentSession, isPending: currentSessionPending, refetch: refetchCurrentSession } = useQuery({
     queryKey: ['sourceChatSession', sourceId, currentSessionId],
     queryFn: () => sourceChatApi.getSession(sourceId, currentSessionId!),
     enabled: !!sourceId && !!currentSessionId
@@ -262,9 +262,17 @@ export function useSourceChat(sourceId: string) {
     }
   }, [currentSessionId, updateSessionMutation])
 
+  // True until the existing transcript (if any) is on screen.
+  const loadingMessages = !isStreaming && messages.length === 0 && (
+    loadingSessions ||
+    (sessions.length > 0 && !currentSessionId) ||
+    (!!currentSessionId && currentSessionPending)
+  )
+
   return {
     // State
     sessions,
+    loadingMessages,
     currentSession: currentSession || sessions.find(s => s.id === currentSessionId),
     pendingModelOverride,
     currentSessionId,

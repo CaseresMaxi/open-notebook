@@ -123,6 +123,7 @@ export const ruRU = {
     dark: "Тёмная",
     system: "Системная",
     loading: "Загрузка...",
+    loadFailed: "Не удалось загрузить. Попробуйте ещё раз.",
     note: "Заметка",
     insight: "Инсайт",
     newSource: "Новый источник",

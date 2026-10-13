@@ -19,7 +19,7 @@ export default function NotebooksPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const viewMode = useNotebookViewStore((state) => state.viewMode)
   const setViewMode = useNotebookViewStore((state) => state.setViewMode)
-  const { data: notebooks, isLoading } = useNotebooks(false)
+  const { data: notebooks, isLoading, isError, refetch } = useNotebooks(false)
   const { data: archivedNotebooks } = useNotebooks(true)
 
   const normalizedQuery = searchTerm.trim().toLowerCase()
@@ -84,6 +84,8 @@ export default function NotebooksPage() {
           <NotebookList 
             notebooks={filteredActive} 
             isLoading={isLoading}
+            isError={isError}
+            onRetry={() => refetch()}
             title={t('notebooks.activeNotebooks')}
             emptyTitle={isSearching ? t('common.noMatches') : undefined}
             emptyDescription={isSearching ? t('common.tryDifferentSearch') : undefined}

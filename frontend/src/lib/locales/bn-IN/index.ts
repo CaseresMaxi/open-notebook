@@ -123,6 +123,7 @@ export const bnIN = {
     dark: "অন্ধকার",
     system: "সিস্টেম",
     loading: "লোড হচ্ছে...",
+    loadFailed: "লোড করা যায়নি। আবার চেষ্টা করুন।",
     note: "নোট",
     insight: "অন্তর্দৃষ্টি",
     newSource: "নতুন উৎস",

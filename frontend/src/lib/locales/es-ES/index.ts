@@ -123,6 +123,7 @@ export const esES = {
     dark: "Oscuro",
     system: "Sistema",
     loading: "Cargando...",
+    loadFailed: "No se pudo cargar. Inténtalo de nuevo.",
     note: "Nota",
     insight: "Análisis",
     newSource: "Nueva fuente",

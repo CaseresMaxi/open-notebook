@@ -126,6 +126,7 @@ export const deDE = {
     dark: "Dunkel",
     system: "System",
     loading: "Laden...",
+    loadFailed: "Konnte nicht geladen werden. Bitte erneut versuchen.",
     note: "Notiz",
     insight: "Erkenntnis",
     newSource: "Neue Quelle",

@@ -8,7 +8,7 @@ import { AppShell } from '@/components/layout/AppShell'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { LoadingSpinner } from '@/components/common/LoadingSpinner'
+import { ListSkeleton, LoadError } from '@/components/common/LoadingSkeletons'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import {
   useDeleteExamAttempt,
@@ -43,15 +43,17 @@ export default function ExamPage() {
   const { data: exam, isLoading } = useExam(examId)
   // The answer key is only fetched once results are shown.
   const { data: examWithAnswers } = useExam(viewedAttempt ? examId : '', true)
-  const { data: attempts = [] } = useExamAttempts(examId)
+  const { data: attempts = [], isLoading: attemptsLoading, isError: attemptsError, refetch: refetchAttempts } = useExamAttempts(examId)
   const submitAttempt = useSubmitExamAttempt(examId)
   const deleteAttempt = useDeleteExamAttempt(examId)
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <LoadingSpinner size="lg" />
-      </div>
+      <AppShell>
+        <div className="product-page">
+          <ListSkeleton rows={5} />
+        </div>
+      </AppShell>
     )
   }
 
@@ -169,7 +171,7 @@ export default function ExamPage() {
             <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
               {t('exams.attempts')}
             </h2>
-            {attempts.length === 0 && <p className="text-sm text-muted-foreground">{t('exams.noAttempts')}</p>}
+            {attemptsLoading ? <ListSkeleton rows={2} /> : attemptsError ? <LoadError onRetry={() => refetchAttempts()} className="py-4" /> : attempts.length === 0 && <p className="text-sm text-muted-foreground">{t('exams.noAttempts')}</p>}
             {attempts.map((attempt) => {
               const percent = attempt.max_score > 0 ? Math.round((attempt.score / attempt.max_score) * 100) : 0
               return (

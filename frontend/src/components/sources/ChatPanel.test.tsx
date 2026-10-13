@@ -24,6 +24,17 @@ describe('ChatPanel composer', () => {
 
   const getTextarea = () => screen.getByRole('textbox') as HTMLTextAreaElement
 
+  it('shows a skeleton, not the empty prompt, while an existing conversation loads', () => {
+    const { rerender } = render(
+      <ChatPanel messages={[]} isStreaming={false} contextIndicators={null} onSendMessage={vi.fn()} loadingMessages />
+    )
+    expect(screen.getByTestId('loading-skeleton')).toBeInTheDocument()
+    expect(screen.queryByText('chat.startConversation')).not.toBeInTheDocument()
+    rerender(<ChatPanel messages={[]} isStreaming={false} contextIndicators={null} onSendMessage={vi.fn()} />)
+    expect(screen.queryByTestId('loading-skeleton')).not.toBeInTheDocument()
+    expect(screen.getByText('chat.startConversation')).toBeInTheDocument()
+  })
+
   it('sends the typed message and clears the input on send-button click', () => {
     const onSendMessage = vi.fn()
     render(

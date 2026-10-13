@@ -24,6 +24,7 @@ import { StreamingResponse } from '@/components/search/StreamingResponse'
 import { AdvancedModelsDialog } from '@/components/search/AdvancedModelsDialog'
 import { SaveToNotebooksDialog } from '@/components/search/SaveToNotebooksDialog'
 import { NotebookScopeSelector } from '@/components/search/NotebookScopeSelector'
+import { Skeleton } from '@/components/ui/skeleton'
 
 export default function SearchPage() {
   const { t } = useTranslation()
@@ -221,7 +222,9 @@ export default function SearchPage() {
                 />
 
                 {/* Models Display */}
-                {!hasEmbeddingModel ? (
+                {modelsLoading ? (
+                  <Skeleton className="h-16 w-full" />
+                ) : !hasEmbeddingModel ? (
                   <div className="flex items-center gap-2 p-3 text-sm text-warn bg-warn-tint rounded-md">
                     <AlertCircle className="h-4 w-4" />
                     <span>{t('searchPage.noEmbeddingModel')}</span>
@@ -381,7 +384,7 @@ export default function SearchPage() {
                   {/* Search Type */}
                   <div className="space-y-2" role="group" aria-labelledby="search-type-label">
                     <span id="search-type-label" className="text-sm font-medium leading-none">{t('searchPage.searchType')}</span>
-                    {!hasEmbeddingModel && (
+                    {!modelsLoading && !hasEmbeddingModel && (
                       <div className="flex items-center gap-2 text-sm text-warn">
                         <AlertCircle className="h-4 w-4" />
                         <span>{t('searchPage.vectorSearchWarning')}</span>

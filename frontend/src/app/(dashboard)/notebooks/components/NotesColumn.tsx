@@ -13,8 +13,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Plus, StickyNote, MoreVertical, Trash2, ListChecks, ChevronDown } from 'lucide-react'
-import { LoadingSpinner } from '@/components/common/LoadingSpinner'
 import { EmptyState } from '@/components/common/EmptyState'
+import { ListSkeleton, LoadError } from '@/components/common/LoadingSkeletons'
 import { NoteEditorDialog } from './NoteEditorDialog'
 import type { NoteContextMode } from '../[id]/page'
 import type { NoteContextDefault } from '@/lib/utils/source-context'
@@ -28,6 +28,8 @@ interface NotesColumnProps {
   standalone?: boolean
   notes?: NoteResponse[]
   isLoading: boolean
+  isError?: boolean
+  onRetry?: () => void
   notebookId: string
   contextSelections?: Record<string, NoteContextMode>
   onContextModeChange?: (noteId: string, mode: NoteContextMode) => void
@@ -38,6 +40,8 @@ export function NotesColumn({
   notes,
   standalone = false,
   isLoading,
+  isError = false,
+  onRetry,
   notebookId,
   onBulkContextModeChange
 }: NotesColumnProps) {
@@ -123,9 +127,9 @@ export function NotesColumn({
 
           <CardContent className="flex-1 overflow-y-auto min-h-0">
             {isLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <LoadingSpinner />
-              </div>
+              <ListSkeleton rows={5} className="py-2" />
+            ) : isError && !notes?.length ? (
+              <LoadError onRetry={onRetry} />
             ) : !notes || notes.length === 0 ? (
               <EmptyState
                 icon={StickyNote}

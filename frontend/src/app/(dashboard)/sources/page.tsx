@@ -12,7 +12,7 @@ import { QUERY_KEYS } from '@/lib/api/query-client'
 import { useDeleteSource } from '@/lib/hooks/use-sources'
 import { useTranslation } from '@/lib/hooks/use-translation'
 import { Button } from '@/components/ui/button'
-import { LoadingSpinner } from '@/components/common/LoadingSpinner'
+import { TableSkeleton } from '@/components/common/LoadingSkeletons'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import { AddSourceDialog } from '@/components/sources/AddSourceDialog'
 import type { SourceListResponse } from '@/lib/types/api'
@@ -38,7 +38,7 @@ export default function SourcesPage() {
           <h1>{t('navigation.sources')}</h1>
           <Button onClick={() => setAddOpen(true)}><Plus className="size-4" />{t('sources.newSource')}</Button>
         </div>
-        {query.isLoading ? <LoadingSpinner /> : query.isError ? <div role="alert"><p>{t('sources.failedToLoad')}</p><Button onClick={() => query.refetch()}>{t('product.retry')}</Button></div> :
+        {query.isLoading ? <TableSkeleton columns={2} rows={8} /> : query.isError ? <div role="alert"><p>{t('sources.failedToLoad')}</p><Button onClick={() => query.refetch()}>{t('product.retry')}</Button></div> :
           <div className="source-library-table"><StudyDataTable rows={rows} rowKey="id" caption={t('navigation.sources')} emptyMessage={t('sources.noSourcesYet')} defaultSort={sort} onSortChange={setSort} columns={[
             { key: 'title', label: t('common.title'), render: (_, source) => <Link className="source-library-link flex min-h-11 items-center gap-3" href={`/sources/${encodeURIComponent(source.id)}`}><FileText className="size-4 shrink-0 text-muted-foreground" /><span className="break-words">{source.title || t('sources.untitledSource')}</span></Link> },
             { key: 'actions', label: t('common.actions'), sortable: false, width: 104, render: (_, source) => <div className="source-library-row-actions"><Button size="icon" variant="ghost" aria-label={`${t('sources.deleteSource')}: ${source.title || t('sources.untitledSource')}`} onClick={() => setDeleting(source)}><Trash2 className="size-4" /></Button></div> },

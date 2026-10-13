@@ -123,6 +123,7 @@ export const jaJP = {
     dark: "ダーク",
     system: "システム",
     loading: "読み込み中...",
+    loadFailed: "読み込めませんでした。もう一度お試しください。",
     note: "ノート",
     insight: "インサイト",
     newSource: "新規ソース",
