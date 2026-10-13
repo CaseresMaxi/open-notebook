@@ -103,7 +103,7 @@ export function NoteEditorDialog({ open, onOpenChange, notebookId, note }: NoteE
       await updateNote.mutateAsync({
         id: noteIdWithPrefix,
         data: {
-          title: data.title,
+          title: data.title === defaultTitle ? '' : data.title,
           content: isStudySummary(fetchedNote ?? note) ? `${SUMMARY_MARKER}\n\n${data.content}` : data.content,
         },
       })
@@ -118,7 +118,7 @@ export function NoteEditorDialog({ open, onOpenChange, notebookId, note }: NoteE
         return
       }
       await createNote.mutateAsync({
-        title: data.title,
+        title: data.title === defaultTitle ? undefined : data.title,
         content: data.content,
         note_type: 'human',
         notebook_id: notebookId,
@@ -175,7 +175,7 @@ export function NoteEditorDialog({ open, onOpenChange, notebookId, note }: NoteE
           )}
 
           <footer className="note-dialog-footer">
-            <LiquidSurface className="note-mode-control" radius={14}>
+            <div className="note-mode-control">
               <Button type="button" variant="ghost" disabled={noteLoading || isSaving}
                 aria-label={writing ? t(showPreview ? 'product.hidePreview' : 'product.showPreview') : t('common.edit')}
                 aria-pressed={writing ? showPreview : undefined}
@@ -183,7 +183,7 @@ export function NoteEditorDialog({ open, onOpenChange, notebookId, note }: NoteE
                 {writing ? (showPreview ? <EyeOff size={18} /> : <Eye size={18} />) : <Pencil size={18} />}
                 <span className={writing ? 'note-preview-toggle-label' : undefined}>{writing ? t(showPreview ? 'product.hidePreview' : 'product.showPreview') : t('common.edit')}</span>
               </Button>
-            </LiquidSurface>
+            </div>
             <div className="flex gap-2">
               <Button type="button" variant="ghost" onClick={handleClose} disabled={isSaving}>
                 {writing || isDirty || !isEditing ? t('common.cancel') : t('common.close')}

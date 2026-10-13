@@ -180,9 +180,9 @@ export function NotesColumn({
                       <h4 className="text-sm font-medium mb-2 break-words">{standalone ? <button className="study-record-title" onClick={() => handleOpenEditor(note)}>{note.title}</button> : note.title}</h4>
                     )}
 
-                    {note.content && (
+                    {(note.description || note.content) && (
                       <p className="text-sm text-muted-foreground line-clamp-3 break-all">
-                        {summaryContent(note.content)}
+                        {note.description || summaryContent(note.content || '')}
                       </p>
                     )}
                   </div>

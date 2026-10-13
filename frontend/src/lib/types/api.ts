@@ -12,6 +12,7 @@ export interface NotebookResponse {
 }
 
 export interface NoteResponse {
+  description?: string | null
   id: string
   title: string | null
   content: string | null

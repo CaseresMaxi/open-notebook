@@ -146,7 +146,7 @@ it('hides summary metadata in the editor and preserves it when the user saves', 
 })
 
 
-it('creates notes with a mandatory default title and restores it when cleared', async () => {
+it('keeps a default title in the editor and requests a content-derived title on save', async () => {
   mockUseNote.mockReturnValue(asResult({ data: undefined, isLoading: false, isError: false }))
   renderDialog({ notebookId: 'notebook:one', note: undefined })
   fireEvent.click(screen.getByRole('button', { name: 'product.newNote' }))
@@ -156,5 +156,5 @@ it('creates notes with a mandatory default title and restores it when cleared', 
   await waitFor(() => expect(screen.getByRole('button', { name: 'product.newNote' })).toBeInTheDocument())
   fireEvent.change(screen.getByTestId('markdown-editor'), { target: { value: 'A useful note' } })
   fireEvent.click(screen.getByText('sources.createNoteBtn'))
-  await waitFor(() => expect(createNoteMock).toHaveBeenCalledWith(expect.objectContaining({ title: 'product.newNote', content: 'A useful note' })))
+  await waitFor(() => expect(createNoteMock).toHaveBeenCalledWith(expect.objectContaining({ title: undefined, content: 'A useful note' })))
 })
