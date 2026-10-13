@@ -191,6 +191,13 @@ def private_network_host(hostname: str | None) -> bool:
     )
 
 
+def secure_cookie(request) -> bool:
+    """Secure unless explicitly local, and always for an HTTPS origin."""
+    if os.getenv("NEXTNOOTBOOK_INSECURE_LOCAL_COOKIES") != "true":
+        return True
+    return (request.headers.get("origin") or "").startswith("https://")
+
+
 def validate_runtime_configuration():
     """Refuse an accidentally anonymous or insecure account-mode configuration."""
     from urllib.parse import urlparse
@@ -249,7 +256,10 @@ def validate_runtime_configuration():
             )
         if insecure:
             if lan_http:
-                if not private_network_host(parsed.hostname):
+                # HTTPS origins (e.g. a Tailscale name) keep Secure cookies.
+                if parsed.scheme == "http" and not private_network_host(
+                    parsed.hostname
+                ):
                     raise ConfigurationError(
                         "LAN HTTP is allowed only on private network origins"
                     )

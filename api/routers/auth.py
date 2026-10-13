@@ -81,7 +81,7 @@ async def start_session(payload: SessionInput, request: Request, response: Respo
         firebase_auth.SESSION_COOKIE,
         cookie,
         httponly=True,
-        secure=os.getenv("NEXTNOOTBOOK_INSECURE_LOCAL_COOKIES") != "true",
+        secure=firebase_auth.secure_cookie(request),
         samesite="lax",
         max_age=firebase_auth.SESSION_SECONDS,
         path="/",
@@ -114,6 +114,6 @@ async def end_session(request: Request, response: Response):
         path="/",
         httponly=True,
         samesite="lax",
-        secure=os.getenv("NEXTNOOTBOOK_INSECURE_LOCAL_COOKIES") != "true",
+        secure=firebase_auth.secure_cookie(request),
     )
     return {"success": True}

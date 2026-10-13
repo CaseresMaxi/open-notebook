@@ -114,3 +114,22 @@ def test_owner_is_never_blocked_by_allowances(monkeypatch, tmp_path):
             usage.reserve("model", 1000)
         with pytest.raises(Exception):
             usage.claim_file("source.pdf", 10_000)
+
+
+def test_lan_http_also_accepts_https_tailnet_origins(account_mode, monkeypatch):
+    monkeypatch.setenv("NEXTNOOTBOOK_LAN_HTTP", "true")
+    account_mode("http://192.168.2.7:8502,https://studybox.tail1234.ts.net")
+    firebase_auth.validate_runtime_configuration()
+
+
+def test_session_cookie_is_secure_for_https_origins(monkeypatch):
+    from types import SimpleNamespace
+
+    def request(origin):
+        return SimpleNamespace(headers={"origin": origin})
+
+    monkeypatch.setenv("NEXTNOOTBOOK_INSECURE_LOCAL_COOKIES", "true")
+    assert firebase_auth.secure_cookie(request("https://studybox.tail1234.ts.net"))
+    assert not firebase_auth.secure_cookie(request("http://192.168.2.7:8502"))
+    monkeypatch.delenv("NEXTNOOTBOOK_INSECURE_LOCAL_COOKIES")
+    assert firebase_auth.secure_cookie(request("http://192.168.2.7:8502"))

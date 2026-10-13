@@ -42,6 +42,18 @@ Only port 8502 is published to the network. The API (5055) and SurrealDB (8000) 
 
 Account mode normally requires HTTPS. `NEXTNOOTBOOK_LAN_HTTP=true` together with `NEXTNOOTBOOK_INSECURE_LOCAL_COOKIES=true` allows HTTP only when every origin is a private address (`10/8`, `172.16/12`, `192.168/16`, loopback) or a home-network name (`*.local`, `*.lan`, `*.home`, `*.home.arpa`, `*.internal`). The server refuses to start with a public origin. Do not forward port 8502 on your router; for access from outside, use a VPN (Tailscale, WireGuard) or put HTTPS in front and drop these flags.
 
+## Access from anywhere (Tailscale)
+
+Tailscale gives the computer a private HTTPS name reachable only by your devices; no router port is opened.
+
+1. Install and sign in on the server: `sudo pacman -S tailscale && sudo systemctl enable --now tailscaled && sudo tailscale up`.
+2. In the Tailscale admin console → DNS, enable **MagicDNS** and **HTTPS certificates**.
+3. Publish the UI inside the tailnet: `sudo tailscale serve --bg 8502`. `tailscale serve status` prints the address, e.g. `https://<hostname>.<tailnet>.ts.net`.
+4. Add that `https://…ts.net` origin to `NEXTNOOTBOOK_ALLOWED_ORIGINS` and `CORS_ORIGINS`, and the hostname to Firebase **Authorized domains**. Restart the stack.
+5. Install Tailscale on the phone/laptop with the same account and open the address.
+
+HTTPS origins always receive `Secure` session cookies, even with `NEXTNOOTBOOK_LAN_HTTP`. To share with someone else, invite them to the tailnet or share the machine from the admin console. Do not use `tailscale funnel` unless you intend to publish the login page on the internet.
+
 ## Backups
 
 ```bash
