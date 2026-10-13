@@ -38,6 +38,31 @@ def admin_email() -> str:
     return os.getenv("NEXTNOOTBOOK_ADMIN_EMAIL", "").strip().casefold()
 
 
+def owner_email() -> str:
+    """Verified email that always owns the original installation (home server)."""
+    return os.getenv("NEXTNOOTBOOK_OWNER_EMAIL", "").strip().casefold()
+
+
+def _write_owner(path: Path, uid: str, email: str, *, replace: bool) -> None:
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="w", dir=path.parent, delete=False
+        ) as stream:
+            temporary = Path(stream.name)
+            json.dump({"version": 1, "uid": uid, "email": email}, stream)
+            stream.flush()
+            os.fsync(stream.fileno())
+        if replace:
+            os.replace(temporary, path)
+            temporary = None
+        else:
+            os.link(temporary, path)
+    finally:
+        if temporary:
+            temporary.unlink(missing_ok=True)
+
+
 def bind_legacy_owner(uid: str, email: str):
     """Bind the existing local installation once, without rewriting study records."""
     cloud_owner = os.getenv("NEXTNOOTBOOK_OWNER_UID")
@@ -50,26 +75,23 @@ def bind_legacy_owner(uid: str, email: str):
         return
     path = Path(target)
     path.parent.mkdir(parents=True, exist_ok=True)
-    temporary = None
     try:
-        with tempfile.NamedTemporaryFile(
-            mode="w", dir=path.parent, delete=False
-        ) as stream:
-            temporary = Path(stream.name)
-            json.dump({"version": 1, "uid": uid, "email": email}, stream)
-            stream.flush()
-            os.fsync(stream.fileno())
-        try:
-            os.link(temporary, path)
-        except FileExistsError:
-            owner = json.loads(path.read_text())
-            if owner.get("uid") != uid:
-                raise ValueError(
-                    "Existing study data is already bound to another account"
-                ) from None
-    finally:
-        if temporary:
-            temporary.unlink(missing_ok=True)
+        _write_owner(path, uid, email, replace=False)
+    except FileExistsError:
+        owner = json.loads(path.read_text())
+        if owner.get("uid") == uid:
+            return
+        # A recreated Firebase account keeps the original data only when the
+        # operator pinned its verified email; the previous binding is kept aside.
+        if owner_email() and (email or "").casefold() == owner_email():
+            backup = path.with_name(f"{path.name}.{owner.get('uid', 'unknown')}.bak")
+            if not backup.exists():
+                backup.write_text(json.dumps(owner))
+            _write_owner(path, uid, email, replace=True)
+            return
+        raise ValueError(
+            "Existing study data is already bound to another account"
+        ) from None
 
 
 def legacy_owner_uid():
@@ -80,6 +102,17 @@ def legacy_owner_uid():
         return None
     path = Path(target)
     return json.loads(path.read_text())["uid"] if path.exists() else None
+
+
+def is_legacy_owner(user) -> bool:
+    """The bound UID, or the pinned verified owner email, sees the original data."""
+    if user["uid"] == legacy_owner_uid():
+        return True
+    return bool(
+        owner_email()
+        and user.get("emailVerified")
+        and (user.get("email") or "").casefold() == owner_email()
+    )
 
 
 def public_user(user, claims=None):
@@ -105,11 +138,10 @@ async def create_session(id_token: str):
         raise ValueError("Verified account required")
     claims = user.custom_claims or {}
     # Only Firebase's verified identity can match the operator configured on the server.
-    if (
-        admin_email()
-        and user.email_verified
-        and (user.email or "").casefold() == admin_email()
-    ):
+    email = (user.email or "").casefold()
+    if owner_email() and user.email_verified and email == owner_email():
+        await run_in_threadpool(bind_legacy_owner, user.uid, user.email)
+    if admin_email() and user.email_verified and email == admin_email():
         await run_in_threadpool(bind_legacy_owner, user.uid, user.email)
         if claims.get("admin") is not True:
             claims = {**claims, "admin": True}
@@ -138,6 +170,25 @@ async def session_user(cookie: str):
         raise ValueError("Verified account required")
     # Read current claims, so role removal takes effect without waiting five days.
     return public_user(user)
+
+
+LAN_SUFFIXES = (".local", ".lan", ".home", ".home.arpa", ".internal")
+
+
+def private_network_host(hostname: str | None) -> bool:
+    """Loopback, RFC 1918/link-local addresses or a home-network hostname."""
+    import ipaddress
+
+    if not hostname:
+        return False
+    try:
+        address = ipaddress.ip_address(hostname)
+    except ValueError:
+        name = hostname.rstrip(".").casefold()
+        return name == "localhost" or ("." in name and name.endswith(LAN_SUFFIXES))
+    return (address.is_private or address.is_loopback) and not (
+        address.is_unspecified or address.is_multicast
+    )
 
 
 def validate_runtime_configuration():
@@ -182,6 +233,8 @@ def validate_runtime_configuration():
             "Account mode requires explicit matching allowed origins and CORS"
         )
     insecure = os.getenv("NEXTNOOTBOOK_INSECURE_LOCAL_COOKIES") == "true"
+    # Home server: plain HTTP is tolerated only for origins inside the private network.
+    lan_http = os.getenv("NEXTNOOTBOOK_LAN_HTTP") == "true"
     for origin in origins:
         parsed = urlparse(origin)
         if (
@@ -195,7 +248,12 @@ def validate_runtime_configuration():
                 "Origins must contain only a scheme, host and optional port"
             )
         if insecure:
-            if parsed.hostname not in {"localhost", "127.0.0.1", "::1"}:
+            if lan_http:
+                if not private_network_host(parsed.hostname):
+                    raise ConfigurationError(
+                        "LAN HTTP is allowed only on private network origins"
+                    )
+            elif parsed.hostname not in {"localhost", "127.0.0.1", "::1"}:
                 raise ConfigurationError(
                     "Insecure cookies are allowed only on loopback origins"
                 )

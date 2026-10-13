@@ -1,0 +1,22 @@
+# Home server: this computer serves NextNootbook to the local network.
+# Firebase only manages accounts (sign-in). Database, uploads, chat history and
+# usage ledger stay on this machine (SurrealDB in ./surreal_data, files in
+# ./notebook_data). See docs/5-CONFIGURATION/home-server.md.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.override.yml \
+#     -f docker-compose.home.yml up -d
+services:
+  open_notebook:
+    environment:
+      - NEXTNOOTBOOK_AUTH_MODE=firebase
+      - NEXTNOOTBOOK_DATABASE_BACKEND=surrealdb
+      - NEXTNOOTBOOK_STORAGE_BACKEND=local
+    ports: !override
+      # Only the web UI is published to the LAN; it proxies /api to the backend
+      # inside the container, so the session cookie stays same-origin.
+      - "${HOME_SERVER_BIND:-0.0.0.0}:8502:8502"
+      - "127.0.0.1:5055:5055"
+    env_file: !override
+      - ./.firebase/home-runtime.env
+    volumes:
+      - ./.firebase/runtime-service-account.json:/run/secrets/nextnootbook-firebase.json:ro

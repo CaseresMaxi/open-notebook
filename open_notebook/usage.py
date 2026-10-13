@@ -134,7 +134,8 @@ def reserve(model, units, kind="language"):
             "SELECT count(*) n FROM ledger WHERE uid=? AND state='reserved'",
             (workspace.uid,),
         ).fetchone()["n"]
-        if (
+        # The installation owner is metered for visibility, never blocked.
+        if not workspace.legacy and (
             policy["disabled"]
             or totals["tokens"] + units > policy["monthly_tokens"]
             or totals["calls"] >= policy["monthly_calls"]
@@ -191,7 +192,9 @@ def claim_file(path, size):
             "SELECT coalesce(sum(bytes),0) n FROM files WHERE uid=? AND path != ?",
             (workspace.uid, str(path)),
         ).fetchone()["n"]
-        if policy["disabled"] or used + size > policy["storage_bytes"]:
+        if not workspace.legacy and (
+            policy["disabled"] or used + size > policy["storage_bytes"]
+        ):
             raise RateLimitError("Your file storage allowance is reached.")
         db.execute(
             "INSERT OR REPLACE INTO files(uid,path,bytes) VALUES(?,?,?)",

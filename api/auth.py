@@ -79,8 +79,10 @@ class PasswordAuthMiddleware(BaseHTTPMiddleware):
                         status_code=403, content={"detail": "Invalid request origin"}
                     )
             await run_in_threadpool(register_account, user)
+            owner = firebase_auth.is_legacy_owner(user)
             policy = await run_in_threadpool(policy_for, user["uid"])
-            if policy["disabled"]:
+            # The installation owner can never be locked out of the original data.
+            if policy["disabled"] and not owner:
                 return JSONResponse(
                     status_code=403, content={"detail": "Account disabled"}
                 )
@@ -115,8 +117,7 @@ class PasswordAuthMiddleware(BaseHTTPMiddleware):
                 return JSONResponse(
                     status_code=403, content={"detail": "Administrator access required"}
                 )
-            owner_uid = firebase_auth.legacy_owner_uid()
-            workspace = Workspace(user["uid"], user["admin"], owner_uid == user["uid"])
+            workspace = Workspace(user["uid"], user["admin"], owner)
             with workspace_scope(workspace):
                 await ensure_workspace(workspace)
                 if path.startswith(platform_paths) or path.startswith(

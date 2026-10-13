@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Home server mode (`docker-compose.home.yml`): one computer serves the local network with Firebase accounts while the database, files and chat history stay on that computer. Plain HTTP is accepted only for private-network origins (`NEXTNOOTBOOK_LAN_HTTP`). `NEXTNOOTBOOK_OWNER_EMAIL` keeps the original installation with its verified owner even if the Firebase account is recreated, and the owner is never disabled or limited. Includes `scripts/home-backup.sh`.
 - Optional Firebase serverless runtime: private Firestore records and chat checkpoints, verified Storage payloads, transactional account allowances, signed Cloud Tasks jobs, Cloud Run containers and a non-destructive operational migration tool. Local installations remain the default.
 - Private study workspaces for verified Firebase accounts: isolated SurrealDB databases, files, chat checkpoints and signed background jobs, with automatic provisioning and study defaults enabled.
 - Private Firebase Storage for originals and image attachments, operator-selected study models, durable per-account AI/file allowances, and administrator account management.

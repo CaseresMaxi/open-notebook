@@ -164,3 +164,4 @@ history.txt
 firebase-debug.log*
 ui-debug.log*
 firebase.auth.local.json
+backups/
