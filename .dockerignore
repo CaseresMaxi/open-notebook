@@ -32,6 +32,7 @@ data
 mydata
 notebook_data
 surreal_data
+backups
 surreal-data
 surreal_single_data
 *.db
