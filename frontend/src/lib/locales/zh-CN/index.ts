@@ -402,6 +402,7 @@ export const zhCN = {
     lastViewed: "查看于{{time}}",
   },
   sources: {
+    insightsCount: "{{count}} 条见解",
     newSource: "新建来源",
     bulkContext: "上下文",
     includeAllInContext: "全部加入上下文",

@@ -402,6 +402,7 @@ export const jaJP = {
     lastViewed: "{{time}}に表示",
   },
   sources: {
+    insightsCount: "{{count}}件のインサイト",
     newSource: "新規ソース",
     bulkContext: "コンテキスト",
     includeAllInContext: "すべてをコンテキストに含める",

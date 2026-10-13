@@ -116,9 +116,9 @@ export function NotesColumn({
                     </DropdownMenuContent>
                   </DropdownMenu>
                 )}
-                <Button variant="outline" size="sm" onClick={() => handleOpenEditor()}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  {t('common.writeNote')}
+                <Button variant="outline" size="sm" onClick={() => handleOpenEditor()} aria-label={t('common.writeNote')}>
+                  <Plus className="h-4 w-4 study-action-icon" />
+                  <span className="study-action-label">{t('common.writeNote')}</span>
                 </Button>
                 {!standalone && collapseButton}
               </LiquidSurface>

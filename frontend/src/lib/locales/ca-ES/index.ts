@@ -402,6 +402,7 @@ export const caES = {
     lastViewed: "Vist {{time}}",
   },
   sources: {
+    insightsCount: "{{count}} anàlisis",
     newSource: "Font nova",
     bulkContext: "Context",
     includeAllInContext: "Inclou-les totes al context",

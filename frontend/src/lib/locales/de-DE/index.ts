@@ -405,6 +405,7 @@ export const deDE = {
     lastViewed: "Angesehen {{time}}",
   },
   sources: {
+    insightsCount: "{{count}} Erkenntnisse",
     newSource: "Neue Quelle",
     bulkContext: "Kontext",
     includeAllInContext: "Alle in den Kontext aufnehmen",

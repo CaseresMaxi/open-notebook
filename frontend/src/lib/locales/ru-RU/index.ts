@@ -402,6 +402,7 @@ export const ruRU = {
     lastViewed: "Просмотрено {{time}}",
   },
   sources: {
+    insightsCount: "Инсайтов: {{count}}",
     newSource: "Новый источник",
     bulkContext: "Контекст",
     includeAllInContext: "Включить все в контекст",

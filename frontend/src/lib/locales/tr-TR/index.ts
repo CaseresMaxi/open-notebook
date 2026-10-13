@@ -402,6 +402,7 @@ export const trTR = {
     lastViewed: "{{time}} görüntülendi",
   },
   sources: {
+    insightsCount: "{{count}} içgörü",
     newSource: "Yeni Kaynak",
     bulkContext: "Bağlam",
     includeAllInContext: "Tümünü bağlama dahil et",

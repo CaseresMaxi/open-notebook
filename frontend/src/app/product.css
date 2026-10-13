@@ -641,3 +641,22 @@
   .notebook-view-toggle [role="group"], .notebook-view-toggle [role="group"] > div { width: 100%; }
   .notebook-view-toggle [role="group"] button { flex: 1; justify-content: center; }
 }
+
+/* The add action leads with a spaced icon; on phones it joins the floating tab
+   bar's free corner as an icon button, and the heading that repeats the active
+   tab is dropped. */
+.product-shell .study-action-icon { margin-right: 8px; }
+@media (max-width: 767px) {
+  .product-shell .study-library-workspace .study-materials { position: relative; }
+  .product-shell .study-library-workspace .study-materials .study-library-actions {
+    position: absolute; top: 10px; right: 8px; z-index: 21; border-radius: 16px;
+  }
+  .product-shell .study-library-workspace .study-library-actions .ql-content { padding: 0; }
+  .product-shell .study-library-workspace .study-library-actions [data-slot=button] { width: 44px; height: 44px; padding: 0; }
+  .product-shell .study-library-workspace .study-action-label { display: none; }
+  .product-shell .study-library-workspace .study-action-icon { margin: 0; width: 20px; height: 20px; }
+  .product-shell .study-library-workspace .study-materials .study-column-heading { display: none; }
+  .product-shell .study-library-workspace .study-materials > [data-slot=card-header] { padding: 64px 0 0; }
+  .product-shell .study-summary-heading h2 { display: none; }
+  .product-shell .study-summary-heading { padding: 64px 0 0; }
+}

@@ -400,6 +400,7 @@ export const enUS = {
     lastViewed: "Viewed {{time}}",
   },
   sources: {
+    insightsCount: "{{count}} insights",
     title: "Sources",
     newSource: "New Source",
     bulkContext: "Context",
