@@ -52,6 +52,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Development:** `architecture.md`, `testing.md`, `api-reference.md` and `code-standards.md` are rewritten from the code. A new playbook covers adding an AI provider. Dev setup lives on one page. The AGENTS files agree with the docs. Contributor conventions (Conventional Commits, CHANGELOG sections, pre-PR checks that match CI) are documented
 
 ### Fixed
+- Reloading the page keeps a Firebase account signed in instead of returning to the login form.
 - The signed-in profile page scrolls on mobile and its preferences wrap instead of being clipped.
 - Signing in with a Firebase account no longer leaves the app stuck loading: a recent session check is reused instead of re-entering the loading state on every remount.
 - Authenticated exam creation uses the administrator-selected study model without exposing an ineffective per-exam override.

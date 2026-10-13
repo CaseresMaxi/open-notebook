@@ -59,7 +59,8 @@ export function LoginForm() {
 
     // If we already know auth status, use it
     if (authRequired !== null) {
-      if (!authRequired && isAuthenticated) {
+      // A live Firebase session (e.g. after a reload) skips the login form.
+      if (isAuthenticated && (!authRequired || mode === 'firebase')) {
         router.push('/notebooks')
       } else {
         setIsCheckingAuth(false)
@@ -67,7 +68,7 @@ export function LoginForm() {
     } else {
       void checkAuth()
     }
-  }, [hasHydrated, authRequired, checkAuthRequired, router, isAuthenticated])
+  }, [hasHydrated, authRequired, checkAuthRequired, router, isAuthenticated, mode])
 
   // Show loading while checking if auth is required
   if (!hasHydrated || isCheckingAuth) {

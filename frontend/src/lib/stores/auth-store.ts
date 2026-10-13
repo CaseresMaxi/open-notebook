@@ -59,10 +59,22 @@ export const useAuthStore = create<AuthState>()(
           })
 
           const required = response.data.auth_enabled || false
-          set({ authRequired: required, mode: response.data.mode ?? 'legacy', firebaseConfig: response.data.firebase ?? null })
           if (response.data.mode === 'firebase') {
-            set({ token: null, isAuthenticated: false, lastAuthCheck: null })
+            // Resolve the session cookie before publishing authRequired: otherwise
+            // the dashboard sees "required but not authenticated" for one render
+            // and redirects a signed-in user to the login page on every reload.
+            let user: AccountUser | null = null
+            try {
+              user = (await apiClient.get<{ user: AccountUser }>('/auth/me')).data.user
+            } catch { user = null }
+            set({
+              mode: 'firebase', firebaseConfig: response.data.firebase ?? null,
+              token: null, user, isAuthenticated: !!user,
+              lastAuthCheck: user ? Date.now() : null, authRequired: required,
+            })
+            return required
           }
+          set({ authRequired: required, mode: response.data.mode ?? 'legacy', firebaseConfig: response.data.firebase ?? null })
 
           // If auth is not required, mark as authenticated
           if (!required) {
