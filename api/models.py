@@ -240,6 +240,7 @@ class NoteResponse(BaseModel):
     created: str
     updated: str
     command_id: Optional[str] = None
+    images: Optional[List[Dict[str, Any]]] = None
 
 
 # Embedding API models

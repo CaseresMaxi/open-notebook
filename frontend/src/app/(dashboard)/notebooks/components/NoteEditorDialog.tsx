@@ -13,6 +13,8 @@ import { useCreateNote, useUpdateNote, useNote } from '@/lib/hooks/use-notes'
 import { QUERY_KEYS } from '@/lib/api/query-client'
 import { MarkdownRenderer } from '@/components/ui/markdown-renderer'
 import { LiquidSurface } from '@/components/layout/LiquidSurface'
+import { ChatResponseContent } from '@/components/sources/ChatResponseContent'
+import { useModalManager } from '@/lib/hooks/use-modal-manager'
 import { MarkdownEditor } from '@/components/ui/markdown-editor'
 import { InlineEdit } from '@/components/common/InlineEdit'
 import { useTranslation } from '@/lib/hooks/use-translation'
@@ -39,6 +41,7 @@ export function NoteEditorDialog({ open, onOpenChange, notebookId, note }: NoteE
   const createNote = useCreateNote()
   const updateNote = useUpdateNote()
   const queryClient = useQueryClient()
+  const { openModal } = useModalManager()
   const isEditing = Boolean(note)
 
   // Ensure note ID has 'note:' prefix for API calls
@@ -165,7 +168,7 @@ export function NoteEditorDialog({ open, onOpenChange, notebookId, note }: NoteE
                 )} />{showPreview && <section className="note-live-preview" aria-label={t('product.preview')}>
                   <div className="note-preview-heading">{t('product.preview')}</div>
                   <article className="note-reading-content"><MarkdownRenderer>{content || ''}</MarkdownRenderer></article>
-                </section>}</div> : <article className="note-reading-content"><MarkdownRenderer>{content || ''}</MarkdownRenderer></article>}
+                </section>}</div> : <article className="note-reading-content">{fetchedNote?.images?.length ? <ChatResponseContent content={content || ''} images={fetchedNote.images} onReferenceClick={(type, id) => openModal(type === 'source_insight' ? 'insight' : type as 'source' | 'note' | 'insight', id)} /> : <MarkdownRenderer>{content || ''}</MarkdownRenderer>}</article>}
                 {errors.content && <p className="text-sm text-destructive mt-1">{errors.content.message}</p>}
               </div>
             </>

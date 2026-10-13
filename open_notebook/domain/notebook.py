@@ -51,9 +51,9 @@ class Notebook(ObjectModel):
     async def get_notes(self, include_content: bool = False) -> List["Note"]:
         try:
             note_projection = (
-                " omit note.embedding"
+                " omit note.embedding, note.images"
                 if include_content
-                else " omit note.content, note.embedding"
+                else " omit note.content, note.embedding, note.images"
             )
             srcs = await repo_query(
                 f"""
@@ -691,6 +691,8 @@ class Note(ObjectModel):
     title: Optional[str] = None
     note_type: Optional[Literal["human", "ai"]] = None
     content: Optional[str] = None
+    # Genuine source crops referenced by [[image:N]] markers in study summaries.
+    images: Optional[List[Dict[str, Any]]] = None
 
     @field_validator("content")
     @classmethod

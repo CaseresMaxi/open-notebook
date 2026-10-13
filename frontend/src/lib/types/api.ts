@@ -15,7 +15,8 @@ export interface NoteResponse {
   content: string | null
   note_type: string | null
   created: string
-  updated: string
+  updated: string  /** Genuine source crops for [[image:N]] markers (study summaries; single-note reads only). */
+  images?: ChatVisual[] | null
 }
 
 export interface SourceListResponse {

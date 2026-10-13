@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { AlignLeft } from 'lucide-react'
 import { LiquidSurface } from '@/components/layout/LiquidSurface'
 import { Button } from '@/components/ui/button'
@@ -16,11 +16,9 @@ import { EmptyState } from '@/components/common/EmptyState'
 import { ListSkeleton } from '@/components/common/LoadingSkeletons'
 import { useNotebookSources } from '@/lib/hooks/use-sources'
 import { useNotes } from '@/lib/hooks/use-notes'
-import { generateStudySummary, generateTopicSummary } from '@/lib/api/study'
-import { transformationsApi } from '@/lib/api/transformations'
+import { createStudySummary } from '@/lib/api/study'
 import { useTranslation } from '@/lib/hooks/use-translation'
 import { isStudySummary, summaryContent } from '@/lib/utils/study-summary'
-import { useModelDefaults } from '@/lib/hooks/use-models'
 import { ListenButton } from '@/components/common/ListenButton'
 import { Input } from '@/components/ui/input'
 import axios from 'axios'
@@ -42,69 +40,48 @@ export function SummaryLibrary({ notebookId, standalone = false }: { notebookId:
     fetchNextPage,
     isFetchingNextPage,
   } = useNotebookSources(notebookId)
-  const templates = useQuery({
-    queryKey: ['transformations'],
-    queryFn: transformationsApi.list,
-  })
-  const defaults = useModelDefaults()
   const [sourceId, setSourceId] = useState('')
   const [topic, setTopic] = useState('')
   const [editing, setEditing] = useState<NoteResponse | undefined>()
   const [status, setStatus] = useState('')
   const summaries = notes.filter(isStudySummary)
+  const saved = () => {
+    client.invalidateQueries({ queryKey: ['notes'] })
+    client.invalidateQueries({ queryKey: ['notebooks'] })
+    setStatus(t('product.summarySaved'))
+  }
+  const failed = (error: unknown) => {
+    const detail = axios.isAxiosError(error) ? (error.response?.data as { detail?: string } | undefined)?.detail : undefined
+    setStatus(detail || (error instanceof Error ? error.message : t('product.summaryFailed')))
+  }
   const generate = useMutation({
     retry: false,
-    mutationFn: async () => {
-      const selectedNotebook = notebookId
-      const template = templates.data?.find((item) =>
-        /summar|resumen|résumé/i.test(item.name + ' ' + item.title)
-      )
-      if (!template) throw new Error(t('product.summaryTemplateMissing'))
-      return generateStudySummary({
-        notebookId: selectedNotebook,
+    mutationFn: () => {
+      const source = sources.find((item) => item.id === sourceId)
+      return createStudySummary({
+        notebookId,
         sourceId,
-        templateId: template.id,
-        instructions: t('product.summaryInstructions', { language }),
-        title: (sourceTitle) =>
-          t('product.summaryTitle', { title: sourceTitle }),
-        sourceLabel: t('product.sourceLink'),
-        emptyError: t('product.summaryEmpty'),
-        outputError: t('product.summaryFailed'),
+        language,
+        title: t('product.summaryTitle', { title: source?.title || t('product.sourceLink') }),
       })
     },
-    onSuccess: () => {
-      client.invalidateQueries({ queryKey: ['notes'] })
-      client.invalidateQueries({ queryKey: ['notebooks'] })
-      setStatus(t('product.summarySaved'))
-    },
-    onError: (error) =>
-      setStatus(
-        error instanceof Error ? error.message : t('product.summaryFailed')
-      ),
+    onSuccess: saved,
+    onError: failed,
   })
   const topicSummary = useMutation({
     retry: false,
-    mutationFn: async (subject: string) => {
-      const modelId = defaults.data?.default_chat_model
-      if (!modelId) throw new Error(t('product.topicSummaryNoModel'))
-      return generateTopicSummary({
+    mutationFn: (subject: string) =>
+      createStudySummary({
         notebookId,
-        modelId,
-        question: t('product.topicSummaryInstructions', { topic: subject, language }),
+        topic: subject,
+        language,
         title: t('product.topicSummaryTitle', { topic: subject }),
-        outputError: t('product.summaryFailed'),
-      })
-    },
+      }),
     onSuccess: () => {
       setTopic('')
-      client.invalidateQueries({ queryKey: ['notes'] })
-      client.invalidateQueries({ queryKey: ['notebooks'] })
-      setStatus(t('product.summarySaved'))
+      saved()
     },
-    onError: (error) => {
-      const detail = axios.isAxiosError(error) ? (error.response?.data as { detail?: string } | undefined)?.detail : undefined
-      setStatus(detail || (error instanceof Error ? error.message : t('product.summaryFailed')))
-    },
+    onError: failed,
   })
   const busy = generate.isPending || topicSummary.isPending
   return (
@@ -146,12 +123,7 @@ export function SummaryLibrary({ notebookId, standalone = false }: { notebookId:
         )}
         <Button
           variant="outline"
-          disabled={
-            !sourceId ||
-            busy ||
-            templates.isLoading ||
-            !templates.data
-          }
+          disabled={!sourceId || busy}
           onClick={() => {
             setStatus('')
             generate.mutate()
@@ -183,19 +155,11 @@ export function SummaryLibrary({ notebookId, standalone = false }: { notebookId:
             disabled={busy}
             className="summary-topic-input min-h-11 flex-1"
           />
-          <Button type="submit" variant="outline" disabled={!topic.trim() || busy || defaults.isLoading}>
+          <Button type="submit" variant="outline" disabled={!topic.trim() || busy}>
             {topicSummary.isPending ? t('product.generatingSummary') : t('product.generateTopicSummary')}
           </Button>
         </form>
       </LiquidSurface>
-        {templates.isError && (
-          <div role="alert" className="text-sm">
-            <p>{t('product.summaryTemplateMissing')}</p>
-            <Button variant="ghost" onClick={() => templates.refetch()}>
-              {t('product.retry')}
-            </Button>
-          </div>
-        )}
         {busy && (
           <p className="text-sm text-muted-foreground" role="status">
             {topicSummary.isPending ? t('product.topicSummaryStatus') : t('product.summaryStatus')}
