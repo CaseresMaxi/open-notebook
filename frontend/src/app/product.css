@@ -620,12 +620,29 @@
 .notebook-tile:hover { transform: translateY(-3px); }
 .notebook-tile:active { transform: scale(.985); }
 .notebook-tile:has(a:focus-visible) { outline: 2px solid var(--ring); outline-offset: 3px; }
-.notebook-tile-halo { position: absolute; inset: 8% 4% -6%; z-index: -1; border-radius: 40px; pointer-events: none;
+.notebook-tile-halo { position: absolute; inset: 6% 3% -4%; z-index: -1; border-radius: 40px; pointer-events: none;
   background:
-    radial-gradient(60% 75% at 22% 28%, color-mix(in oklch, var(--nb-accent) 75%, transparent), transparent 72%),
-    radial-gradient(55% 65% at 88% 82%, color-mix(in oklch, var(--nb-accent) 45%, transparent), transparent 72%);
-  filter: blur(24px); opacity: .7; transition: opacity .35s ease, transform .45s ease; }
-.notebook-tile:hover .notebook-tile-halo { opacity: .85; transform: scale(1.05); }
+    radial-gradient(60% 75% at 22% 30%, color-mix(in oklch, var(--nb-accent) 80%, transparent), transparent 72%),
+    radial-gradient(55% 65% at 88% 82%, color-mix(in oklch, var(--nb-accent) 50%, transparent), transparent 72%);
+  filter: blur(24px); opacity: .75; transition: opacity .35s ease, scale .45s ease; will-change: transform;
+  animation: notebook-halo-drift 14s ease-in-out infinite alternate; animation-delay: var(--nb-phase, 0s); }
+/* A second, hue-shifted blob drifting the other way: the colours slowly move
+   under the liquid glass, so its refraction and rim light read on a still page.
+   The blur is static and only transforms animate, so phones just composite. */
+.notebook-tile-halo-alt { inset: 20% 22% 10%; border-radius: 50%;
+  background: radial-gradient(closest-side, color-mix(in oklch, var(--nb-accent) 75%, white 10%), transparent);
+  filter: blur(18px) hue-rotate(40deg); opacity: .6; animation-name: notebook-halo-orbit; animation-duration: 19s; }
+.notebook-tile:hover .notebook-tile-halo { opacity: .9; scale: 1.05; }
+@keyframes notebook-halo-drift {
+  0% { transform: translate(-4%, -3%) scale(1); }
+  50% { transform: translate(4%, 3%) scale(1.06); }
+  100% { transform: translate(-2%, 4%) scale(.97); }
+}
+@keyframes notebook-halo-orbit {
+  0% { transform: translate(-30%, 20%) scale(.9); }
+  50% { transform: translate(28%, -18%) scale(1.15); }
+  100% { transform: translate(8%, 22%) scale(1); }
+}
 .notebook-tile-glass { height: 100%; }
 .notebook-tile-body { display: flex; flex-direction: column; gap: 14px; height: 100%; min-height: 140px; padding: 18px 18px 16px 20px; }
 .notebook-tile-mark { display: grid; place-items: center; flex-shrink: 0; width: 46px; height: 46px; border-radius: 15px; font-family: var(--font-display, inherit); font-size: 21px; font-weight: 700; color: var(--foreground);

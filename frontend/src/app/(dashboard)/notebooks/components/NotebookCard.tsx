@@ -54,9 +54,10 @@ export function NotebookCard({ notebook, index = 0 }: NotebookCardProps) {
       <article
         data-record-id={notebook.id}
         className="notebook-tile group"
-        style={{ '--nb-accent': notebookAccent(notebook.id), '--nb-delay': `${Math.min(index, 8) * 55}ms` } as CSSProperties}
+        style={{ '--nb-accent': notebookAccent(notebook.id), '--nb-delay': `${Math.min(index, 8) * 55}ms`, '--nb-phase': `${-(index * 3.7) % 14}s` } as CSSProperties}
       >
         <span className="notebook-tile-halo" aria-hidden="true" />
+        <span className="notebook-tile-halo notebook-tile-halo-alt" aria-hidden="true" />
         <LiquidSurface className="notebook-tile-glass" radius={26}>
           <div className="notebook-tile-body">
             <div className="flex items-start gap-3">
