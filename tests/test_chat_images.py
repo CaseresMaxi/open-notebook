@@ -144,7 +144,7 @@ def test_both_graphs_deliver_images_to_model_without_counting_base64(source_chat
     image = ChatImage(**_image())
     user = build_user_message("What is shown?", [image])
     model = MagicMock()
-    model.invoke.return_value = AIMessage(content="A red image")
+    model.ainvoke = AsyncMock(return_value=AIMessage(content="A red image"))
     provision = AsyncMock(return_value=model)
     with (
         patch.object(module, "provision_langchain_model", new=provision),
@@ -161,7 +161,7 @@ def test_both_graphs_deliver_images_to_model_without_counting_base64(source_chat
             {"configurable": {"model_id": "model:vision"}},
         )
     assert result["messages"].content == "A red image"
-    payload = model.invoke.call_args.args[0]
+    payload = model.ainvoke.call_args.args[0]
     assert payload[-1].content[-1]["image_url"]["url"] == image.data_url
     context = provision.call_args.args[0]
     assert "What is shown?" in context

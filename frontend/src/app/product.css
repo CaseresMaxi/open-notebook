@@ -725,3 +725,20 @@
   .product-shell .source-workspace-toolbar { padding: 8px 8px 4px; }
   .product-shell .source-workspace .source-detail-grid [data-slot=card] { border: 0; border-radius: 0; background: transparent; box-shadow: none; }
 }
+
+/* Arc components inside answers and notes: part of the reading flow, not cards on cards. */
+.arc-block { margin: 18px 0 22px; padding: 0; font-family: var(--font-body); white-space: normal; color: var(--foreground); animation: arc-block-in .42s cubic-bezier(.16,1,.3,1) both; }
+.arc-block-title { margin: 0 0 10px; font-size: .875rem; font-weight: 500; color: var(--text-secondary); letter-spacing: -.01em; }
+.arc-block :where(p, ul, ol, h1, h2, h3, h4) { margin-top: 0; }
+.arc-block table { margin: 0; }
+.arc-block-loading { min-height: 180px; border-radius: 18px; background: linear-gradient(100deg, var(--surface-muted) 30%, color-mix(in oklab, var(--surface-muted) 55%, transparent) 50%, var(--surface-muted) 70%) 0 0 / 300% 100%; animation: arc-block-shimmer 1.4s linear infinite; }
+.arc-block-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.arc-block-unavailable { font-size: .8125rem; color: var(--text-muted); }
+.arc-block-callout, .arc-block-accordion { margin-block: 14px 18px; }
+.prose .arc-block :where(li) { margin: 0; }
+@keyframes arc-block-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes arc-block-shimmer { to { background-position: -300% 0; } }
+@media (prefers-reduced-motion: reduce) { .arc-block, .arc-block-loading { animation: none; } }
+/* Charts keep Arc's vivid series hues: the product shell's neutral accent would draw grey lines. */
+.arc-block { --series-1: #1f7dcf; --series-2: #7128a5; --series-3: #e58f00; --series-4: #009e84; --accent: var(--series-1); --accent-strong: #17609f; --accent-subtle: color-mix(in oklab, var(--series-1) 14%, transparent); }
+.dark .arc-block { --series-1: #55adff; --series-2: #b25bd6; --series-3: #f08a2c; --series-4: #1fbf7a; --accent-strong: #a4c7ff; }

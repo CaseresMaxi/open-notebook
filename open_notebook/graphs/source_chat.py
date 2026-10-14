@@ -16,15 +16,15 @@ from open_notebook.config import LANGGRAPH_CHECKPOINT_FILE
 from open_notebook.domain.notebook import Source, SourceInsight
 from open_notebook.exceptions import IncompleteGenerationError, OpenNotebookError
 from open_notebook.utils import clean_thinking_content
+from open_notebook.utils.arc_blocks import arc_instructions
 from open_notebook.utils.chat_followups import followup_context
 from open_notebook.utils.chat_images import chat_model_context, visual_history_context
 from open_notebook.utils.chat_responses import (
     latest_request,
     quiz_instructions,
-    requested_widgets,
     run_chat_response,
 )
-from open_notebook.utils.chat_visuals import run_visual_chat
+from open_notebook.utils.chat_routing import run_turn
 from open_notebook.utils.context_builder import (
     build_source_context,
     format_source_context,
@@ -158,25 +158,36 @@ def _call_model_with_source_context_inner(
     system_prompt = Prompter(prompt_template="source_chat/system").render(
         data=prompt_data
     )
-    payload = [SystemMessage(content=system_prompt + quiz_instructions())] + state.get(
-        "messages", []
+    history = visual_history_context(followup_context(state.get("messages", [])))
+    model_id = config.get("configurable", {}).get("model_id") or state.get(
+        "model_override"
     )
+    instructions = system_prompt + quiz_instructions() + arc_instructions()
 
-    # Handle async model provisioning from sync context
-    payload = visual_history_context(followup_context(payload))
+    async def selected_source() -> set[str]:
+        return {source_id}
 
     def run_in_new_loop():
-        """Run the async function in a new event loop"""
+        """Run the async turn in a new event loop"""
         new_loop = asyncio.new_event_loop()
         try:
             asyncio.set_event_loop(new_loop)
             return new_loop.run_until_complete(
-                provision_langchain_model(
-                    chat_model_context(payload),
-                    config.get("configurable", {}).get("model_id")
-                    or state.get("model_override"),
-                    "chat",
-                    max_tokens=8192,
+                run_turn(
+                    history,
+                    instructions,
+                    provision_langchain_model(
+                        chat_model_context(
+                            [SystemMessage(content=instructions), *history]
+                        ),
+                        model_id,
+                        "chat",
+                        max_tokens=8192,
+                    ),
+                    toggle=bool(state.get("visual_tools")),
+                    has_sources=True,
+                    model_id=model_id,
+                    source_ids=selected_source,
                 )
             )
         finally:
@@ -191,29 +202,12 @@ def _call_model_with_source_context_inner(
 
         with concurrent.futures.ThreadPoolExecutor() as executor:
             future = executor.submit(copy_context().run, run_in_new_loop)
-            model = future.result()
+            ai_message = future.result()
     except RuntimeError:
         # No event loop running, safe to use asyncio.run()
-        model = asyncio.run(
-            provision_langchain_model(
-                chat_model_context(payload),
-                config.get("configurable", {}).get("model_id")
-                or state.get("model_override"),
-                "chat",
-                max_tokens=8192,
-            )
-        )
+        ai_message = run_in_new_loop()
 
-    if state.get("visual_tools") or requested_widgets(latest_request(payload))[0]:
-        ai_message = run_visual_chat(
-            model,
-            payload,
-            {source_id},
-            config.get("configurable", {}).get("model_id")
-            or state.get("model_override"),
-        )
-    else:
-        ai_message = model.invoke(payload)
+    payload = [SystemMessage(content=instructions), *history]
 
     # Clean thinking content from AI response (e.g., <think>...</think> tags)
     content = extract_text_content(ai_message.content)

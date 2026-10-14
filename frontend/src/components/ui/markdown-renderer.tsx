@@ -1,6 +1,7 @@
 'use client'
 
 import { MarkdownDataTable } from '@/components/ui/study-data-table'
+import dynamic from 'next/dynamic'
 
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -53,6 +54,13 @@ for (const [name, language] of Object.entries(LANGUAGES)) {
   SyntaxHighlighter.registerLanguage(name, language)
 }
 
+// Interactive Arc components in answers load on first use, keeping the chart
+// code out of pages that never show one.
+const ArcBlock = dynamic(() => import('@/components/chat/ArcBlock'), {
+  ssr: false,
+  loading: () => <div className="arc-block arc-block-loading" aria-hidden="true" />,
+})
+
 type Components = {
   [Key in Extract<ElementType, string>]?: ElementType<ComponentProps<Key> & ExtraProps>
 }
@@ -84,8 +92,14 @@ export function MarkdownRenderer({ children, components = {}}: { children: React
             tr: ({ children }) => <tr className="border-b border-border">{children}</tr>,
             th: ({ children }) => <th className="border border-border px-3 py-2 text-left font-semibold">{children}</th>,
             td: ({ children }) => <td className="border border-border px-3 py-2">{children}</td>,
+            pre: ({ children, node }) => {
+              const code = node?.children?.[0]
+              const classes = code && 'properties' in code ? code.properties?.className : undefined
+              return Array.isArray(classes) && classes.includes('language-arc') ? <>{children}</> : <pre>{children}</pre>
+            },
             code: ({ children, className }) => {
               const match = /language-(\w+)/.exec(className || '')
+              if (match?.[1] === 'arc') return <ArcBlock source={String(children).trim()} />
               const isBlock = match || String(children).includes('\n')
               return isBlock ? (
                 <SyntaxHighlighter

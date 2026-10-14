@@ -24,6 +24,7 @@ import { useTranslation } from '@/lib/hooks/use-translation'
 import { CreateExamDialog } from '@/app/(dashboard)/exams/components/CreateExamDialog'
 import { ChatImages } from './ChatImages'
 import { ChatResponseContent } from './ChatResponseContent'
+import { replaceArcBlocksWithMarkdown } from '@/lib/utils/arc-blocks'
 import { readChatImages, CHAT_IMAGE_TYPES } from '@/lib/utils/chat-images'
 import { ChatSkeleton } from '@/components/common/LoadingSkeletons'
 
@@ -419,7 +420,7 @@ const ChatMessage = memo(function ChatMessage({
   onReferenceClick
 }: ChatMessageProps) {
   const { t } = useTranslation()
-  const exportContent = message.content
+  const exportContent = replaceArcBlocksWithMarkdown(message.content)
     .replace(/\[\[image:(\d+)\]\]/g, (_, number) => message.images?.[Number(number) - 1]?.name ?? '')
     .replace(/\[\[quiz:[^\]]+\]\]/g, t('chat.inlineQuiz'))
     .replace(/\[\[followup:\d+\]\]/g, t('chat.continueQuestion'))

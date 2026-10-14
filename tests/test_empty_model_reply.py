@@ -27,7 +27,7 @@ def _sync_model_returning(content: str) -> MagicMock:
     model = MagicMock()
     # AIMessage won't accept content=None; some providers still return it.
     reply = MagicMock(content=None) if content is None else AIMessage(content=content)
-    model.invoke = MagicMock(return_value=reply)
+    model.ainvoke = AsyncMock(return_value=reply)
     return model
 
 

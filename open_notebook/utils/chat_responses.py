@@ -16,6 +16,7 @@ from open_notebook.domain.chat_quiz import ChatQuiz
 from open_notebook.exceptions import OpenNotebookError
 from open_notebook.graphs.chat_quiz import InlineQuiz, repair_inline_quiz
 from open_notebook.graphs.exam import validate_generated_questions
+from open_notebook.utils.arc_blocks import materialize_arc_blocks
 from open_notebook.utils.chat_followups import (
     followup_instructions,
     materialize_followups,
@@ -138,6 +139,9 @@ async def materialize_chat_response(
     request: str = "",
     context: str = "",
 ) -> Any:
+    reply = reply.model_copy(
+        update={"content": materialize_arc_blocks(extract_text_content(reply.content))}
+    )
     reply = materialize_followups(reply, request, requested_widgets(request)[1])
     if reply.additional_kwargs.get("response_followups"):
         # A clarification is a complete turn: wait for the user before generating.

@@ -135,7 +135,11 @@ def test_model_payload_excludes_forgotten_artifacts():
         }
     ]
     messages += [HumanMessage(content="new question")]
-    model = SimpleNamespace(invoke=lambda payload: AIMessage(content="answer"))
+
+    async def answer(payload):
+        return AIMessage(content="answer")
+
+    model = SimpleNamespace(ainvoke=answer)
     with (
         patch(
             "open_notebook.graphs.chat.provision_langchain_model",
@@ -145,7 +149,7 @@ def test_model_payload_excludes_forgotten_artifacts():
             "open_notebook.graphs.chat.run_chat_response",
             side_effect=lambda message, *_: message,
         ),
-        patch.object(model, "invoke", wraps=model.invoke) as invoke,
+        patch.object(model, "ainvoke", wraps=model.ainvoke) as invoke,
     ):
         call_model_with_messages(
             {

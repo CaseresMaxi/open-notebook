@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Interactive components in chat answers: the model can place animated Arc UI components inline (line, bar, donut and waffle charts, sortable tables, metric cards, gauges, steps, collapsible sections and callouts) as validated ```arc blocks. They render in chat and saved notes, and copy or read aloud as plain Markdown.
+- Faster chat turns with OpenAI's Decisions API: when an OpenAI key is configured, each turn starts answering immediately while `gpt-6-luna` decides in parallel whether visual tools, an inline component or more reasoning are needed, so most turns skip the slow visual tool loop. `OPEN_NOTEBOOK_DECISIONS=off` turns it off.
 - Study summaries (per source and per topic) are generated server-side from the original material (`POST /api/notebooks/{id}/study-summaries`): they include verbatim quotations, kept only when they appear in the source, and genuine crops of useful figures, diagrams or tables from the original documents, shown inline and stored with the note (`note.images`, migration 28). Chat answers that summarize also add verbatim quotes and source figures.
 - Read aloud: chat answers and saved summaries have a Listen button that speaks them with the configured default text-to-speech model (`POST /api/speech`, Markdown and citations stripped, long text chunked, usage metered, one reading at a time with recent audio reused). Voice via `NEXTNOOTBOOK_TTS_VOICE` (default `nova`).
 - Topic summaries: the Summaries library can summarize a free-text topic across a notebook's sources with the existing Ask pipeline and save it as a study summary that can be read aloud.

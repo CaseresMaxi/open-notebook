@@ -16,15 +16,15 @@ from open_notebook.config import LANGGRAPH_CHECKPOINT_FILE
 from open_notebook.domain.notebook import Notebook
 from open_notebook.exceptions import IncompleteGenerationError, OpenNotebookError
 from open_notebook.utils import clean_thinking_content
+from open_notebook.utils.arc_blocks import arc_instructions
 from open_notebook.utils.chat_followups import followup_context
 from open_notebook.utils.chat_images import chat_model_context, visual_history_context
 from open_notebook.utils.chat_responses import (
     latest_request,
     quiz_instructions,
-    requested_widgets,
     run_chat_response,
 )
-from open_notebook.utils.chat_visuals import run_visual_chat
+from open_notebook.utils.chat_routing import run_turn
 from open_notebook.utils.error_classifier import classify_error
 from open_notebook.utils.notebook_chat_context import select_history
 from open_notebook.utils.text_utils import extract_text_content
@@ -44,27 +44,56 @@ class ThreadState(TypedDict):
 def call_model_with_messages(state: ThreadState, config: RunnableConfig) -> dict:
     try:
         system_prompt = Prompter(prompt_template="chat/system").render(data=state)  # type: ignore[arg-type]
-        payload = [
-            SystemMessage(content=system_prompt + quiz_instructions())
-        ] + select_history(
-            state.get("messages", []),
-            state.get("history_start", 0),
-            state.get("history_turns"),
+        history = visual_history_context(
+            followup_context(
+                select_history(
+                    state.get("messages", []),
+                    state.get("history_start", 0),
+                    state.get("history_turns"),
+                )
+            )
         )
-        payload = visual_history_context(followup_context(payload))
         model_id = config.get("configurable", {}).get("model_id") or state.get(
             "model_override"
         )
+        instructions = system_prompt + quiz_instructions() + arc_instructions()
 
-        # Handle async model provisioning from sync context
+        async def available_sources() -> set[str]:
+            notebook = state.get("notebook")
+            sources = await notebook.get_sources() if notebook else []
+            context = state.get("context")
+            selected: set[str] = (
+                {
+                    str(item.get("id"))
+                    for item in context.get("sources", [])
+                    if isinstance(item, dict)
+                }
+                if isinstance(context, dict)
+                else set()
+            )
+            return {str(source.id) for source in sources} & selected
+
         def run_in_new_loop():
-            """Run the async function in a new event loop"""
+            """Run the async turn in a new event loop"""
             new_loop = asyncio.new_event_loop()
             try:
                 asyncio.set_event_loop(new_loop)
                 return new_loop.run_until_complete(
-                    provision_langchain_model(
-                        chat_model_context(payload), model_id, "chat", max_tokens=8192
+                    run_turn(
+                        history,
+                        instructions,
+                        provision_langchain_model(
+                            chat_model_context(
+                                [SystemMessage(content=instructions), *history]
+                            ),
+                            model_id,
+                            "chat",
+                            max_tokens=8192,
+                        ),
+                        toggle=bool(state.get("visual_tools")),
+                        has_sources=bool(state.get("context")),
+                        model_id=model_id,
+                        source_ids=available_sources,
                     )
                 )
             finally:
@@ -79,45 +108,12 @@ def call_model_with_messages(state: ThreadState, config: RunnableConfig) -> dict
 
             with concurrent.futures.ThreadPoolExecutor() as executor:
                 future = executor.submit(copy_context().run, run_in_new_loop)
-                model = future.result()
+                ai_message = future.result()
         except RuntimeError:
             # No event loop running, safe to use asyncio.run()
-            model = asyncio.run(
-                provision_langchain_model(
-                    chat_model_context(payload),
-                    model_id,
-                    "chat",
-                    max_tokens=8192,
-                )
-            )
+            ai_message = run_in_new_loop()
 
-        if state.get("visual_tools") or requested_widgets(latest_request(payload))[0]:
-
-            async def available_sources():
-                notebook = state.get("notebook")
-                sources = await notebook.get_sources() if notebook else []
-                context = state.get("context")
-                selected: set[str] = (
-                    {
-                        str(item.get("id"))
-                        for item in context.get("sources", [])
-                        if isinstance(item, dict)
-                    }
-                    if isinstance(context, dict)
-                    else set()
-                )
-                return {str(source.id) for source in sources} & selected
-
-            def get_ids():
-                return asyncio.run(available_sources())
-
-            import concurrent.futures
-
-            with concurrent.futures.ThreadPoolExecutor() as executor:
-                source_ids = executor.submit(copy_context().run, get_ids).result()
-            ai_message = run_visual_chat(model, payload, source_ids, model_id)
-        else:
-            ai_message = model.invoke(payload)
+        payload = [SystemMessage(content=instructions), *history]
 
         # Clean thinking content from AI response (e.g., <think>...</think> tags)
         content = extract_text_content(ai_message.content)
