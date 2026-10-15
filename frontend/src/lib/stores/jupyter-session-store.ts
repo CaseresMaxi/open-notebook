@@ -138,6 +138,15 @@ export async function runAllCells(sourceId: string, onDone?: (cell: NotebookCell
   update(sourceId, () => ({ queue: [] }))
 }
 
+/**
+ * Runs code that is not a notebook cell (e.g. a block in a chat answer) in the
+ * session `key`: a focused notebook's id shares its variables, any other key is
+ * a session of its own.
+ */
+export function runInSession(key: string, code: string, onOutput: (output: NotebookOutput) => void): Promise<boolean> {
+  return kernelFor(key).run(code, onOutput)
+}
+
 /** Throws the Python session away (also the only way to stop a running cell). */
 export function restartSession(sourceId: string) {
   const kernel = kernels.get(sourceId)

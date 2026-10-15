@@ -1135,6 +1135,16 @@ export const bnIN = {
     deleteAttemptDesc: "{{date}}-এর প্রচেষ্টা ({{percent}}%) মুছবেন? এটি পূর্বাবস্থায় ফেরানো যাবে না।",
     deleteExamNamed: "{{title}} মুছুন",
   },
+  chatCode: {
+    run: "চালান",
+    runAgain: "আবার চালান",
+    stop: "থামান",
+    stopped: "থামানো হয়েছে: Python পুনরায় চালু হয়েছে।\n",
+    inNotebook: "{{name}}-এর সেশনে চলে",
+    inChat: "আপনার ব্রাউজারে চলে",
+    noOutput: "কোনো আউটপুট নেই।",
+    figureAlt: "চ্যাটের কোড দিয়ে তৈরি চিত্র",
+  },
   chatFocus: {
     label: "ফোকাস",
     focusInChat: "চ্যাট এখানে ফোকাস করুন",
@@ -1146,7 +1156,7 @@ export const bnIN = {
     openNotebook: "খুলুন",
     removeNamed: "{{name}} ফোকাস থেকে সরান",
     clear: "ফোকাস সরান",
-    notebookHint: "চ্যাট আপনার সম্পাদনা ও ফলাফল দেখতে পায়। Python উত্তর নোটবুকে যোগ করা যায়।",
+    notebookHint: "চ্যাট আপনার সম্পাদনা ও ফলাফল দেখতে পায়। Python উত্তর এই নোটবুকের সেশনে চলে এবং এতে যোগ করা যায়।",
   },
   jupyter: {
     tutor: "টিউটর",

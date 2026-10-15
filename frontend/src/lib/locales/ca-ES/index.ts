@@ -1134,6 +1134,16 @@ export const caES = {
     deleteAttemptDesc: "Vols eliminar l'intent del {{date}} ({{percent}}%)? No es pot desfer.",
     deleteExamNamed: "Elimina {{title}}",
   },
+  chatCode: {
+    run: "Executa",
+    runAgain: "Torna a executar",
+    stop: "Atura",
+    stopped: "Aturat: s'ha reiniciat Python.\n",
+    inNotebook: "S'executa a la sessió de {{name}}",
+    inChat: "S'executa al teu navegador",
+    noOutput: "Sense sortida.",
+    figureAlt: "Figura generada pel codi del xat",
+  },
   chatFocus: {
     label: "Focus",
     focusInChat: "Centra el xat aquí",
@@ -1145,7 +1155,7 @@ export const caES = {
     openNotebook: "Obre",
     removeNamed: "Treu {{name}} del focus",
     clear: "Treu el focus",
-    notebookHint: "El xat veu les teves edicions i resultats. Les respostes en Python es poden afegir al quadern.",
+    notebookHint: "El xat veu les teves edicions i resultats. Les respostes en Python s'executen a la sessió d'aquest quadern i s'hi poden afegir.",
   },
   jupyter: {
     tutor: "Tutor",

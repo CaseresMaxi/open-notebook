@@ -1134,6 +1134,16 @@ export const trTR = {
     deleteAttemptDesc: "{{date}} tarihli deneme (%{{percent}}) silinsin mi? Bu işlem geri alınamaz.",
     deleteExamNamed: "{{title}} sil",
   },
+  chatCode: {
+    run: "Çalıştır",
+    runAgain: "Yeniden çalıştır",
+    stop: "Durdur",
+    stopped: "Durduruldu: Python yeniden başlatıldı.\n",
+    inNotebook: "{{name}} oturumunda çalışır",
+    inChat: "Tarayıcınızda çalışır",
+    noOutput: "Çıktı yok.",
+    figureAlt: "Sohbet kodunun ürettiği şekil",
+  },
   chatFocus: {
     label: "Odak",
     focusInChat: "Sohbeti buraya odakla",
@@ -1145,7 +1155,7 @@ export const trTR = {
     openNotebook: "Aç",
     removeNamed: "{{name}} odaktan kaldır",
     clear: "Odağı temizle",
-    notebookHint: "Sohbet düzenlemelerinizi ve sonuçlarınızı görür. Python yanıtları not defterine eklenebilir.",
+    notebookHint: "Sohbet düzenlemelerinizi ve sonuçlarınızı görür. Python yanıtları bu not defterinin oturumunda çalışır ve ona eklenebilir.",
   },
   jupyter: {
     tutor: "Eğitmen",

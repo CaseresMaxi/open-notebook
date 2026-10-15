@@ -1134,6 +1134,16 @@ export const jaJP = {
     deleteAttemptDesc: "{{date}} の受験記録（{{percent}}%）を削除しますか？元に戻せません。",
     deleteExamNamed: "{{title}} を削除",
   },
+  chatCode: {
+    run: "実行",
+    runAgain: "もう一度実行",
+    stop: "停止",
+    stopped: "停止しました: Python を再起動しました。\n",
+    inNotebook: "{{name}} のセッションで実行",
+    inChat: "ブラウザで実行",
+    noOutput: "出力はありません。",
+    figureAlt: "チャットのコードが作成した図",
+  },
   chatFocus: {
     label: "フォーカス",
     focusInChat: "チャットをここに集中",
@@ -1145,7 +1155,7 @@ export const jaJP = {
     openNotebook: "開く",
     removeNamed: "{{name}} をフォーカスから外す",
     clear: "フォーカスを解除",
-    notebookHint: "チャットはあなたの編集と結果を見ています。Python の回答はノートブックに追加できます。",
+    notebookHint: "チャットはあなたの編集と結果を見ています。Python の回答はこのノートブックのセッションで実行でき、追加もできます。",
   },
   jupyter: {
     tutor: "チューター",

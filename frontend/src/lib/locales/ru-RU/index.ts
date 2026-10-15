@@ -1134,6 +1134,16 @@ export const ruRU = {
     deleteAttemptDesc: "Удалить попытку от {{date}} ({{percent}}%)? Это действие нельзя отменить.",
     deleteExamNamed: "Удалить {{title}}",
   },
+  chatCode: {
+    run: "Запустить",
+    runAgain: "Запустить снова",
+    stop: "Остановить",
+    stopped: "Остановлено: Python перезапущен.\n",
+    inNotebook: "Выполняется в сеансе {{name}}",
+    inChat: "Выполняется в вашем браузере",
+    noOutput: "Нет вывода.",
+    figureAlt: "Рисунок, созданный кодом из чата",
+  },
   chatFocus: {
     label: "Фокус",
     focusInChat: "Сфокусировать чат здесь",
@@ -1145,7 +1155,7 @@ export const ruRU = {
     openNotebook: "Открыть",
     removeNamed: "Убрать {{name}} из фокуса",
     clear: "Сбросить фокус",
-    notebookHint: "Чат видит ваши правки и результаты. Ответы на Python можно добавить в блокнот.",
+    notebookHint: "Чат видит ваши правки и результаты. Ответы на Python выполняются в сеансе этого блокнота, и их можно добавить в него.",
   },
   jupyter: {
     tutor: "Наставник",

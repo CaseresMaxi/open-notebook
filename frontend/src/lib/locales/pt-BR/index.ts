@@ -1134,6 +1134,16 @@ export const ptBR = {
     deleteAttemptDesc: "Excluir a tentativa de {{date}} ({{percent}}%)? Não é possível desfazer.",
     deleteExamNamed: "Excluir {{title}}",
   },
+  chatCode: {
+    run: "Executar",
+    runAgain: "Executar de novo",
+    stop: "Parar",
+    stopped: "Parado: o Python foi reiniciado.\n",
+    inNotebook: "Roda na sessão de {{name}}",
+    inChat: "Roda no seu navegador",
+    noOutput: "Sem saída.",
+    figureAlt: "Figura gerada pelo código do chat",
+  },
   chatFocus: {
     label: "Foco",
     focusInChat: "Focar o chat aqui",
@@ -1145,7 +1155,7 @@ export const ptBR = {
     openNotebook: "Abrir",
     removeNamed: "Tirar {{name}} do foco",
     clear: "Tirar foco",
-    notebookHint: "O chat vê suas edições e resultados. Respostas em Python podem ser adicionadas ao caderno.",
+    notebookHint: "O chat vê suas edições e resultados. Respostas em Python rodam na sessão deste caderno e podem ser adicionadas a ele.",
   },
   jupyter: {
     tutor: "Tutor",

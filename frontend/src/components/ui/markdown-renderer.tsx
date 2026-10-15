@@ -45,15 +45,10 @@ import yaml from 'react-syntax-highlighter/dist/esm/languages/prism/yaml'
 import type {ExtraProps} from 'react-markdown'
 import {createContext, useContext, type ComponentProps, type ElementType, type ReactNode} from 'react'
 
-/** An action offered under code blocks, e.g. "Add to notebook" in a focused chat. */
-export interface CodeBlockAction {
-  languages: string[]
-  label: string
-  icon?: ReactNode
-  onAction: (code: string) => void
-}
+/** Extra UI under fenced code blocks (e.g. run Python in a chat answer); null for none. */
+export type CodeBlockExtras = (code: string, language: string) => ReactNode
 
-export const CodeBlockActionContext = createContext<CodeBlockAction | null>(null)
+export const CodeBlockExtrasContext = createContext<CodeBlockExtras | null>(null)
 
 const LANGUAGES = {
   bash, c, cpp, csharp, css, diff, docker, go, java, javascript, json, jsx,
@@ -79,7 +74,7 @@ export function MarkdownRenderer({ children, components = {}}: { children: React
 
   const { getEffectiveTheme } = useThemeStore()
   const isDark = getEffectiveTheme() === 'dark'
-  const codeAction = useContext(CodeBlockActionContext)
+  const codeExtras = useContext(CodeBlockExtrasContext)
 
   return (
     <div className="prose prose-sm prose-neutral dark:prose-invert max-w-none break-words prose-headings:font-semibold prose-a:text-primary prose-a:break-all prose-code:before:content-none prose-code:after:content-none prose-pre:p-0 prose-pre:bg-transparent prose-p:mb-4 prose-p:leading-7 prose-li:mb-2">
@@ -106,7 +101,12 @@ export function MarkdownRenderer({ children, components = {}}: { children: React
             pre: ({ children, node }) => {
               const code = node?.children?.[0]
               const classes = code && 'properties' in code ? code.properties?.className : undefined
-              return Array.isArray(classes) && classes.includes('language-arc') ? <>{children}</> : <pre>{children}</pre>
+              if (Array.isArray(classes) && classes.includes('language-arc')) return <>{children}</>
+              // Blocks with extras (run buttons, outputs) are not preformatted text themselves.
+              if (codeExtras && Array.isArray(classes) && classes.some(name => String(name).startsWith('language-'))) {
+                return <div className="code-block">{children}</div>
+              }
+              return <pre>{children}</pre>
             },
             code: ({ children, className }) => {
               const match = /language-(\w+)/.exec(className || '')
@@ -123,16 +123,9 @@ export function MarkdownRenderer({ children, components = {}}: { children: React
                 </SyntaxHighlighter>
               )
               if (!isBlock) return <code className="bg-border rounded px-1 py-0.5">{children}</code>
-              if (!codeAction || !match || !codeAction.languages.includes(match[1].toLowerCase())) return highlighted
-              const code = String(children).replace(/\n$/, '')
-              return (
-                <div className="code-block-action">
-                  {highlighted}
-                  <button type="button" className="code-block-action-button" onClick={() => codeAction.onAction(code)}>
-                    {codeAction.icon}{codeAction.label}
-                  </button>
-                </div>
-              )
+              const extras = codeExtras && match ? codeExtras(String(children).replace(/\n$/, ''), match[1].toLowerCase()) : null
+              if (!extras) return highlighted
+              return <div className="code-block-action">{highlighted}{extras}</div>
             },
           }, ...components}}
         >

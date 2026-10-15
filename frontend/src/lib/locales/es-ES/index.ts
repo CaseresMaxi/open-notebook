@@ -1135,6 +1135,16 @@ export const esES = {
     deleteAttemptDesc: "¿Eliminar el intento del {{date}} ({{percent}}%)? No se puede deshacer.",
     deleteExamNamed: "Eliminar {{title}}",
   },
+  chatCode: {
+    run: "Ejecutar",
+    runAgain: "Ejecutar de nuevo",
+    stop: "Detener",
+    stopped: "Detenido: se reinició Python.\n",
+    inNotebook: "Corre en la sesión de {{name}}",
+    inChat: "Corre en tu navegador",
+    noOutput: "Sin salida.",
+    figureAlt: "Figura generada por el código del chat",
+  },
   chatFocus: {
     label: "Foco",
     focusInChat: "Hacer foco en el chat",
@@ -1146,7 +1156,7 @@ export const esES = {
     openNotebook: "Abrir",
     removeNamed: "Quitar {{name}} del foco",
     clear: "Quitar foco",
-    notebookHint: "El chat ve tus ediciones y resultados. Las respuestas en Python se pueden agregar al cuaderno.",
+    notebookHint: "El chat ve tus ediciones y resultados. Las respuestas en Python corren en la sesión de este cuaderno y se pueden agregar a él.",
   },
   jupyter: {
     tutor: "Tutor",

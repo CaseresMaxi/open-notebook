@@ -1,8 +1,7 @@
 'use client'
 
 import { useCallback, useMemo } from 'react'
-import { Crosshair, ListPlus, X } from 'lucide-react'
-import { toast } from 'sonner'
+import { Crosshair, X } from 'lucide-react'
 import { useNotebookChat } from '@/lib/hooks/use-notebook-chat'
 import { useNotes } from '@/lib/hooks/use-notes'
 import { ChatPanel } from '@/components/sources/ChatPanel'
@@ -14,9 +13,8 @@ import { NotebookContextDialog } from '@/components/sources/NotebookContextDialo
 import type { ContextMode, NoteContextMode } from '@/lib/types/notebook-context'
 import { SourceListResponse } from '@/lib/types/api'
 import { ChatSkeleton } from '@/components/common/LoadingSkeletons'
-import { CodeBlockActionContext, type CodeBlockAction } from '@/components/ui/markdown-renderer'
 import { useChatFocusStore, useFocusedSources } from '@/lib/stores/chat-focus-store'
-import { addChatCell, getSession, useJupyterSessionStore } from '@/lib/stores/jupyter-session-store'
+import { getSession, useJupyterSessionStore } from '@/lib/stores/jupyter-session-store'
 import { liveNotebook } from '@/lib/utils/chat-focus'
 import { useModalManager } from '@/lib/hooks/use-modal-manager'
 import type { ChatFocus } from '@/lib/types/api'
@@ -69,17 +67,7 @@ export function ChatColumn({ notebookId, contextSelections, sources, sourcesLoad
     return { source_ids: focused.map(source => source.id).slice(0, 50), notebooks }
   }, [focused])
   const focusedNotebook = focused.find(isJupyter)
-  const codeAction = useMemo<CodeBlockAction | null>(() => focusedNotebook ? {
-    languages: ['python', 'py'],
-    label: t('chatFocus.addToNotebook'),
-    icon: <ListPlus className="size-3.5" aria-hidden="true" />,
-    onAction: code => {
-      addChatCell(focusedNotebook.id, code)
-      toast.success(t('chatFocus.cellAdded', { name: focusedNotebook.title || t('sources.untitledSource') }), {
-        action: { label: t('chatFocus.openNotebook'), onClick: () => openModal('source', focusedNotebook.id) },
-      })
-    },
-  } : null, [focusedNotebook, openModal, t])
+  const codeNotebook = useMemo(() => focusedNotebook ? { id: focusedNotebook.id, title: focusedNotebook.title ?? '' } : null, [focusedNotebook])
 
   // Initialize notebook chat hook
   const chat = useNotebookChat({
@@ -169,7 +157,6 @@ export function ChatColumn({ notebookId, contextSelections, sources, sourcesLoad
   ) : null
 
   return (
-    <CodeBlockActionContext.Provider value={codeAction}>
     <ChatPanel
       headerActions={<NotebookContextDialog
         sources={sources} notes={notes} selections={contextSelections}
@@ -200,7 +187,7 @@ export function ChatColumn({ notebookId, contextSelections, sources, sourcesLoad
       composerTop={focusBar}
       draft={draft}
       onDraftUsed={() => takeDraft(notebookId)}
+      codeNotebook={codeNotebook}
     />
-    </CodeBlockActionContext.Provider>
   )
 }

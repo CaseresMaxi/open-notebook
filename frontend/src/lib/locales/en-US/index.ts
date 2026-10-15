@@ -1133,6 +1133,16 @@ export const enUS = {
     deleteAttemptDesc: "Delete the attempt from {{date}} ({{percent}}%)? This can't be undone.",
     deleteExamNamed: "Delete {{title}}",
   },
+  chatCode: {
+    run: "Run",
+    runAgain: "Run again",
+    stop: "Stop",
+    stopped: "Stopped: Python was restarted.\n",
+    inNotebook: "Runs in the {{name}} session",
+    inChat: "Runs in your browser",
+    noOutput: "No output.",
+    figureAlt: "Figure produced by the chat code",
+  },
   chatFocus: {
     label: "Focus",
     focusInChat: "Focus the chat here",
@@ -1144,7 +1154,7 @@ export const enUS = {
     openNotebook: "Open",
     removeNamed: "Remove {{name}} from focus",
     clear: "Clear focus",
-    notebookHint: "The chat sees your edits and results. Python answers can be added to the notebook.",
+    notebookHint: "The chat sees your edits and results. Python answers run in this notebook's session and can be added to it.",
   },
   jupyter: {
     tutor: "Tutor",

@@ -1134,6 +1134,16 @@ export const plPL = {
     deleteAttemptDesc: "Usunąć podejście z {{date}} ({{percent}}%)? Tej operacji nie można cofnąć.",
     deleteExamNamed: "Usuń {{title}}",
   },
+  chatCode: {
+    run: "Uruchom",
+    runAgain: "Uruchom ponownie",
+    stop: "Zatrzymaj",
+    stopped: "Zatrzymano: Python został uruchomiony ponownie.\n",
+    inNotebook: "Działa w sesji {{name}}",
+    inChat: "Działa w Twojej przeglądarce",
+    noOutput: "Brak wyniku.",
+    figureAlt: "Wykres utworzony przez kod z czatu",
+  },
   chatFocus: {
     label: "Fokus",
     focusInChat: "Skup czat na tym",
@@ -1145,7 +1155,7 @@ export const plPL = {
     openNotebook: "Otwórz",
     removeNamed: "Usuń {{name}} z fokusu",
     clear: "Wyczyść fokus",
-    notebookHint: "Czat widzi Twoje zmiany i wyniki. Odpowiedzi w Pythonie można dodać do notatnika.",
+    notebookHint: "Czat widzi Twoje zmiany i wyniki. Odpowiedzi w Pythonie działają w sesji tego notatnika i można je do niego dodać.",
   },
   jupyter: {
     tutor: "Tutor",

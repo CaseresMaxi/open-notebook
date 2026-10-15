@@ -35,7 +35,7 @@ function DisplayOutput({ data, alt }: { data: Record<string, string>; alt: strin
 }
 
 /** Outputs of one code cell, in the order the code produced them. */
-export function CellOutputs({ outputs, cellNumber }: { outputs: NotebookOutput[]; cellNumber: number }) {
+export function CellOutputs({ outputs, cellNumber, figureAlt }: { outputs: NotebookOutput[]; cellNumber: number; figureAlt?: string }) {
   const { t } = useTranslation()
   // Consecutive stream chunks read as one block, like in Jupyter.
   const merged = useMemo(() => outputs.reduce<NotebookOutput[]>((list, output) => {
@@ -59,7 +59,7 @@ export function CellOutputs({ outputs, cellNumber }: { outputs: NotebookOutput[]
             </pre>
           )
         }
-        return <DisplayOutput key={index} data={output.data} alt={t('jupyter.figureAlt', { n: cellNumber })} />
+        return <DisplayOutput key={index} data={output.data} alt={figureAlt ?? t('jupyter.figureAlt', { n: cellNumber })} />
       })}
     </div>
   )

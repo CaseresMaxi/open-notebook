@@ -6,6 +6,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { LiquidSurface } from '@/components/layout/LiquidSurface'
+import { ChatCodeRunner, RUNNABLE_LANGUAGES, type CodeNotebook } from '@/components/chat/ChatCodeRunner'
+import { CodeBlockExtrasContext, type CodeBlockExtras } from '@/components/ui/markdown-renderer'
 import { Drawer, DrawerContent, DrawerTrigger } from '@/components/arc/drawer/drawer'
 import { useDevelopmentTools } from '@/lib/hooks/use-development-tools'
 import { Bot, User, Send, Loader2, Clock, ImagePlus } from 'lucide-react'
@@ -68,6 +70,8 @@ interface ChatPanelProps {
   // Text to place in the composer once (e.g. a question about a notebook cell)
   draft?: { text: string; at: number } | null
   onDraftUsed?: () => void
+  // A focused Jupyter notebook: Python blocks run in its session and can be added to it
+  codeNotebook?: CodeNotebook | null
 }
 
 export function ChatPanel({
@@ -90,7 +94,8 @@ export function ChatPanel({
   notebookId,
   composerTop,
   draft,
-  onDraftUsed
+  onDraftUsed,
+  codeNotebook
 }: ChatPanelProps) {
   const developerTools = useDevelopmentTools()
   const [examRequest, setExamRequest] = useState<string | null>(null)
@@ -99,6 +104,11 @@ export function ChatPanel({
   const scrollAreaRef = useRef<HTMLDivElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const { openModal } = useModalManager()
+  // Python blocks in answers run in the browser, in a session per chat.
+  const codeSessionKey = `chat:${notebookId ?? contextType}`
+  const codeExtras = useCallback<CodeBlockExtras>((code, language) => RUNNABLE_LANGUAGES.has(language)
+    ? <ChatCodeRunner code={code} sessionKey={codeSessionKey} notebook={codeNotebook} />
+    : null, [codeSessionKey, codeNotebook])
 
   // Stable reference-click handler so memoized messages don't re-render on
   // composer keystrokes (which no longer re-render this component at all, since
@@ -138,7 +148,7 @@ export function ChatPanel({
   }, [messages])
 
   return (
-    <>
+    <CodeBlockExtrasContext.Provider value={codeExtras}>
     {examRequest !== null && <CreateExamDialog open onOpenChange={open => { if (!open) setExamRequest(null) }} initialNotebookId={notebookId} initialInstructions={examRequest || ''} initialModelId={modelOverride} />}
     <Card className="study-conversation relative py-0 flex flex-col h-full min-h-0 flex-1 overflow-hidden">
       <CardHeader className="pb-3 flex-shrink-0">
@@ -240,7 +250,7 @@ export function ChatPanel({
       </CardContent>
     </Card>
 
-    </>
+    </CodeBlockExtrasContext.Provider>
   )
 }
 

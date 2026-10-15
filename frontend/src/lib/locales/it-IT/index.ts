@@ -1134,6 +1134,16 @@ export const itIT = {
     deleteAttemptDesc: "Eliminare il tentativo del {{date}} ({{percent}}%)? L'azione è irreversibile.",
     deleteExamNamed: "Elimina {{title}}",
   },
+  chatCode: {
+    run: "Esegui",
+    runAgain: "Esegui di nuovo",
+    stop: "Ferma",
+    stopped: "Fermato: Python è stato riavviato.\n",
+    inNotebook: "Gira nella sessione di {{name}}",
+    inChat: "Gira nel tuo browser",
+    noOutput: "Nessun output.",
+    figureAlt: "Figura prodotta dal codice della chat",
+  },
   chatFocus: {
     label: "Focus",
     focusInChat: "Concentra la chat qui",
@@ -1145,7 +1155,7 @@ export const itIT = {
     openNotebook: "Apri",
     removeNamed: "Togli {{name}} dal focus",
     clear: "Togli focus",
-    notebookHint: "La chat vede le tue modifiche e i risultati. Le risposte in Python si possono aggiungere al notebook.",
+    notebookHint: "La chat vede le tue modifiche e i risultati. Le risposte in Python girano nella sessione di questo notebook e si possono aggiungere.",
   },
   jupyter: {
     tutor: "Tutor",

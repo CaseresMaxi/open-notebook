@@ -1137,6 +1137,16 @@ export const deDE = {
     deleteAttemptDesc: "Versuch vom {{date}} ({{percent}} %) löschen? Das kann nicht rückgängig gemacht werden.",
     deleteExamNamed: "{{title}} löschen",
   },
+  chatCode: {
+    run: "Ausführen",
+    runAgain: "Erneut ausführen",
+    stop: "Stoppen",
+    stopped: "Gestoppt: Python wurde neu gestartet.\n",
+    inNotebook: "Läuft in der Sitzung von {{name}}",
+    inChat: "Läuft in deinem Browser",
+    noOutput: "Keine Ausgabe.",
+    figureAlt: "Vom Chat-Code erzeugte Abbildung",
+  },
   chatFocus: {
     label: "Fokus",
     focusInChat: "Chat hierauf fokussieren",
@@ -1148,7 +1158,7 @@ export const deDE = {
     openNotebook: "Öffnen",
     removeNamed: "{{name}} aus dem Fokus entfernen",
     clear: "Fokus aufheben",
-    notebookHint: "Der Chat sieht deine Änderungen und Ergebnisse. Python-Antworten lassen sich zum Notebook hinzufügen.",
+    notebookHint: "Der Chat sieht deine Änderungen und Ergebnisse. Python-Antworten laufen in der Sitzung dieses Notebooks und lassen sich hinzufügen.",
   },
   jupyter: {
     tutor: "Tutor",

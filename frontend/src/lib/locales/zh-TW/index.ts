@@ -1134,6 +1134,16 @@ export const zhTW = {
     deleteAttemptDesc: "刪除 {{date}} 的作答紀錄（{{percent}}%）？此操作無法復原。",
     deleteExamNamed: "刪除 {{title}}",
   },
+  chatCode: {
+    run: "執行",
+    runAgain: "再次執行",
+    stop: "停止",
+    stopped: "已停止：Python 已重新啟動。\n",
+    inNotebook: "在 {{name}} 的工作階段中執行",
+    inChat: "在你的瀏覽器中執行",
+    noOutput: "沒有輸出。",
+    figureAlt: "聊天程式碼產生的圖",
+  },
   chatFocus: {
     label: "聚焦",
     focusInChat: "讓聊天聚焦於此",
@@ -1145,7 +1155,7 @@ export const zhTW = {
     openNotebook: "開啟",
     removeNamed: "將 {{name}} 移出聚焦",
     clear: "清除聚焦",
-    notebookHint: "聊天可以看到你的修改和結果。Python 回答可以加入筆記本。",
+    notebookHint: "聊天可以看到你的修改和結果。Python 回答在此筆記本的工作階段中執行，也可以加入筆記本。",
   },
   jupyter: {
     tutor: "導師",
