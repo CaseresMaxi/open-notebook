@@ -1,5 +1,7 @@
+import asyncio
 import operator
 import os
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 from urllib.parse import urlparse
 
@@ -17,6 +19,12 @@ from open_notebook.domain.content_settings import ContentSettings
 from open_notebook.domain.notebook import Asset, Source
 from open_notebook.domain.transformation import Transformation
 from open_notebook.graphs.transformation import graph as transform_graph
+from open_notebook.utils.jupyter import (
+    NotebookError,
+    is_notebook_path,
+    load_notebook,
+    notebook_text,
+)
 from open_notebook.utils.runtime_capabilities import engine_runtime_missing
 
 # content-core >= 2.1 disables its own Loguru logging for library consumers.
@@ -240,16 +248,32 @@ async def content_process(state: SourceState) -> dict:
     )
 
     url = content_state.get("url") or ""
-    try:
-        processed = await extract_content(
-            url=content_state.get("url"),
-            file_path=content_state.get("file_path"),
-            content=content_state.get("content"),
-            config=config,
+    if is_notebook_path(content_state.get("file_path")):
+        # content-core has no notebook reader: keep Markdown, code and textual
+        # outputs so chat and search see the whole notebook.
+        notebook_path = Path(content_state["file_path"])
+        try:
+            notebook = load_notebook(await asyncio.to_thread(notebook_path.read_bytes))
+        except NotebookError as exc:
+            raise ValueError(str(exc)) from exc
+        processed = ExtractionOutput(
+            content=notebook_text(notebook),
+            title=notebook_path.stem,
+            source_type="file",
+            identified_type="application/x-ipynb+json",
+            metadata={"cells": len(notebook["cells"])},
         )
-    except cc.ContentCoreError as e:
-        logger.warning(f"content-core extraction failed ({type(e).__name__}): {e}")
-        raise _extraction_error(e, url) from e
+    else:
+        try:
+            processed = await extract_content(
+                url=content_state.get("url"),
+                file_path=content_state.get("file_path"),
+                content=content_state.get("content"),
+                config=config,
+            )
+        except cc.ContentCoreError as e:
+            logger.warning(f"content-core extraction failed ({type(e).__name__}): {e}")
+            raise _extraction_error(e, url) from e
 
     # Since content-core 2.2, empty content means the source was genuinely
     # empty; extraction failures raise (handled above).

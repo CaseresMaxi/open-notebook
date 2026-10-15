@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Jupyter notebooks as sources: upload a `.ipynb` to read it with its saved outputs, edit and run its cells in the browser (Pyodide, no code runs on the server; seaborn and other PyPI packages install on first import; `pd.read_csv(url)` and your own data files work), and learn from a tutor beside each cell that explains what the code does and, as it runs, the real result you got. See ADR-030.
 - Exams are in the main navigation (sidebar and phone menu), listed as liquid glass tiles like notebooks (tinted by notebook, best score in the mark, the whole tile opens the exam); the exam page is centred with a floating glass submit bar. An exam page has a question navigator showing answered questions, a progress bar, and keeps unsent answers when you leave and come back in the same tab.
 - Interactive components in chat answers: the model can place animated Arc UI components inline (line, bar, donut and waffle charts, sortable tables, metric cards, gauges, steps, collapsible sections and callouts) as validated ```arc blocks. They render in chat and saved notes, and copy or read aloud as plain Markdown.
 - Faster chat turns with OpenAI's Decisions API: when an OpenAI key is configured, each turn starts answering immediately while `gpt-6-luna` decides in parallel whether visual tools, an inline component or more reasoning are needed, so most turns skip the slow visual tool loop. `OPEN_NOTEBOOK_DECISIONS=off` turns it off.

@@ -68,6 +68,10 @@ import { SourceInsightDialog } from '@/components/sources/SourceInsightDialog'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import { GlassTabsList } from '@/components/layout/GlassTabsList'
 import { NotebookAssociations } from '@/components/sources/NotebookAssociations'
+import dynamic from 'next/dynamic'
+
+// The notebook runner (Pyodide worker) loads only for .ipynb sources.
+const JupyterNotebook = dynamic(() => import('@/components/jupyter/JupyterNotebook'), { ssr: false })
 
 interface SourceDetailContentProps {
   sourceId: string
@@ -386,6 +390,7 @@ function SourceDetailContentInner({
     return null
   }
 
+  const isJupyterNotebook = !!source?.asset?.file_path?.toLowerCase().endsWith('.ipynb')
   const isYouTubeUrl = useMemo(() => {
     if (!externalHref) return false
     return !!(getYouTubeVideoId(externalHref))
@@ -552,9 +557,13 @@ function SourceDetailContentInner({
                   )}
                 </div>
               )}
-              <MarkdownRenderer>
-                {source.full_text || t('sources.noContent')}
-              </MarkdownRenderer>
+              {isJupyterNotebook ? (
+                <JupyterNotebook sourceId={sourceId} />
+              ) : (
+                <MarkdownRenderer>
+                  {source.full_text || t('sources.noContent')}
+                </MarkdownRenderer>
+              )}
             </section>
           </TabsContent>
 

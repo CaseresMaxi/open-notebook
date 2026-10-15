@@ -21,6 +21,7 @@ export const QUERY_KEYS = {
   accountUsage: ["account", "usage"] as const,
   managedAccounts: ["admin", "accounts"] as const,
   notebooks: ['notebooks'] as const,
+  jupyterNotebook: (sourceId: string, language?: string) => ['sources', sourceId, 'jupyter', language] as const,
   notebook: (id: string) => ['notebooks', id] as const,
   notes: (notebookId?: string) => ['notes', notebookId] as const,
   note: (id: string) => ['notes', id] as const,
