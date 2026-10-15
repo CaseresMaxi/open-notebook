@@ -68,6 +68,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Uploaded Jupyter notebooks were rejected with "Unsupported file type: application/json", and their title kept the stored file's random prefix.
+- Uploaded PDFs no longer stay processing forever when Docling vision is on: the Docker image downloads Docling models over plain HTTP (`HF_HUB_DISABLE_XET=1`), which times out and resumes, instead of the Xet client, which stalled on the 8 GB chart model and blocked the worker.
 - Leaving an exam returns where it was opened from (the filtered exam list, a notebook or its chat) instead of the unfiltered list; the notebook filter is kept in the URL, results open at the top with focus on the title, and deleting an attempt asks for confirmation.
 - Notebook tiles now drift their accent colours slowly behind the liquid glass (two softly blurred blobs, one hue-shifted, desynchronised per tile), so the glass refraction and rim light read on a still page; only transforms animate, so phones composite it without repainting, and reduced motion keeps it still.
 - The Sources page lists sources as frameless record rows (title, type, insights and an actions menu) like a notebook's Sources tab, with an A–Z / Z–A toggle, instead of a boxed table. A source opened from it fills the phone screen without a card: a back arrow sits beside the title, the chat button lives in the floating tab bar, and the tab bar keeps its liquid-glass material (the frosted fallback now only applies when the WebGL glass is off).

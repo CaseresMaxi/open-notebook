@@ -114,6 +114,10 @@ ENV API_HOST=0.0.0.0
 ENV UV_CACHE_DIR=/app/data/.cache/uv
 ENV PLAYWRIGHT_BROWSERS_PATH=/app/data/.cache/playwright
 ENV HF_HOME=/app/data/.cache/huggingface
+# Download models over plain HTTP: it times out on a stalled read and resumes the
+# partial file, while the Xet client can stall without a timeout and leave a
+# source processing forever (e.g. the 8 GB chart model Docling vision fetches).
+ENV HF_HUB_DISABLE_XET=1
 
 # Data directory (volume-mounted by users) and supervisor log directory
 RUN mkdir -p /app/data /var/log/supervisor \

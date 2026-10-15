@@ -204,6 +204,7 @@ If an engine is selected in Settings but its runtime is missing, extraction fall
 | `UV_CACHE_DIR` | `/app/data/.cache/uv` | Package cache for the optional runtimes |
 | `PLAYWRIGHT_BROWSERS_PATH` | `/app/data/.cache/playwright` | Chromium download for local Crawl4AI |
 | `HF_HOME` | `/app/data/.cache/huggingface` | Model cache for Docling |
+| `HF_HUB_DISABLE_XET` | `1` | Docling models download over plain HTTP, which times out on a stalled read and resumes, instead of the Xet client, which can hang |
 
 ---
 
