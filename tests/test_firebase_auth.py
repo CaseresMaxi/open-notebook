@@ -185,6 +185,43 @@ async def test_admin_assignment_requires_verified_identity(monkeypatch):
     promote.assert_not_called()
 
 
+@pytest.mark.asyncio
+async def test_extra_administrators_never_take_the_original_data(monkeypatch, tmp_path):
+    path = tmp_path / "account-owner.json"
+    monkeypatch.setenv("NEXTNOOTBOOK_LEGACY_OWNER_FILE", str(path))
+    monkeypatch.setenv(
+        "NEXTNOOTBOOK_ADMIN_EMAIL", "Owner@example.com, helper@example.com"
+    )
+    monkeypatch.delenv("NEXTNOOTBOOK_OWNER_EMAIL", raising=False)
+    monkeypatch.setattr(firebase_auth, "firebase_app", lambda: "app")
+    monkeypatch.setattr(
+        firebase_auth.auth,
+        "verify_id_token",
+        Mock(return_value={"uid": "uid", "auth_time": firebase_auth.time.time()}),
+    )
+    user = SimpleNamespace(
+        uid="helper-uid",
+        email="helper@example.com",
+        display_name="Helper",
+        disabled=False,
+        email_verified=True,
+        custom_claims={},
+    )
+    monkeypatch.setattr(firebase_auth.auth, "get_user", Mock(return_value=user))
+    promote = Mock()
+    monkeypatch.setattr(firebase_auth.auth, "set_custom_user_claims", promote)
+    monkeypatch.setattr(
+        firebase_auth.auth, "create_session_cookie", Mock(return_value="session")
+    )
+    _, account = await firebase_auth.create_session("token")
+    assert account["admin"] is True
+    promote.assert_called_once_with("helper-uid", {"admin": True}, app="app")
+    assert not path.exists()
+    user.uid, user.email = "owner-uid", "owner@example.com"
+    await firebase_auth.create_session("token")
+    assert firebase_auth.legacy_owner_uid() == "owner-uid"
+
+
 def test_legacy_owner_binding_is_immutable(monkeypatch, tmp_path):
     path = tmp_path / "account-owner.json"
     monkeypatch.setenv("NEXTNOOTBOOK_LEGACY_OWNER_FILE", str(path))

@@ -120,7 +120,7 @@ def reserve(model, units, kind="language"):
             for k, expiry in (data.get("active") or {}).items()
             if expiry > now()
         }
-        if (
+        if not workspace.unlimited and (
             limits["disabled"]
             or totals["tokens"] + units > limits["monthly_tokens"]
             or totals["calls"] >= limits["monthly_calls"]
@@ -204,7 +204,9 @@ def claim_file(path, size):
         data = ref.get(transaction=tx).to_dict() or {}
         previous = file.get(transaction=tx).to_dict() or {}
         total = data.get("storage_bytes", 0) - previous.get("bytes", 0) + size
-        if policy(data)["disabled"] or total > policy(data)["storage_bytes"]:
+        if not workspace.unlimited and (
+            policy(data)["disabled"] or total > policy(data)["storage_bytes"]
+        ):
             raise RateLimitError("Your file storage allowance is reached.")
         tx.set(ref, {"storage_bytes": total}, merge=True)
         tx.set(

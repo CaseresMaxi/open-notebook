@@ -269,3 +269,14 @@ def test_cloud_original_remains_downloadable_without_local_cache(monkeypatch):
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(b"original")
         assert _is_source_file_available(source) is True
+
+
+def test_administrators_are_metered_but_never_blocked():
+    usage.set_policy("alice", {**usage.DEFAULT_POLICY, "monthly_tokens": 10})
+    with workspace_scope(Workspace("alice", admin=True)):
+        usage.settle(usage.reserve("model", 50))
+        usage.claim_file("a", 600 * 1024 * 1024)
+    assert usage.summary("alice")["used"]["tokens"] == 50
+    with workspace_scope(Workspace("alice")):
+        with pytest.raises(RateLimitError):
+            usage.reserve("model", 1)

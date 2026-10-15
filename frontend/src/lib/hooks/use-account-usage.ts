@@ -14,6 +14,8 @@ export interface AccountUsage {
   month: string
   used: { tokens: number; calls: number; images: number; storage_bytes: number }
   limits: AccountPolicy
+  /** Administrators and the installation owner are never blocked. */
+  unlimited?: boolean
 }
 export interface ManagedAccount extends Record<string, unknown> {
   uid: string
@@ -21,6 +23,7 @@ export interface ManagedAccount extends Record<string, unknown> {
   name: string
   policy: AccountPolicy
   usage: AccountUsage
+  unlimited?: boolean
 }
 export function useAccountUsage(enabled: boolean) {
   return useQuery({

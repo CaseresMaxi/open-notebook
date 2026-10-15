@@ -12,6 +12,7 @@ import { usePathname } from 'next/navigation'
 import {
   BookOpen,
   FileText,
+  GraduationCap,
   UserRound,
   CreditCard,
   Settings,
@@ -39,6 +40,7 @@ export function AppSidebar() {
   const items = [
     { label: t('navigation.notebooks'), href: '/notebooks', icon: BookOpen },
     { label: t('navigation.sources'), href: '/sources', icon: FileText },
+    { label: t('navigation.exams'), href: '/exams', icon: GraduationCap },
     { label: t('product.profile'), href: '/profile', icon: UserRound },
     { label: t('product.payments'), href: '/payments', icon: CreditCard },
     ...(user?.admin ? [{label:t('commercial.accounts'),href:'/admin/accounts',icon:UserRound}] : []),

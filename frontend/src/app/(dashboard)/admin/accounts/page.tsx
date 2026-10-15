@@ -80,7 +80,9 @@ export default function AccountsPage() {
               render: (_, row) => (
                 <span className="tabular-nums">
                   {row.usage.used.tokens.toLocaleString()} /{' '}
-                  {row.policy.monthly_tokens.toLocaleString()}
+                  {row.unlimited
+                    ? t('commercial.unlimited')
+                    : row.policy.monthly_tokens.toLocaleString()}
                 </span>
               ),
             },

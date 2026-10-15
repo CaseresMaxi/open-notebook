@@ -34,8 +34,16 @@ def firebase_app():
     )
 
 
+def admin_emails() -> list[str]:
+    """Verified emails granted the administrator role (comma-separated)."""
+    raw = os.getenv("NEXTNOOTBOOK_ADMIN_EMAIL", "")
+    return [email.strip().casefold() for email in raw.split(",") if email.strip()]
+
+
 def admin_email() -> str:
-    return os.getenv("NEXTNOOTBOOK_ADMIN_EMAIL", "").strip().casefold()
+    """The primary administrator, who owns the installation when no owner is pinned."""
+    emails = admin_emails()
+    return emails[0] if emails else ""
 
 
 def owner_email() -> str:
@@ -141,8 +149,10 @@ async def create_session(id_token: str):
     email = (user.email or "").casefold()
     if owner_email() and user.email_verified and email == owner_email():
         await run_in_threadpool(bind_legacy_owner, user.uid, user.email)
-    if admin_email() and user.email_verified and email == admin_email():
-        await run_in_threadpool(bind_legacy_owner, user.uid, user.email)
+    if user.email_verified and email in admin_emails():
+        # Extra administrators get the role, never the original study data.
+        if email == admin_email() and not owner_email():
+            await run_in_threadpool(bind_legacy_owner, user.uid, user.email)
         if claims.get("admin") is not True:
             claims = {**claims, "admin": True}
             await run_in_threadpool(

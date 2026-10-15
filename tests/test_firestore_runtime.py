@@ -117,7 +117,9 @@ async def test_job_outbox_retry_and_completed_delivery(workspace, monkeypatch):
 
         @workspace_command
         async def inner(value):
-            calls.append(current_workspace().uid)
+            workspace = current_workspace()
+            assert workspace is not None
+            calls.append(workspace.uid)
             return {"success": True}
 
         return await inner(data)

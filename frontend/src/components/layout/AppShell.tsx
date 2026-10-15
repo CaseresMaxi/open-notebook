@@ -11,6 +11,7 @@ import { usePathname } from 'next/navigation'
 import {
   BookOpen,
   FileText,
+  GraduationCap,
   Menu,
   UserRound,
   CreditCard,
@@ -34,6 +35,7 @@ export function WorkspaceNavigation({ onNavigate }: { onNavigate: () => void }) 
   const links = [
     ['/notebooks', 'navigation.notebooks', BookOpen],
     ['/sources', 'navigation.sources', FileText],
+    ['/exams', 'navigation.exams', GraduationCap],
     ['/profile', 'product.profile', UserRound],
     ['/payments', 'product.payments', CreditCard],
     ['/settings', 'navigation.settings', Settings],
@@ -41,7 +43,7 @@ export function WorkspaceNavigation({ onNavigate }: { onNavigate: () => void }) 
   return <nav aria-label={t('product.studyNavigation')} className="grid gap-1">
     {user?.admin && <Link href="/admin/accounts" onClick={onNavigate} className="flex min-h-11 items-center gap-3 rounded-lg p-3 hover:bg-accent"><UserRound className="size-4" />{t('commercial.accounts')}</Link>}
     {links.map(([href, label, Icon]) => <Link key={href} href={href} onClick={onNavigate}
-      aria-current={pathname === href ? 'page' : undefined}
+      aria-current={pathname === href || pathname?.startsWith(`${href}/`) ? 'page' : undefined}
       className="flex min-h-11 items-center gap-3 rounded-lg p-3 hover:bg-accent">
       <Icon className="size-4" />{t(label)}
     </Link>)}

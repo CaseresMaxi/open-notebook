@@ -29,7 +29,9 @@ export function AccountUsage() {
           </dt>
           <dd className="tabular-nums">
             {usage.data.used.tokens.toLocaleString()} /{' '}
-            {usage.data.limits.monthly_tokens.toLocaleString()}
+            {usage.data.unlimited
+              ? t('commercial.unlimited')
+              : usage.data.limits.monthly_tokens.toLocaleString()}
           </dd>
         </div>
         <div>
@@ -38,7 +40,9 @@ export function AccountUsage() {
           </dt>
           <dd className="tabular-nums">
             {(usage.data.used.storage_bytes / 1048576).toFixed(1)} /{' '}
-            {(usage.data.limits.storage_bytes / 1048576).toFixed(0)} MB
+            {usage.data.unlimited
+              ? t('commercial.unlimited')
+              : `${(usage.data.limits.storage_bytes / 1048576).toFixed(0)} MB`}
           </dd>
         </div>
       </dl>

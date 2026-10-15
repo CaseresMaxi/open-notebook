@@ -1,4 +1,5 @@
 import json
+from dataclasses import replace
 
 import pytest
 
@@ -7,7 +8,7 @@ from open_notebook.ai.decisions import TurnDecision, apply_effort, parse_answers
 from open_notebook.utils.arc_blocks import arc_instructions, materialize_arc_blocks
 from open_notebook.utils.chat_routing import use_visual_tools
 
-ANSWERS = [
+ANSWERS: list[dict] = [
     {"type": "predicate", "name": "visual_tools", "probability": 0.1},
     {"type": "choice", "name": "presentation", "choice": "chart", "confidence": 0.6},
     {"type": "score", "name": "effort", "score": 0.2},
@@ -15,20 +16,19 @@ ANSWERS = [
 
 
 def decision(**changes) -> TurnDecision:
-    values = dict(
-        visual_tools=False,
-        presentation="prose",
-        presentation_confidence=0.0,
-        effort="low",
-        latency_ms=1,
-    )
-    return TurnDecision(**(values | changes))
+    return replace(TurnDecision(False, "prose", 0.0, "low", 1), **changes)
+
+
+def parsed(answers: list, latency_ms: int = 1) -> TurnDecision:
+    result = parse_answers(answers, latency_ms)
+    assert result is not None
+    return result
 
 
 def test_parses_decisions_answers():
-    parsed = parse_answers(ANSWERS, 120)
-    assert parsed == TurnDecision(False, "chart", 0.6, "none", 120)
-    assert "chart" in parsed.presentation_hint()
+    result = parsed(ANSWERS, 120)
+    assert result == TurnDecision(False, "chart", 0.6, "none", 120)
+    assert "chart" in result.presentation_hint()
 
 
 @pytest.mark.parametrize(
@@ -36,14 +36,14 @@ def test_parses_decisions_answers():
 )
 def test_effort_levels(score, effort):
     answers = [*ANSWERS[:2], {"type": "score", "name": "effort", "score": score}]
-    assert parse_answers(answers, 1).effort == effort
+    assert parsed(answers).effort == effort
 
 
 def test_refusals_fall_back_to_heuristics():
     answers = [{"type": "refusal", "name": "visual_tools"}, *ANSWERS[1:]]
     assert parse_answers(answers, 1) is None
     answers = [ANSWERS[0], {"type": "refusal", "name": "presentation"}, ANSWERS[2]]
-    assert parse_answers(answers, 1).presentation_hint() == ""
+    assert parsed(answers).presentation_hint() == ""
 
 
 def test_charts_skip_the_visual_tool_loop_when_decided():
@@ -261,7 +261,7 @@ def test_presentation_uses_the_chosen_probability():
         },
         ANSWERS[2],
     ]
-    assert parse_answers(answers, 1).presentation_confidence == 0.7
+    assert parsed(answers).presentation_confidence == 0.7
 
 
 def test_step_labels_drop_their_own_numbering():

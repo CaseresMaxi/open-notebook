@@ -25,6 +25,7 @@ import { useLanguages } from '@/lib/hooks/use-podcasts'
 import { useCreateExam } from '@/lib/hooks/use-exams'
 import { useTranslation } from '@/lib/hooks/use-translation'
 import { ExamDifficulty } from '@/lib/types/exams'
+import { currentPath, examHref } from '@/lib/utils/exam-navigation'
 
 const DEFAULT_VALUE = '__default__'
 const MAX_PER_TYPE = 50
@@ -119,7 +120,7 @@ export function CreateExamDialog({ open, onOpenChange, initialNotebookId, initia
     }, {
       onSuccess: (exam) => {
         onOpenChange(false)
-        router.push(`/exams/${encodeURIComponent(exam.id)}`)
+        router.push(examHref(exam.id, currentPath()))
       },
     })
   }

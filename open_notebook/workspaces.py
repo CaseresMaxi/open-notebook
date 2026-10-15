@@ -15,6 +15,11 @@ class Workspace:
     legacy: bool = False
 
     @property
+    def unlimited(self) -> bool:
+        """Administrators and the installation owner are metered, never blocked."""
+        return self.admin or self.legacy
+
+    @property
     def key(self) -> str:
         return hashlib.sha256(self.uid.encode()).hexdigest()
 

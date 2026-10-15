@@ -134,8 +134,8 @@ def reserve(model, units, kind="language"):
             "SELECT count(*) n FROM ledger WHERE uid=? AND state='reserved'",
             (workspace.uid,),
         ).fetchone()["n"]
-        # The installation owner is metered for visibility, never blocked.
-        if not workspace.legacy and (
+        # Administrators and the installation owner are metered for visibility, never blocked.
+        if not workspace.unlimited and (
             policy["disabled"]
             or totals["tokens"] + units > policy["monthly_tokens"]
             or totals["calls"] >= policy["monthly_calls"]
@@ -192,7 +192,7 @@ def claim_file(path, size):
             "SELECT coalesce(sum(bytes),0) n FROM files WHERE uid=? AND path != ?",
             (workspace.uid, str(path)),
         ).fetchone()["n"]
-        if not workspace.legacy and (
+        if not workspace.unlimited and (
             policy["disabled"] or used + size > policy["storage_bytes"]
         ):
             raise RateLimitError("Your file storage allowance is reached.")

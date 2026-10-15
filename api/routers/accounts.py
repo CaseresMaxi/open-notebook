@@ -4,6 +4,7 @@ from fastapi import APIRouter, Request
 from pydantic import BaseModel, Field
 from starlette.concurrency import run_in_threadpool
 
+from api import firebase_auth
 from open_notebook import usage
 from open_notebook.ai.models import Model
 from open_notebook.exceptions import InvalidInputError
@@ -22,9 +23,22 @@ class Policy(BaseModel):
     disabled: bool = False
 
 
+def unlimited(user) -> bool:
+    """Administrators and the installation owner are never blocked by limits."""
+    email = (user.get("email") or "").casefold()
+    return (
+        user.get("admin") is True
+        or (bool(email) and email in firebase_auth.admin_emails())
+        or user["uid"] == firebase_auth.legacy_owner_uid()
+        or (bool(email) and email == firebase_auth.owner_email())
+    )
+
+
 @router.get("/account/usage")
 async def account_usage(request: Request):
-    return await run_in_threadpool(usage.summary, request.state.user["uid"])
+    user = request.state.user
+    summary = await run_in_threadpool(usage.summary, user["uid"])
+    return {**summary, "unlimited": unlimited(user)}
 
 
 @router.get("/admin/accounts")
@@ -32,6 +46,7 @@ async def accounts():
     users = await run_in_threadpool(usage.accounts)
     for user in users:
         user["usage"] = await run_in_threadpool(usage.summary, user["uid"])
+        user["unlimited"] = unlimited(user)
     return users
 
 

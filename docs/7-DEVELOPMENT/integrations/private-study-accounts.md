@@ -32,6 +32,8 @@ NEXTNOOTBOOK_USAGE_DB=/app/data/platform/usage.sqlite
 NEXTNOOTBOOK_LEGACY_OWNER_FILE=/app/data/account-owner.json
 ```
 
+`NEXTNOOTBOOK_ADMIN_EMAIL` accepts several comma-separated verified emails. Every listed account gets the administrator role and is metered but never blocked by its allowance; only the first one (when `NEXTNOOTBOOK_OWNER_EMAIL` is unset) is bound to the original installation's data.
+
 For private localhost testing only, use explicit loopback origins and `NEXTNOOTBOOK_INSECURE_LOCAL_COOKIES=true`. Otherwise cookies require HTTPS. Keep existing encryption material to preserve credential decryption.
 
 The runtime service account has Auth administration, object administration and bucket metadata read on the chosen private bucket, plus Firestore data access for verified archival copies. Do not grant public object access. The application checks ownership before using its server credentials. Storage and Firestore client rules deny direct reads/writes.
