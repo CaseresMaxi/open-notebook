@@ -18,3 +18,22 @@ export interface NotebookDocument {
   /** Tutor explanations keyed by cell index (cached on the server). */
   explanations: Record<string, string>
 }
+
+/** `saved`: not run in this session; the output is the one stored in the file. */
+export type LiveCellStatus = 'not_run' | 'saved' | 'ran' | 'error' | 'running'
+
+export interface LiveCell {
+  number: number
+  kind: 'code' | 'markdown'
+  code: string
+  edited: boolean
+  from_chat: boolean
+  status: LiveCellStatus
+  output: string
+}
+
+export interface LiveNotebook {
+  source_id: string
+  title: string
+  cells: LiveCell[]
+}

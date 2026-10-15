@@ -22,7 +22,8 @@ import {
   CheckCircle,
   AlertTriangle,
   Loader2,
-  Unlink
+  Unlink,
+  Crosshair
 } from 'lucide-react'
 import { useSourceStatus } from '@/lib/hooks/use-sources'
 import { useTranslation } from '@/lib/hooks/use-translation'
@@ -44,6 +45,9 @@ interface SourceCardProps {
   showRemoveFromNotebook?: boolean
   contextMode?: ContextMode
   onContextModeChange?: (mode: ContextMode) => void
+  /** Whether the notebook chat is focused on this source. */
+  focused?: boolean
+  onToggleFocus?: (sourceId: string) => void
 }
 
 const SOURCE_TYPE_ICONS = {
@@ -120,7 +124,9 @@ function SourceCardImpl({
   className,
   showRemoveFromNotebook = false,
   contextMode,
-  onContextModeChange
+  onContextModeChange,
+  focused = false,
+  onToggleFocus
 }: SourceCardProps) {
   const { t } = useTranslation()
   const statusConfigMap = getStatusConfig(t)
@@ -264,6 +270,9 @@ function SourceCardImpl({
               >
                 {compact ? <button className="study-record-title" onClick={handleCardClick}>{title}</button> : title}
               </h4>
+              {focused && (
+                <span className="chat-focus-mark"><Crosshair className="h-3 w-3" aria-hidden="true" />{t('chatFocus.focused')}</span>
+              )}
             </div>
 
             {statusData?.message && (isProcessing || isFailed) && (
@@ -305,7 +314,21 @@ function SourceCardImpl({
                   <MoreVertical className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuContent align="end" className="w-56">
+              {onToggleFocus && (
+                <>
+                  <DropdownMenuItem
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onToggleFocus(source.id)
+                    }}
+                  >
+                    <Crosshair className="h-4 w-4 mr-2" />
+                    {focused ? t('chatFocus.removeFocus') : t('chatFocus.focusInChat')}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                </>
+              )}
               {showRemoveFromNotebook && (
                 <>
                   <DropdownMenuItem

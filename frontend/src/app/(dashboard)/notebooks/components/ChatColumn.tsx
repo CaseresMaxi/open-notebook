@@ -1,6 +1,8 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
+import { Crosshair, ListPlus, X } from 'lucide-react'
+import { toast } from 'sonner'
 import { useNotebookChat } from '@/lib/hooks/use-notebook-chat'
 import { useNotes } from '@/lib/hooks/use-notes'
 import { ChatPanel } from '@/components/sources/ChatPanel'
@@ -12,6 +14,14 @@ import { NotebookContextDialog } from '@/components/sources/NotebookContextDialo
 import type { ContextMode, NoteContextMode } from '@/lib/types/notebook-context'
 import { SourceListResponse } from '@/lib/types/api'
 import { ChatSkeleton } from '@/components/common/LoadingSkeletons'
+import { CodeBlockActionContext, type CodeBlockAction } from '@/components/ui/markdown-renderer'
+import { useChatFocusStore, useFocusedSources } from '@/lib/stores/chat-focus-store'
+import { addChatCell, getSession, useJupyterSessionStore } from '@/lib/stores/jupyter-session-store'
+import { liveNotebook } from '@/lib/utils/chat-focus'
+import { useModalManager } from '@/lib/hooks/use-modal-manager'
+import type { ChatFocus } from '@/lib/types/api'
+
+const isJupyter = (source: SourceListResponse) => !!source.asset?.file_path?.toLowerCase().endsWith('.ipynb')
 
 interface ChatColumnProps {
   onSourceContextChange?: (id: string, mode: ContextMode) => void
@@ -25,16 +35,59 @@ interface ChatColumnProps {
 
 export function ChatColumn({ notebookId, contextSelections, sources, sourcesLoading, onSourceContextChange, onNoteContextChange, onExcludeMaterials }: ChatColumnProps) {
   const { t } = useTranslation()
+  const { openModal } = useModalManager()
 
   // Fetch notes for this notebook
   const { data: notes = [], isLoading: notesLoading } = useNotes(notebookId)
+
+  // Focus: the chat reads only the focused sources, in full. A Jupyter notebook
+  // with a session in this tab sends what is on screen instead (edits, results).
+  const focusIds = useFocusedSources(notebookId)
+  const unfocus = useChatFocusStore(state => state.unfocus)
+  const clearFocus = useChatFocusStore(state => state.clear)
+  const draft = useChatFocusStore(state => (state.draft?.notebookId === notebookId ? state.draft : null))
+  const takeDraft = useChatFocusStore(state => state.takeDraft)
+  const focused = useMemo(() => sources.filter(source => focusIds.includes(source.id)), [sources, focusIds])
+  const liveIds = useJupyterSessionStore(useCallback(state => focused
+    .filter(source => isJupyter(source) && (state.sessions[source.id]?.cells.length ?? 0) > 0)
+    .map(source => source.id).join(','), [focused]))
+  const effectiveSelections = useMemo<ContextSelections>(() => {
+    if (!focused.length) return contextSelections
+    const live = new Set(liveIds.split(',').filter(Boolean))
+    return {
+      sources: Object.fromEntries(sources.map(source => [source.id,
+        !focusIds.includes(source.id) ? 'off' : live.has(source.id) ? 'insights' : 'full'])),
+      notes: Object.fromEntries(notes.map(note => [note.id, 'off'])),
+    }
+  }, [focused.length, contextSelections, liveIds, sources, focusIds, notes])
+  const getFocus = useCallback((): ChatFocus | undefined => {
+    if (!focused.length) return undefined
+    const notebooks = focused.filter(isJupyter)
+      .map(source => liveNotebook(source.id, getSession(source.id)))
+      .filter((notebook): notebook is NonNullable<typeof notebook> => !!notebook)
+      .slice(0, 4)
+    return { source_ids: focused.map(source => source.id).slice(0, 50), notebooks }
+  }, [focused])
+  const focusedNotebook = focused.find(isJupyter)
+  const codeAction = useMemo<CodeBlockAction | null>(() => focusedNotebook ? {
+    languages: ['python', 'py'],
+    label: t('chatFocus.addToNotebook'),
+    icon: <ListPlus className="size-3.5" aria-hidden="true" />,
+    onAction: code => {
+      addChatCell(focusedNotebook.id, code)
+      toast.success(t('chatFocus.cellAdded', { name: focusedNotebook.title || t('sources.untitledSource') }), {
+        action: { label: t('chatFocus.openNotebook'), onClick: () => openModal('source', focusedNotebook.id) },
+      })
+    },
+  } : null, [focusedNotebook, openModal, t])
 
   // Initialize notebook chat hook
   const chat = useNotebookChat({
     notebookId,
     sources,
     notes,
-    contextSelections
+    contextSelections: effectiveSelections,
+    getFocus,
   })
 
   // Calculate context stats for indicator
@@ -45,7 +98,7 @@ export function ChatColumn({ notebookId, contextSelections, sources, sourcesLoad
 
     // Count sources by mode
     sources.forEach(source => {
-      const mode = contextSelections.sources[source.id]
+      const mode = effectiveSelections.sources[source.id]
       if (mode === 'insights') {
         sourcesInsights++
       } else if (mode === 'full') {
@@ -55,7 +108,7 @@ export function ChatColumn({ notebookId, contextSelections, sources, sourcesLoad
 
     // Count notes that are included (not 'off')
     notes.forEach(note => {
-      const mode = contextSelections.notes[note.id]
+      const mode = effectiveSelections.notes[note.id]
       if (mode === 'full') {
         notesCount++
       }
@@ -68,7 +121,7 @@ export function ChatColumn({ notebookId, contextSelections, sources, sourcesLoad
       tokenCount: chat.tokenCount,
       charCount: chat.charCount
     }
-  }, [sources, notes, contextSelections, chat.tokenCount, chat.charCount])
+  }, [sources, notes, effectiveSelections, chat.tokenCount, chat.charCount])
 
   // Show loading state while sources/notes are being fetched
   if (sourcesLoading || notesLoading) {
@@ -96,7 +149,27 @@ export function ChatColumn({ notebookId, contextSelections, sources, sourcesLoad
     )
   }
 
+  const focusBar = focused.length > 0 ? (
+    <div className="chat-focus-bar" role="group" aria-label={t('chatFocus.label')}>
+      <span className="chat-focus-title"><Crosshair className="size-3.5" aria-hidden="true" /><span className="chat-focus-label">{t('chatFocus.label')}</span></span>
+      {focused.map(source => (
+        <span key={source.id} className="chat-focus-chip">
+          <button type="button" className="chat-focus-name" onClick={() => openModal('source', source.id)} title={source.title ?? ''}>
+            {source.title || t('sources.untitledSource')}
+          </button>
+          <button type="button" className="chat-focus-remove" onClick={() => unfocus(notebookId, source.id)}
+            aria-label={t('chatFocus.removeNamed', { name: source.title || t('sources.untitledSource') })}>
+            <X className="size-3.5" />
+          </button>
+        </span>
+      ))}
+      <button type="button" className="chat-focus-clear" onClick={() => clearFocus(notebookId)}>{t('chatFocus.clear')}</button>
+      {focusedNotebook && <p className="chat-focus-hint">{t('chatFocus.notebookHint')}</p>}
+    </div>
+  ) : null
+
   return (
+    <CodeBlockActionContext.Provider value={codeAction}>
     <ChatPanel
       headerActions={<NotebookContextDialog
         sources={sources} notes={notes} selections={contextSelections}
@@ -124,6 +197,10 @@ export function ChatColumn({ notebookId, contextSelections, sources, sourcesLoad
       loadingMessages={chat.loadingMessages}
       notebookContextStats={contextStats}
       notebookId={notebookId}
+      composerTop={focusBar}
+      draft={draft}
+      onDraftUsed={() => takeDraft(notebookId)}
     />
+    </CodeBlockActionContext.Provider>
   )
 }

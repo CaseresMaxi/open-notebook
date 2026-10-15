@@ -23,6 +23,7 @@ from open_notebook.exceptions import (
 )
 from open_notebook.graphs.chat import graph as chat_graph
 from open_notebook.utils import token_count
+from open_notebook.utils.chat_focus import ChatFocus
 from open_notebook.utils.chat_followups import followup_context
 from open_notebook.utils.chat_images import (
     ChatInput,
@@ -84,6 +85,9 @@ class ExecuteChatRequest(ChatInput):
     session_id: str = Field(..., description="Chat session ID")
     context: Dict[str, Any] = Field(
         ..., description="Chat context with sources and notes"
+    )
+    focus: Optional[ChatFocus] = Field(
+        None, description="Sources the chat concentrates on, and live notebooks"
     )
 
 
@@ -364,6 +368,8 @@ async def _execute_chat(request: ExecuteChatRequest):
         state_values["notebook"] = notebook
         state_values["model_override"] = model_override
         state_values["visual_tools"] = request.visual_tools
+        # Per turn: a focus never leaks into the next message once it is cleared.
+        state_values["focus"] = request.focus.model_dump() if request.focus else None
 
         # Add user message to state
         # Explicit id so a failed turn can remove it from the checkpoint.

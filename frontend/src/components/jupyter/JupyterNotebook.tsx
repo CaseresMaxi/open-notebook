@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { FilePlus2, Loader2, Pencil, Play, PlayCircle, RotateCcw, Sparkles, Square, Undo2 } from 'lucide-react'
+import { FilePlus2, Loader2, MessageSquare, MessageSquarePlus, Pencil, Play, PlayCircle, RotateCcw, Sparkles, Square, Trash2, Undo2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { MarkdownRenderer } from '@/components/ui/markdown-renderer'
@@ -9,13 +9,18 @@ import { LiquidSurface } from '@/components/layout/LiquidSurface'
 import { LoadError } from '@/components/common/LoadingSkeletons'
 import { jupyterApi } from '@/lib/api/jupyter'
 import { useJupyterNotebook, useNotebookExplanations } from '@/lib/hooks/use-jupyter'
+import { useModalManager } from '@/lib/hooks/use-modal-manager'
 import { useTranslation } from '@/lib/hooks/use-translation'
-import { PythonKernel, type KernelStatus } from '@/lib/python/kernel'
+import type { KernelStatus } from '@/lib/python/kernel'
+import { useChatFocusStore } from '@/lib/stores/chat-focus-store'
+import {
+  addSessionFiles, EMPTY_SESSION, EXTRA_CELL_BASE, removeChatCell, restartSession, runAllCells, runSessionCell,
+  useJupyterSessionStore, type RunExplanation,
+} from '@/lib/stores/jupyter-session-store'
+import { useCurrentNotebookId } from '@/lib/utils/chat-focus'
 import type { NotebookCell, NotebookOutput } from '@/lib/types/jupyter'
 import { cn } from '@/lib/utils'
 import { CellOutputs, outputsText } from './CellOutputs'
-
-type RunExplanation = { state: 'loading' | 'done' | 'error'; text?: string }
 
 const EXPLAIN_RUNS_KEY = 'jupyter-explain-runs'
 
@@ -72,12 +77,15 @@ interface CodeCellProps {
   running: boolean
   queued: boolean
   blocked: boolean
+  fromChat: boolean
   onChange: (code: string) => void
   onReset: () => void
   onRun: () => void
+  onRemove?: () => void
+  onAsk?: () => void
 }
 
-function CodeCell({ number, language, code, edited, outputs, live, count, running, queued, blocked, onChange, onReset, onRun }: CodeCellProps) {
+function CodeCell({ number, language, code, edited, fromChat, outputs, live, count, running, queued, blocked, onChange, onReset, onRun, onRemove, onAsk }: CodeCellProps) {
   const { t } = useTranslation()
   const [editing, setEditing] = useState(false)
   const textarea = useRef<HTMLTextAreaElement>(null)
@@ -100,14 +108,27 @@ function CodeCell({ number, language, code, edited, outputs, live, count, runnin
         <span className="jnb-count" aria-label={count ? t('jupyter.executionCount', { n: count }) : undefined}>
           [{running ? '*' : queued ? '·' : count ?? ' '}]
         </span>
+        {fromChat && <span className="jnb-chat-badge"><MessageSquare className="size-3" aria-hidden="true" />{t('chatFocus.fromChat')}</span>}
         <span className="ml-auto flex items-center gap-1">
+          {onAsk && (
+            <Button size="icon" variant="ghost" className="size-10 rounded-full" onClick={onAsk}
+              aria-label={t('jupyter.askChat', { n: number })} title={t('jupyter.askChat', { n: number })}>
+              <MessageSquarePlus className="size-4" />
+            </Button>
+          )}
+          {onRemove && (
+            <Button size="icon" variant="ghost" className="size-10 rounded-full" onClick={onRemove} disabled={running}
+              aria-label={t('jupyter.removeCell', { n: number })} title={t('jupyter.removeCell', { n: number })}>
+              <Trash2 className="size-4" />
+            </Button>
+          )}
           {edited && (
             <Button size="sm" variant="ghost" onClick={onReset} title={t('jupyter.resetCell')}>
-              <Undo2 className="mr-1 size-3.5" />{t('jupyter.resetCell')}
+              <Undo2 className="size-3.5" />{t('jupyter.resetCell')}
             </Button>
           )}
           <Button size="sm" variant="ghost" onClick={() => setEditing(value => !value)} aria-pressed={editing}>
-            <Pencil className="mr-1 size-3.5" />{editing ? t('jupyter.doneEditing') : t('jupyter.edit')}
+            <Pencil className="size-3.5" />{editing ? t('jupyter.doneEditing') : t('jupyter.edit')}
           </Button>
         </span>
       </div>
@@ -149,27 +170,20 @@ const STATUS_LABEL: Record<KernelStatus, string> = {
 }
 
 /** A Jupyter notebook source: read it, run it in the browser, learn from a tutor beside each cell. */
-export function JupyterNotebook({ sourceId }: { sourceId: string }) {
+export function JupyterNotebook({ sourceId, title = '' }: { sourceId: string; title?: string }) {
   const { t, language } = useTranslation()
   const notebook = useJupyterNotebook(sourceId, language)
   const explain = useNotebookExplanations(sourceId, language)
-  const [edits, setEdits] = useState<Record<number, string>>({})
-  const [live, setLive] = useState<Record<number, NotebookOutput[]>>({})
-  const [counts, setCounts] = useState<Record<number, number>>({})
-  const [running, setRunning] = useState<number | null>(null)
-  const [queue, setQueue] = useState<number[]>([])
-  const [status, setStatus] = useState<KernelStatus>('idle')
-  const [installing, setInstalling] = useState<string | undefined>()
-  const [files, setFiles] = useState<string[]>([])
+  const session = useJupyterSessionStore(state => state.sessions[sourceId]) ?? EMPTY_SESSION
+  const update = useJupyterSessionStore(state => state.update)
+  const notebookId = useCurrentNotebookId()
+  const focusSource = useChatFocusStore(state => state.focusSource)
+  const { closeModal } = useModalManager()
   const [explainRuns, setExplainRuns] = useState(true)
-  const [runs, setRuns] = useState<Record<number, RunExplanation>>({})
-  const kernel = useRef<PythonKernel | null>(null)
-  const counter = useRef(0)
-  const generation = useRef(0)
   const fileInput = useRef<HTMLInputElement>(null)
   const requested = useRef(false)
-
   const [elapsed, setElapsed] = useState(0)
+  const { running, queue, status, edits, live, counts, runs, files, installing } = session
 
   useEffect(() => { setExplainRuns(readPreference()) }, [])
   // Some cells (model sweeps) take a minute in WebAssembly: show they are alive.
@@ -180,10 +194,14 @@ export function JupyterNotebook({ sourceId }: { sourceId: string }) {
     const timer = setInterval(() => setElapsed(Math.round((Date.now() - started) / 1000)), 1000)
     return () => clearInterval(timer)
   }, [running])
-  useEffect(() => () => kernel.current?.dispose(), [])
 
   const data = notebook.data
-  const cells = useMemo(() => data?.cells ?? [], [data])
+  // The session keeps the notebook's cells so the chat can read what is on screen.
+  useEffect(() => {
+    if (data) update(sourceId, () => ({ cells: data.cells, language: data.language, title }))
+  }, [data, sourceId, title, update])
+
+  const cells = useMemo(() => [...(data?.cells ?? []), ...session.extra], [data, session.extra])
   const codeCells = useMemo(() => cells.filter(cell => cell.type === 'code'), [cells])
   const numbers = useMemo(() => new Map(codeCells.map((cell, position) => [cell.index, position + 1])), [codeCells])
   const explanations = data?.explanations ?? {}
@@ -191,78 +209,44 @@ export function JupyterNotebook({ sourceId }: { sourceId: string }) {
 
   // Explanations are generated once per notebook and language, then cached by the API.
   useEffect(() => {
-    if (data && !hasExplanations && codeCells.length && !requested.current) {
+    if (data && !hasExplanations && data.cells.some(cell => cell.type === 'code') && !requested.current) {
       requested.current = true
       explain.mutate(false)
     }
-  }, [data, hasExplanations, codeCells.length, explain])
+  }, [data, hasExplanations, explain])
 
-  const getKernel = useCallback(() => {
-    if (!kernel.current) {
-      kernel.current = new PythonKernel((next, detail) => {
-        setStatus(next)
-        setInstalling(next === 'busy' || next === 'loading' ? detail : undefined)
-      })
-    }
-    kernel.current.start()
-    return kernel.current
-  }, [])
+  // A cell just added from the chat: bring it into view once.
+  const reveal = session.reveal
+  useEffect(() => {
+    if (reveal === null || !data) return
+    const frame = requestAnimationFrame(() => {
+      document.getElementById(`jnb-cell-${sourceId}-${reveal}`)?.scrollIntoView?.({ behavior: 'smooth', block: 'center' })
+      update(sourceId, () => ({ reveal: null }))
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [reveal, data, sourceId, update])
 
   const explainRun = useCallback(async (cell: NotebookCell, code: string, outputs: NotebookOutput[]) => {
-    setRuns(previous => ({ ...previous, [cell.index]: { state: 'loading' } }))
+    const setRun = (run: RunExplanation) => update(sourceId, current => ({ runs: { ...current.runs, [cell.index]: run } }))
+    setRun({ state: 'loading' })
     try {
       const text = await jupyterApi.explainOutput(sourceId, {
         code, output: outputsText(outputs), context: precedingMarkdown(cells, cell.index), language,
       })
-      setRuns(previous => ({ ...previous, [cell.index]: { state: 'done', text } }))
+      setRun({ state: 'done', text })
     } catch {
-      setRuns(previous => ({ ...previous, [cell.index]: { state: 'error' } }))
+      setRun({ state: 'error' })
     }
-  }, [cells, language, sourceId])
+  }, [cells, language, sourceId, update])
 
-  const runCell = useCallback(async (cell: NotebookCell): Promise<boolean> => {
-    const ticket = generation.current
-    const code = edits[cell.index] ?? cell.source
-    const collected: NotebookOutput[] = []
-    setRunning(cell.index)
-    setLive(previous => ({ ...previous, [cell.index]: [] }))
-    const ok = await getKernel().run(code, output => {
-      collected.push(output)
-      setLive(previous => ({ ...previous, [cell.index]: [...(previous[cell.index] ?? []), output] }))
-    })
-    if (ticket !== generation.current) return false
-    const count = ++counter.current
-    setCounts(previous => ({ ...previous, [cell.index]: count }))
-    setRunning(current => (current === cell.index ? null : current))
-    if (explainRuns && code.trim()) void explainRun(cell, code, collected)
-    return ok
-  }, [edits, explainRun, explainRuns, getKernel])
+  const afterRun = useCallback((cell: NotebookCell, code: string, outputs: NotebookOutput[]) => {
+    if (explainRuns && code.trim()) void explainRun(cell, code, outputs)
+  }, [explainRun, explainRuns])
 
-  const runAll = async () => {
-    const ticket = generation.current
-    setQueue(codeCells.map(cell => cell.index))
-    for (const cell of codeCells) {
-      if (ticket !== generation.current) return
-      setQueue(previous => previous.filter(index => index !== cell.index))
-      const ok = await runCell(cell)
-      if (!ok) break // like Jupyter: stop at the first error
-    }
-    setQueue([])
-  }
-
-  const restart = () => {
-    generation.current++
-    counter.current = 0
-    setQueue([]); setRunning(null); setLive({}); setCounts({}); setRuns({}); setFiles([])
-    kernel.current?.restart()
-  }
-
-  const addFiles = async (list: FileList | null) => {
-    for (const file of Array.from(list ?? [])) {
-      const name = await getKernel().addFile(file)
-      setFiles(previous => [...new Set([...previous, name])])
-    }
-    if (fileInput.current) fileInput.current.value = ''
+  const askChat = (number: number) => {
+    if (!notebookId) return
+    focusSource(notebookId, sourceId, `${t('jupyter.aboutCell', { n: number })} `)
+    closeModal()
   }
 
   const toggleExplainRuns = (value: boolean) => {
@@ -285,28 +269,31 @@ export function JupyterNotebook({ sourceId }: { sourceId: string }) {
 
   return (
     <div className="jnb">
-      <LiquidSurface className="jnb-toolbar" radius={20}>
+      <LiquidSurface className="jnb-toolbar" radius={22}>
         <div className="jnb-toolbar-row">
           <span className={cn('jnb-status', `jnb-status-${status}`)} role="status" aria-live="polite">
             <span className="jnb-status-dot" aria-hidden="true" />{statusText}
           </span>
           <span className="jnb-toolbar-actions">
-            <Button size="sm" onClick={runAll} disabled={busy || !codeCells.length}>
-              <PlayCircle className="mr-1.5 size-4" />{t('jupyter.runAll')}
+            <Button size="sm" variant="ghost" className="jnb-primary" onClick={() => void runAllCells(sourceId, afterRun)} disabled={busy || !codeCells.length}>
+              <PlayCircle className="size-4" /><span className="jnb-action-label">{t('jupyter.runAll')}</span>
             </Button>
-            <Button size="sm" variant="ghost" onClick={restart} disabled={status === 'idle'}
-              title={busy ? t('jupyter.stopHint') : undefined}>
-              {busy ? <Square className="mr-1.5 size-4" /> : <RotateCcw className="mr-1.5 size-4" />}
-              {busy ? t('jupyter.stop') : t('jupyter.restart')}
+            <Button size="sm" variant="ghost" onClick={() => restartSession(sourceId)} disabled={status === 'idle'}
+              aria-label={busy ? t('jupyter.stop') : t('jupyter.restart')} title={busy ? t('jupyter.stopHint') : t('jupyter.restart')}>
+              {busy ? <Square className="size-4" /> : <RotateCcw className="size-4" />}
+              <span className="jnb-action-label">{busy ? t('jupyter.stop') : t('jupyter.restart')}</span>
             </Button>
-            <Button size="sm" variant="ghost" onClick={() => fileInput.current?.click()}>
-              <FilePlus2 className="mr-1.5 size-4" />{t('jupyter.addData')}
+            <Button size="sm" variant="ghost" onClick={() => fileInput.current?.click()} aria-label={t('jupyter.addData')} title={t('jupyter.addData')}>
+              <FilePlus2 className="size-4" /><span className="jnb-action-label">{t('jupyter.addData')}</span>
             </Button>
-            <input ref={fileInput} type="file" multiple hidden onChange={event => void addFiles(event.target.files)} />
+            <input ref={fileInput} type="file" multiple hidden onChange={event => {
+              void addSessionFiles(sourceId, Array.from(event.target.files ?? []))
+              event.target.value = ''
+            }} />
           </span>
         </div>
         <div className="jnb-toolbar-row jnb-toolbar-secondary">
-          <label className="flex items-center gap-2">
+          <label className="jnb-toggle">
             <Checkbox checked={explainRuns} onCheckedChange={value => toggleExplainRuns(value === true)} />
             {t('jupyter.explainRuns')}
           </label>
@@ -316,7 +303,7 @@ export function JupyterNotebook({ sourceId }: { sourceId: string }) {
             <Button size="sm" variant="ghost" onClick={() => explain.mutate(false)}>{t('jupyter.explainError')} · {t('common.retry')}</Button>
           ) : hasExplanations ? (
             <Button size="sm" variant="ghost" onClick={() => explain.mutate(true)}>
-              <Sparkles className="mr-1.5 size-3.5" />{t('jupyter.regenerate')}
+              <Sparkles className="size-3.5" />{t('jupyter.regenerate')}
             </Button>
           ) : null}
         </div>
@@ -337,26 +324,30 @@ export function JupyterNotebook({ sourceId }: { sourceId: string }) {
         const number = numbers.get(cell.index) ?? 0
         const code = edits[cell.index] ?? cell.source
         const liveOutputs = live[cell.index]
+        const fromChat = cell.index >= EXTRA_CELL_BASE
         return (
-          <section key={cell.id} className="jnb-row jnb-row-code" aria-label={t('jupyter.cellN', { n: number })}>
+          <section key={cell.id} id={`jnb-cell-${sourceId}-${cell.index}`} className={cn('jnb-row jnb-row-code', fromChat && 'jnb-row-chat')} aria-label={t('jupyter.cellN', { n: number })}>
             <CodeCell
               number={number}
               language={data.language}
               code={code}
-              edited={edits[cell.index] !== undefined && edits[cell.index] !== cell.source}
+              edited={!fromChat && edits[cell.index] !== undefined && edits[cell.index] !== cell.source}
+              fromChat={fromChat}
               outputs={liveOutputs ?? cell.outputs}
               live={!!liveOutputs}
               count={counts[cell.index] ?? (liveOutputs ? null : cell.execution_count)}
               running={running === cell.index}
               queued={queue.includes(cell.index)}
               blocked={busy}
-              onChange={value => setEdits(previous => ({ ...previous, [cell.index]: value }))}
-              onReset={() => setEdits(previous => { const next = { ...previous }; delete next[cell.index]; return next })}
-              onRun={() => void runCell(cell)}
+              onChange={value => update(sourceId, current => ({ edits: { ...current.edits, [cell.index]: value } }))}
+              onReset={() => update(sourceId, current => { const next = { ...current.edits }; delete next[cell.index]; return { edits: next } })}
+              onRemove={fromChat ? () => removeChatCell(sourceId, cell.index) : undefined}
+              onRun={() => void runSessionCell(sourceId, cell, (text, outputs) => afterRun(cell, text, outputs))}
+              onAsk={notebookId ? () => askChat(number) : undefined}
             />
             <Tutor
-              explanation={explanations[cell.index]}
-              pending={explain.isPending && !explanations[cell.index]}
+              explanation={fromChat ? undefined : explanations[cell.index]}
+              pending={!fromChat && explain.isPending && !explanations[cell.index]}
               run={runs[cell.index]}
             />
           </section>

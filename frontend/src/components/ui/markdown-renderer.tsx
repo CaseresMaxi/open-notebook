@@ -43,7 +43,17 @@ import typescript from 'react-syntax-highlighter/dist/esm/languages/prism/typesc
 import yaml from 'react-syntax-highlighter/dist/esm/languages/prism/yaml'
 
 import type {ExtraProps} from 'react-markdown'
-import type {ComponentProps, ElementType} from 'react'
+import {createContext, useContext, type ComponentProps, type ElementType, type ReactNode} from 'react'
+
+/** An action offered under code blocks, e.g. "Add to notebook" in a focused chat. */
+export interface CodeBlockAction {
+  languages: string[]
+  label: string
+  icon?: ReactNode
+  onAction: (code: string) => void
+}
+
+export const CodeBlockActionContext = createContext<CodeBlockAction | null>(null)
 
 const LANGUAGES = {
   bash, c, cpp, csharp, css, diff, docker, go, java, javascript, json, jsx,
@@ -69,6 +79,7 @@ export function MarkdownRenderer({ children, components = {}}: { children: React
 
   const { getEffectiveTheme } = useThemeStore()
   const isDark = getEffectiveTheme() === 'dark'
+  const codeAction = useContext(CodeBlockActionContext)
 
   return (
     <div className="prose prose-sm prose-neutral dark:prose-invert max-w-none break-words prose-headings:font-semibold prose-a:text-primary prose-a:break-all prose-code:before:content-none prose-code:after:content-none prose-pre:p-0 prose-pre:bg-transparent prose-p:mb-4 prose-p:leading-7 prose-li:mb-2">
@@ -101,7 +112,7 @@ export function MarkdownRenderer({ children, components = {}}: { children: React
               const match = /language-(\w+)/.exec(className || '')
               if (match?.[1] === 'arc') return <ArcBlock source={String(children).trim()} />
               const isBlock = match || String(children).includes('\n')
-              return isBlock ? (
+              const highlighted = (
                 <SyntaxHighlighter
                   language={match ? match[1] : 'text'}
                   style={isDark ? darkTheme : lightTheme}
@@ -110,8 +121,17 @@ export function MarkdownRenderer({ children, components = {}}: { children: React
                 >
                   {String(children)}
                 </SyntaxHighlighter>
-              ) : (
-                <code className="bg-border rounded px-1 py-0.5">{children}</code>
+              )
+              if (!isBlock) return <code className="bg-border rounded px-1 py-0.5">{children}</code>
+              if (!codeAction || !match || !codeAction.languages.includes(match[1].toLowerCase())) return highlighted
+              const code = String(children).replace(/\n$/, '')
+              return (
+                <div className="code-block-action">
+                  {highlighted}
+                  <button type="button" className="code-block-action-button" onClick={() => codeAction.onAction(code)}>
+                    {codeAction.icon}{codeAction.label}
+                  </button>
+                </div>
               )
             },
           }, ...components}}

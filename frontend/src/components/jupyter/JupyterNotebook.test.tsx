@@ -34,10 +34,17 @@ vi.mock('@/lib/python/kernel', () => ({
 }))
 vi.mock('@/components/layout/LiquidSurface', () => ({ LiquidSurface: ({ children }: { children: React.ReactNode }) => <div>{children}</div> }))
 
+import { usePathname } from 'next/navigation'
 import { JupyterNotebook } from './JupyterNotebook'
+import { addChatCell, getSession, resetJupyterSessions } from '@/lib/stores/jupyter-session-store'
+import { useChatFocusStore } from '@/lib/stores/chat-focus-store'
 
 describe('JupyterNotebook', () => {
-  beforeEach(() => { run.mockClear(); explainOutput.mockClear() })
+  beforeEach(() => {
+    run.mockClear(); explainOutput.mockClear(); resetJupyterSessions()
+    vi.mocked(usePathname).mockReturnValue('')
+    useChatFocusStore.setState({ focus: {}, request: null, draft: null })
+  })
 
   it('shows cells, saved outputs and the tutor beside the code', () => {
     render(<JupyterNotebook sourceId="source:1" />)
@@ -67,5 +74,43 @@ describe('JupyterNotebook', () => {
     fireEvent.keyDown(screen.getByLabelText('jupyter.codeOf'), { key: 'Enter', shiftKey: true })
     await waitFor(() => expect(run).toHaveBeenCalledWith('print(1)', expect.any(Function)))
     expect(screen.getByRole('button', { name: /jupyter.resetCell/ })).toBeInTheDocument()
+  })
+
+  it('keeps the session after the notebook closes, so the chat can read it', async () => {
+    const { unmount } = render(<JupyterNotebook sourceId="source:1" title="KNN" />)
+    fireEvent.click(screen.getByRole('button', { name: 'jupyter.runCell' }))
+    await waitFor(() => expect(screen.getByText('42')).toBeInTheDocument())
+    unmount()
+    const session = getSession('source:1')
+    expect(session.title).toBe('KNN')
+    expect(session.live[1]).toEqual([{ type: 'stream', name: 'stdout', text: '42\n' }])
+    render(<JupyterNotebook sourceId="source:1" title="KNN" />)
+    expect(screen.getByText('42', { selector: 'pre' })).toBeInTheDocument()
+  })
+
+  it('shows code added from the chat as a new cell that runs like the others', async () => {
+    addChatCell('source:1', 'print(2 * 21)\n')
+    render(<JupyterNotebook sourceId="source:1" />)
+    expect(screen.getByText('chatFocus.fromChat')).toBeInTheDocument()
+    const buttons = screen.getAllByRole('button', { name: 'jupyter.runCell' })
+    fireEvent.click(buttons[1])
+    await waitFor(() => expect(run).toHaveBeenCalledWith('print(2 * 21)', expect.any(Function)))
+    fireEvent.click(screen.getByRole('button', { name: 'jupyter.removeCell' }))
+    expect(screen.queryByText('chatFocus.fromChat')).not.toBeInTheDocument()
+  })
+
+  it('asks the notebook chat about a cell only inside a notebook', () => {
+    render(<JupyterNotebook sourceId="source:1" />)
+    expect(screen.queryByRole('button', { name: 'jupyter.askChat' })).not.toBeInTheDocument()
+  })
+
+  it('focuses the chat on the notebook with a draft about the cell', () => {
+    vi.mocked(usePathname).mockReturnValue('/notebooks/notebook%3Aabc')
+    render(<JupyterNotebook sourceId="source:1" />)
+    fireEvent.click(screen.getByRole('button', { name: 'jupyter.askChat' }))
+    const state = useChatFocusStore.getState()
+    expect(state.focus['notebook:abc']).toEqual(['source:1'])
+    expect(state.request?.notebookId).toBe('notebook:abc')
+    expect(state.takeDraft('notebook:abc')).toBe('jupyter.aboutCell ')
   })
 })

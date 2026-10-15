@@ -1,3 +1,5 @@
+import type { LiveNotebook } from '@/lib/types/jupyter'
+
 export interface NotebookResponse {
   id: string
   name: string
@@ -255,7 +257,14 @@ export interface UpdateNotebookChatSessionRequest {
   model_override?: string | null
 }
 
+/** Sources the chat concentrates on, and the live state of focused Jupyter notebooks. */
+export interface ChatFocus {
+  source_ids: string[]
+  notebooks: LiveNotebook[]
+}
+
 export interface SendNotebookChatMessageRequest {
+  focus?: ChatFocus
   visual_tools?: boolean
   /** Internal turn: the model receives it, the transcript never shows it. */
   hidden?: boolean

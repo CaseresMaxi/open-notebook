@@ -63,6 +63,11 @@ interface ChatPanelProps {
   notebookContextStats?: NotebookContextStats
   // Notebook ID for saving notes
   notebookId?: string
+  // Shown just above the composer (e.g. the sources the chat is focused on)
+  composerTop?: ReactNode
+  // Text to place in the composer once (e.g. a question about a notebook cell)
+  draft?: { text: string; at: number } | null
+  onDraftUsed?: () => void
 }
 
 export function ChatPanel({
@@ -82,7 +87,10 @@ export function ChatPanel({
   loadingMessages = false,
   title,
   contextType = 'source',
-  notebookId
+  notebookId,
+  composerTop,
+  draft,
+  onDraftUsed
 }: ChatPanelProps) {
   const developerTools = useDevelopmentTools()
   const [examRequest, setExamRequest] = useState<string | null>(null)
@@ -225,6 +233,9 @@ export function ChatPanel({
           isStreaming={isStreaming}
           modelOverride={modelOverride}
           onModelChange={onModelChange}
+          top={composerTop}
+          draft={draft}
+          onDraftUsed={onDraftUsed}
         />
       </CardContent>
     </Card>
@@ -240,13 +251,19 @@ interface ChatComposerProps {
   isStreaming: boolean
   modelOverride?: string
   onModelChange?: (model?: string) => void
+  top?: ReactNode
+  draft?: { text: string; at: number } | null
+  onDraftUsed?: () => void
 }
 
 function ChatComposer({
   onSendMessage,
   isStreaming,
   modelOverride,
-  onModelChange
+  onModelChange,
+  top,
+  draft,
+  onDraftUsed
 }: ChatComposerProps) {
   const { t } = useTranslation()
   const developerTools = useDevelopmentTools()
@@ -272,6 +289,17 @@ function ChatComposer({
   }, [])
   const readingRef = useRef(false)
   const busy = isStreaming || readingImages || submitting
+  useEffect(() => {
+    if (!draft) return
+    setInput(previous => (previous.trim() ? `${previous.trimEnd()}\n${draft.text}` : draft.text))
+    onDraftUsed?.()
+    const frame = requestAnimationFrame(() => {
+      const field = document.getElementById(chatInputId) as HTMLTextAreaElement | null
+      field?.focus()
+      field?.setSelectionRange(field.value.length, field.value.length)
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [draft, onDraftUsed, chatInputId])
 
   const addImages = async (files: File[]) => {
     if (busy || readingRef.current || !files.length) return
@@ -327,6 +355,7 @@ function ChatComposer({
         event.preventDefault()
         void addImages(Array.from(event.dataTransfer.files))
       }}>
+      {top}
       {developerTools && <Drawer open={optionsOpen} onOpenChange={setOptionsOpen}>
         <DrawerTrigger asChild><Button variant="ghost" size="sm">{t('navigation.advanced')}</Button></DrawerTrigger>
         <DrawerContent closeLabel={t('common.close')} className="product-shell" title={t('navigation.advanced')}>

@@ -20,6 +20,7 @@ import { SourceCard } from '@/components/sources/SourceCard'
 import { useDeleteSource, useRetrySource, useRemoveSourceFromNotebook } from '@/lib/hooks/use-sources'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import { useModalManager } from '@/lib/hooks/use-modal-manager'
+import { useChatFocusStore, useFocusedSources } from '@/lib/stores/chat-focus-store'
 import { ContextMode } from '../[id]/page'
 import type { SourceBulkAction } from '@/lib/utils/source-context'
 import { CollapsibleColumn, createCollapseButton } from '@/components/notebooks/CollapsibleColumn'
@@ -67,6 +68,13 @@ export function SourcesColumn({
   const [sourceToRemove, setSourceToRemove] = useState<string | null>(null)
 
   const { openModal } = useModalManager()
+  const focusedSources = useFocusedSources(notebookId)
+  const focusSource = useChatFocusStore(state => state.focusSource)
+  const unfocus = useChatFocusStore(state => state.unfocus)
+  const toggleFocus = (sourceId: string) => {
+    if (focusedSources.includes(sourceId)) unfocus(notebookId, sourceId)
+    else focusSource(notebookId, sourceId)
+  }
   const deleteSource = useDeleteSource()
   const retrySource = useRetrySource()
   const removeFromNotebook = useRemoveSourceFromNotebook()
@@ -238,6 +246,8 @@ export function SourcesColumn({
                     onRemoveFromNotebook={handleRemoveFromNotebook}
                     onRefresh={onRefresh}
                     showRemoveFromNotebook={true}
+                    focused={focusedSources.includes(source.id)}
+                    onToggleFocus={toggleFocus}
                   />
                 ))}
                 {/* Loading indicator for infinite scroll */}

@@ -13,7 +13,8 @@ import {
   CreateNotebookChatSessionRequest,
   UpdateNotebookChatSessionRequest,
   SourceListResponse,
-  NoteResponse
+  NoteResponse,
+  ChatFocus
 } from '@/lib/types/api'
 import { ContextSelections } from '@/app/(dashboard)/notebooks/[id]/page'
 
@@ -22,9 +23,11 @@ interface UseNotebookChatParams {
   sources: SourceListResponse[]
   notes: NoteResponse[]
   contextSelections: ContextSelections
+  /** Read at send time: the sources the chat is focused on, if any. */
+  getFocus?: () => ChatFocus | undefined
 }
 
-export function useNotebookChat({ notebookId, sources, notes, contextSelections }: UseNotebookChatParams) {
+export function useNotebookChat({ notebookId, sources, notes, contextSelections, getFocus }: UseNotebookChatParams) {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null)
@@ -256,6 +259,7 @@ export function useNotebookChat({ notebookId, sources, notes, contextSelections 
         images,
         visual_tools: visualTools,
         context,
+        focus: getFocus?.(),
         model_override: modelOverride ?? (currentSession?.model_override ?? undefined),
         hidden: options?.hidden || undefined
       })
@@ -283,6 +287,7 @@ export function useNotebookChat({ notebookId, sources, notes, contextSelections 
     currentSession,
     pendingModelOverride,
     buildContext,
+    getFocus,
     refetchCurrentSession,
     queryClient,
     t

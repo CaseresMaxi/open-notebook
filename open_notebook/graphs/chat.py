@@ -17,6 +17,7 @@ from open_notebook.domain.notebook import Notebook
 from open_notebook.exceptions import IncompleteGenerationError, OpenNotebookError
 from open_notebook.utils import clean_thinking_content
 from open_notebook.utils.arc_blocks import arc_instructions
+from open_notebook.utils.chat_focus import focus_instructions
 from open_notebook.utils.chat_followups import followup_context
 from open_notebook.utils.chat_images import chat_model_context, visual_history_context
 from open_notebook.utils.chat_responses import (
@@ -38,6 +39,7 @@ class ThreadState(TypedDict):
     history_start: NotRequired[int]
     history_turns: NotRequired[Optional[int]]
     visual_tools: NotRequired[bool]
+    focus: NotRequired[Optional[dict]]
     model_override: Optional[str]
 
 
@@ -56,7 +58,12 @@ def call_model_with_messages(state: ThreadState, config: RunnableConfig) -> dict
         model_id = config.get("configurable", {}).get("model_id") or state.get(
             "model_override"
         )
-        instructions = system_prompt + quiz_instructions() + arc_instructions()
+        instructions = (
+            system_prompt
+            + focus_instructions(state.get("focus"))
+            + quiz_instructions()
+            + arc_instructions()
+        )
 
         async def available_sources() -> set[str]:
             notebook = state.get("notebook")

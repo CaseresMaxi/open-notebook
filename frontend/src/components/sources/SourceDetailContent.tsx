@@ -58,6 +58,7 @@ import {
   Database,
   AlertCircle,
   MessageSquare,
+  Crosshair,
   ArrowLeft,
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
@@ -69,6 +70,8 @@ import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import { GlassTabsList } from '@/components/layout/GlassTabsList'
 import { NotebookAssociations } from '@/components/sources/NotebookAssociations'
 import dynamic from 'next/dynamic'
+import { useChatFocusStore } from '@/lib/stores/chat-focus-store'
+import { useCurrentNotebookId } from '@/lib/utils/chat-focus'
 
 // The notebook runner (Pyodide worker) loads only for .ipynb sources.
 const JupyterNotebook = dynamic(() => import('@/components/jupyter/JupyterNotebook'), { ssr: false })
@@ -112,6 +115,8 @@ function SourceDetailContentInner({
 }: SourceDetailContentProps) {
   const { t, language } = useTranslation()
   const queryClient = useQueryClient()
+  const focusNotebookId = useCurrentNotebookId()
+  const focusSource = useChatFocusStore(state => state.focusSource)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [activeTab, setActiveTab] = useState('content')
   const [insights, setInsights] = useState<SourceInsightResponse[]>([])
@@ -464,6 +469,16 @@ function SourceDetailContentInner({
             { value: 'insights', label: `${t('common.insights')}${insights.length ? ` (${insights.length})` : ''}` },
             { value: 'details', label: t('sources.details') },
           ]} trailing={<>
+            {/* Focus the notebook chat on this source - only inside a notebook */}
+            {showChatButton && focusNotebookId && (
+              <Button variant="ghost" size="icon" onClick={() => {
+                  focusSource(focusNotebookId, sourceId)
+                  onClose?.()
+                }}
+                aria-label={t('chatFocus.focusInChat')} title={t('chatFocus.focusInChat')}>
+                <Crosshair className="h-5 w-5" />
+              </Button>
+            )}
             {/* Chat with source button - only in modal */}
             {showChatButton && onChatClick && (
               <Button variant="ghost" size="icon" onClick={onChatClick}
@@ -558,7 +573,7 @@ function SourceDetailContentInner({
                 </div>
               )}
               {isJupyterNotebook ? (
-                <JupyterNotebook sourceId={sourceId} />
+                <JupyterNotebook sourceId={sourceId} title={source.title ?? ''} />
               ) : (
                 <MarkdownRenderer>
                   {source.full_text || t('sources.noContent')}

@@ -15,6 +15,7 @@ import { ListSkeleton } from '@/components/common/LoadingSkeletons'
 import { useTranslation } from '@/lib/hooks/use-translation'
 import { GlassTabsList } from '@/components/layout/GlassTabsList'
 import { Tabs, TabsContent } from '@/components/ui/tabs'
+import { useChatFocusStore } from '@/lib/stores/chat-focus-store'
 import {
   applyBulkSourceContext,
   applyBulkNoteContext,
@@ -57,6 +58,11 @@ export default function NotebookPage() {
 
   // Mobile tab state (Sources, Notes, or Chat)
   const [mobileActiveTab, setMobileActiveTab] = useState<'sources' | 'notes' | 'summaries' | 'chat'>('chat')
+  // Focusing a source (from its card, its dialog or a notebook cell) brings the chat forward.
+  const focusRequest = useChatFocusStore(state => state.request)
+  useEffect(() => {
+    if (focusRequest?.notebookId === notebookId) setMobileActiveTab('chat')
+  }, [focusRequest, notebookId])
 
   // Context selection state
   const [contextSelections, setContextSelections] = useState<ContextSelections>({

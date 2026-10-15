@@ -1,6 +1,7 @@
 import asyncio
 import operator
 import os
+import re
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 from urllib.parse import urlparse
@@ -258,7 +259,8 @@ async def content_process(state: SourceState) -> dict:
             raise ValueError(str(exc)) from exc
         processed = ExtractionOutput(
             content=notebook_text(notebook),
-            title=notebook_path.stem,
+            # Account uploads are stored as <uuid hex>_<original name>.
+            title=re.sub(r"^[0-9a-f]{32}_", "", notebook_path.stem),
             source_type="file",
             identified_type="application/x-ipynb+json",
             metadata={"cells": len(notebook["cells"])},
