@@ -166,6 +166,11 @@ def _extraction_error(error: "cc.ContentCoreError", url: str) -> ValueError:
     return ValueError("Could not extract content from this source.")
 
 
+def _upload_title(title: str) -> str:
+    """Account uploads are stored as <uuid hex>_<original name>: show the original."""
+    return re.sub(r"^[0-9a-f]{32}_", "", title)
+
+
 async def content_process(state: SourceState) -> dict:
     content_state: Dict[str, Any] = state["content_state"]
     if content_state.get("file_path"):
@@ -259,8 +264,7 @@ async def content_process(state: SourceState) -> dict:
             raise ValueError(str(exc)) from exc
         processed = ExtractionOutput(
             content=notebook_text(notebook),
-            # Account uploads are stored as <uuid hex>_<original name>.
-            title=re.sub(r"^[0-9a-f]{32}_", "", notebook_path.stem),
+            title=_upload_title(notebook_path.stem),
             source_type="file",
             identified_type="application/x-ipynb+json",
             metadata={"cells": len(notebook["cells"])},
@@ -328,7 +332,7 @@ async def save_source(state: SourceState) -> dict:
 
     # Preserve user-set title; only overwrite placeholder or empty titles
     if extraction.title and (not source.title or source.title == "Processing..."):
-        source.title = extraction.title
+        source.title = _upload_title(extraction.title)
 
     await source.save()
 

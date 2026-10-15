@@ -302,6 +302,34 @@ class TestSaveSourceTitlePreservation:
         assert mock_source.title == "Extracted Title"
         mock_source.save.assert_awaited_once()
 
+    @pytest.mark.asyncio
+    @patch("open_notebook.graphs.source.Source.get")
+    async def test_upload_prefix_stripped_from_title(self, mock_get):
+        """An upload's stored <uuid hex>_ prefix is not shown in its title."""
+        from content_core.common import ExtractionOutput
+
+        from open_notebook.graphs.source import SourceState, save_source
+
+        mock_source = MagicMock(spec=Source)
+        mock_source.title = "Processing..."
+        mock_source.save = AsyncMock()
+        mock_get.return_value = mock_source
+
+        state = {
+            "source_id": "source:123",
+            "content_state": {"url": None, "file_path": "/app/data/uploads/x.pdf"},
+            "extraction": ExtractionOutput(
+                title="ea75855aee7b4e8094e67ab523ca2ac4_2026-2C-Primer Parcial.pdf",
+                content="Content",
+            ),
+            "embed": False,
+            "apply_transformations": [],
+        }
+
+        await save_source(cast(SourceState, state))
+
+        assert mock_source.title == "2026-2C-Primer Parcial.pdf"
+
 
 # ============================================================================
 # TEST SUITE 5: Source Graph - content_process (content-core 2.x)
