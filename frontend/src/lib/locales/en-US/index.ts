@@ -1131,7 +1131,6 @@ export const enUS = {
     viewAttempt: "View attempt from {{date}}: {{percent}}%",
     deleteAttempt: "Delete attempt",
     deleteAttemptDesc: "Delete the attempt from {{date}} ({{percent}}%)? This can't be undone.",
-    openNamed: "Open {{title}}",
     deleteExamNamed: "Delete {{title}}",
   },
   models: {

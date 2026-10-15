@@ -1135,7 +1135,6 @@ export const deDE = {
     viewAttempt: "Versuch vom {{date}} ansehen: {{percent}} %",
     deleteAttempt: "Versuch löschen",
     deleteAttemptDesc: "Versuch vom {{date}} ({{percent}} %) löschen? Das kann nicht rückgängig gemacht werden.",
-    openNamed: "{{title}} öffnen",
     deleteExamNamed: "{{title}} löschen",
   },
   models: {

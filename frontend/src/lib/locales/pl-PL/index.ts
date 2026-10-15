@@ -1132,7 +1132,6 @@ export const plPL = {
     viewAttempt: "Zobacz podejście z {{date}}: {{percent}}%",
     deleteAttempt: "Usuń podejście",
     deleteAttemptDesc: "Usunąć podejście z {{date}} ({{percent}}%)? Tej operacji nie można cofnąć.",
-    openNamed: "Otwórz {{title}}",
     deleteExamNamed: "Usuń {{title}}",
   },
   models: {

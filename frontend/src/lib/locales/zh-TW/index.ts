@@ -1132,7 +1132,6 @@ export const zhTW = {
     viewAttempt: "查看 {{date}} 的作答：{{percent}}%",
     deleteAttempt: "刪除作答紀錄",
     deleteAttemptDesc: "刪除 {{date}} 的作答紀錄（{{percent}}%）？此操作無法復原。",
-    openNamed: "開啟 {{title}}",
     deleteExamNamed: "刪除 {{title}}",
   },
   models: {

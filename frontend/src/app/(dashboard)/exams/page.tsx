@@ -3,11 +3,10 @@
 import { Suspense, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { ArrowLeft, GraduationCap, Plus, Trash2, Play } from 'lucide-react'
+import { ArrowLeft, GraduationCap, Plus } from 'lucide-react'
 import { AppShell } from '@/components/layout/AppShell'
+import { LiquidSurface } from '@/components/layout/LiquidSurface'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { EmptyState } from '@/components/common/EmptyState'
 import { CardGridSkeleton, LoadError } from '@/components/common/LoadingSkeletons'
@@ -18,6 +17,7 @@ import { useTranslation } from '@/lib/hooks/use-translation'
 import { Exam } from '@/lib/types/exams'
 import { examHref, examListHref } from '@/lib/utils/exam-navigation'
 import { CreateExamDialog } from './components/CreateExamDialog'
+import { ExamCard } from './components/ExamCard'
 
 const ALL_NOTEBOOKS = '__all__'
 
@@ -74,7 +74,7 @@ function ExamsPageContent() {
             </Button>
           </div>
 
-          <div className="max-w-xs">
+          <LiquidSurface className="exam-filter" radius={16}>
             <Select value={notebookFilter} onValueChange={setNotebookFilter}>
               <SelectTrigger aria-label={t('exams.filterByNotebook')} className="w-full">
                 <SelectValue />
@@ -88,7 +88,7 @@ function ExamsPageContent() {
                 ))}
               </SelectContent>
             </Select>
-          </div>
+          </LiquidSurface>
 
           {isLoading ? (
             <CardGridSkeleton count={4} />
@@ -107,59 +107,17 @@ function ExamsPageContent() {
               }
             />
           ) : (
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              {exams.map((exam) => {
-                const best =
-                  exam.best_score != null && exam.max_score > 0
-                    ? Math.round((exam.best_score / exam.max_score) * 100)
-                    : null
-                return (
-                  <Card data-record-id={exam.id} key={exam.id} className="flex flex-col">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-base leading-snug">{exam.title}</CardTitle>
-                      <p className="text-xs text-muted-foreground truncate">
-                        {notebookNames[exam.notebook_id] ?? exam.notebook_id}
-                      </p>
-                    </CardHeader>
-                    <CardContent className="flex flex-1 flex-col gap-4">
-                      <div className="flex flex-wrap gap-2">
-                        <Badge variant="secondary">
-                          {t('exams.questionCount', { n: exam.question_count })}
-                        </Badge>
-                        <Badge variant="outline">{t(`exams.difficulties.${exam.difficulty}`)}</Badge>
-                        {best != null && (
-                          <Badge>{t('exams.bestScore', { percent: best })}</Badge>
-                        )}
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        {t('exams.attemptCount', { n: exam.attempt_count })} ·{' '}
-                        {new Date(exam.created).toLocaleDateString()}
-                      </p>
-                      <div className="mt-auto flex gap-2">
-                        <Button asChild size="sm" className="flex-1 min-h-11">
-                          <Link
-                            href={examHref(exam.id, listHref)}
-                            aria-label={t('exams.openNamed', { title: exam.title })}
-                          >
-                            <Play className="h-4 w-4 mr-2" />
-                            {t('exams.open')}
-                          </Link>
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="outline"
-                          className="size-11"
-                          aria-label={t('exams.deleteExamNamed', { title: exam.title })}
-                          title={t('exams.deleteExamNamed', { title: exam.title })}
-                          onClick={() => setExamToDelete(exam)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )
-              })}
+            <div className="notebook-tiles exam-tiles">
+              {exams.map((exam, index) => (
+                <ExamCard
+                  key={exam.id}
+                  exam={exam}
+                  index={index}
+                  href={examHref(exam.id, listHref)}
+                  notebookName={notebookNames[exam.notebook_id]}
+                  onDelete={() => setExamToDelete(exam)}
+                />
+              ))}
             </div>
           )}
         </div>

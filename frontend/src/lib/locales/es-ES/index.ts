@@ -1133,7 +1133,6 @@ export const esES = {
     viewAttempt: "Ver intento del {{date}}: {{percent}}%",
     deleteAttempt: "Eliminar intento",
     deleteAttemptDesc: "¿Eliminar el intento del {{date}} ({{percent}}%)? No se puede deshacer.",
-    openNamed: "Abrir {{title}}",
     deleteExamNamed: "Eliminar {{title}}",
   },
   models: {

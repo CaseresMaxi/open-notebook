@@ -1132,7 +1132,6 @@ export const frFR = {
     viewAttempt: "Voir la tentative du {{date}} : {{percent}} %",
     deleteAttempt: "Supprimer la tentative",
     deleteAttemptDesc: "Supprimer la tentative du {{date}} ({{percent}} %) ? Action irréversible.",
-    openNamed: "Ouvrir {{title}}",
     deleteExamNamed: "Supprimer {{title}}",
   },
   models: {

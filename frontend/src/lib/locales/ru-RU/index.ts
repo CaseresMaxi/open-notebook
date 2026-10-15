@@ -1132,7 +1132,6 @@ export const ruRU = {
     viewAttempt: "Открыть попытку от {{date}}: {{percent}}%",
     deleteAttempt: "Удалить попытку",
     deleteAttemptDesc: "Удалить попытку от {{date}} ({{percent}}%)? Это действие нельзя отменить.",
-    openNamed: "Открыть {{title}}",
     deleteExamNamed: "Удалить {{title}}",
   },
   models: {

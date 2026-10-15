@@ -1132,7 +1132,6 @@ export const jaJP = {
     viewAttempt: "{{date}} の受験を表示：{{percent}}%",
     deleteAttempt: "受験記録を削除",
     deleteAttemptDesc: "{{date}} の受験記録（{{percent}}%）を削除しますか？元に戻せません。",
-    openNamed: "{{title}} を開く",
     deleteExamNamed: "{{title}} を削除",
   },
   models: {

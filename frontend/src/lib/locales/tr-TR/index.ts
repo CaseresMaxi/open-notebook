@@ -1132,7 +1132,6 @@ export const trTR = {
     viewAttempt: "{{date}} denemesini gör: %{{percent}}",
     deleteAttempt: "Denemeyi sil",
     deleteAttemptDesc: "{{date}} tarihli deneme (%{{percent}}) silinsin mi? Bu işlem geri alınamaz.",
-    openNamed: "{{title}} aç",
     deleteExamNamed: "{{title}} sil",
   },
   models: {

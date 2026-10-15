@@ -182,7 +182,7 @@ function ExamPageContent() {
   return (
     <AppShell>
       <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto">
-        <div className="p-4 sm:p-6 grid gap-6 lg:grid-cols-[1fr_280px] max-w-6xl">
+        <div className="mx-auto w-full max-w-6xl p-4 sm:p-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
           <div className="space-y-6 min-w-0">
             <div className="space-y-3">
               <Button asChild variant="ghost" size="sm" className="-ml-2 min-h-11">
@@ -262,7 +262,7 @@ function ExamPageContent() {
                   )
                 })}
 
-                <div className="sticky bottom-0 -mx-4 sm:-mx-6 border-t bg-background/95 px-4 sm:px-6 py-3 backdrop-blur space-y-3">
+                <div className="exam-submit-bar sticky bottom-3 z-20 px-4 py-3 space-y-3">
                   <Progress
                     value={progress}
                     aria-label={t('exams.answeredProgress', { answered: answeredCount, total: questions.length })}
@@ -310,10 +310,8 @@ function ExamPageContent() {
                       <li
                         data-record-id={attempt.id}
                         key={attempt.id}
-                        className={cn(
-                          'flex items-center gap-2 rounded-md border p-1 pl-3 text-sm',
-                          current && 'border-primary'
-                        )}
+                        data-current={current || undefined}
+                        className="exam-attempt flex items-center gap-2 p-1 pl-3 text-sm"
                       >
                         <button
                           type="button"

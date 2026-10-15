@@ -1132,7 +1132,6 @@ export const itIT = {
     viewAttempt: "Vedi il tentativo del {{date}}: {{percent}}%",
     deleteAttempt: "Elimina tentativo",
     deleteAttemptDesc: "Eliminare il tentativo del {{date}} ({{percent}}%)? L'azione è irreversibile.",
-    openNamed: "Apri {{title}}",
     deleteExamNamed: "Elimina {{title}}",
   },
   models: {

@@ -1133,7 +1133,6 @@ export const bnIN = {
     viewAttempt: "{{date}}-এর প্রচেষ্টা দেখুন: {{percent}}%",
     deleteAttempt: "প্রচেষ্টা মুছুন",
     deleteAttemptDesc: "{{date}}-এর প্রচেষ্টা ({{percent}}%) মুছবেন? এটি পূর্বাবস্থায় ফেরানো যাবে না।",
-    openNamed: "{{title}} খুলুন",
     deleteExamNamed: "{{title}} মুছুন",
   },
   models: {

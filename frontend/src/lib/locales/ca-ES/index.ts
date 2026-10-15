@@ -1132,7 +1132,6 @@ export const caES = {
     viewAttempt: "Mostra l'intent del {{date}}: {{percent}}%",
     deleteAttempt: "Elimina l'intent",
     deleteAttemptDesc: "Vols eliminar l'intent del {{date}} ({{percent}}%)? No es pot desfer.",
-    openNamed: "Obre {{title}}",
     deleteExamNamed: "Elimina {{title}}",
   },
   models: {

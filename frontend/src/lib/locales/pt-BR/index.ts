@@ -1132,7 +1132,6 @@ export const ptBR = {
     viewAttempt: "Ver tentativa de {{date}}: {{percent}}%",
     deleteAttempt: "Excluir tentativa",
     deleteAttemptDesc: "Excluir a tentativa de {{date}} ({{percent}}%)? Não é possível desfazer.",
-    openNamed: "Abrir {{title}}",
     deleteExamNamed: "Excluir {{title}}",
   },
   models: {

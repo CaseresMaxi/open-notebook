@@ -1132,7 +1132,6 @@ export const zhCN = {
     viewAttempt: "查看 {{date}} 的作答：{{percent}}%",
     deleteAttempt: "删除作答记录",
     deleteAttemptDesc: "删除 {{date}} 的作答记录（{{percent}}%）？此操作无法撤销。",
-    openNamed: "打开 {{title}}",
     deleteExamNamed: "删除 {{title}}",
   },
   models: {

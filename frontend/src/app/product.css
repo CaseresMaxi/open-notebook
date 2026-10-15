@@ -742,3 +742,12 @@
 /* Charts keep Arc's vivid series hues: the product shell's neutral accent would draw grey lines. */
 .arc-block { --series-1: #1f7dcf; --series-2: #7128a5; --series-3: #e58f00; --series-4: #009e84; --accent: var(--series-1); --accent-strong: #17609f; --accent-subtle: color-mix(in oklab, var(--series-1) 14%, transparent); }
 .dark .arc-block { --series-1: #55adff; --series-2: #b25bd6; --series-3: #f08a2c; --series-4: #1fbf7a; --accent-strong: #a4c7ff; }
+
+/* Exams reuse the notebook tile glass; the mark shows the best score. */
+.exam-tile-score { font-size: 14px; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+.product-shell .exam-filter { width: min(100%, 320px); border-radius: 16px; }
+.product-shell .exam-filter [data-slot=select-trigger] { min-height: 44px; border: 0; background: transparent; box-shadow: none; }
+.product-shell .exam-submit-bar { border-radius: 22px; background: var(--nn-glass); box-shadow: inset 0 0 0 1px var(--nn-edge), inset 0 1px 0 var(--nn-edge), 0 16px 40px var(--nn-shadow); -webkit-backdrop-filter: blur(18px) saturate(1.2); backdrop-filter: blur(18px) saturate(1.2); }
+.product-shell .exam-attempt { border-radius: 16px; background: var(--nn-glass); box-shadow: inset 0 0 0 1px var(--nn-edge); }
+.product-shell .exam-attempt[data-current] { box-shadow: inset 0 0 0 1.5px var(--ring); }
+.notebook-tiles.exam-tiles { grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); }
