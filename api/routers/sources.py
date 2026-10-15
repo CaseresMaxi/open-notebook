@@ -42,6 +42,7 @@ from open_notebook.exceptions import (
     OpenNotebookError,
     UnsupportedTypeException,
 )
+from open_notebook.utils.jupyter import is_notebook_path
 from open_notebook.workspace_commands import submit_command
 from open_notebook.workspaces import current_workspace
 from open_notebook.workspaces import uploads_folder as account_uploads_folder
@@ -62,6 +63,10 @@ async def _assert_file_supported(file_path: str) -> None:
     so this never turns a transient problem into a hard rejection — real
     extraction will surface those.
     """
+    # Jupyter notebooks are read by our own loader, not content-core, which
+    # only sees them as generic JSON.
+    if is_notebook_path(file_path):
+        return
     try:
         support = await check_file_support(file_path)
     except Exception as e:  # pragma: no cover - defensive

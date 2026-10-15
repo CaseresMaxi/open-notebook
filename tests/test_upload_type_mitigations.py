@@ -153,6 +153,17 @@ class TestPreflightFileSupport:
             await _assert_file_supported("/uploads/doc.pdf")
 
     @pytest.mark.asyncio
+    async def test_jupyter_notebooks_skip_content_core(self):
+        """content-core detects .ipynb as plain JSON and rejects it; our own
+        loader extracts notebooks, so the pre-flight must let them through."""
+        from api.routers.sources import _assert_file_supported
+
+        check = AsyncMock()
+        with patch("api.routers.sources.check_file_support", new=check):
+            await _assert_file_supported("/uploads/knn.IPYNB")
+        check.assert_not_called()
+
+    @pytest.mark.asyncio
     async def test_check_errors_are_swallowed(self):
         """A missing file on retry (or any check error) must not become a hard
         415 — extraction downstream will surface the real problem."""
