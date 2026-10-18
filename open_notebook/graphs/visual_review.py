@@ -38,7 +38,7 @@ async def review_html_visual(
         blocks: list[str | dict] = [
             {
                 "type": "text",
-                "text": f"Actual user request: {user_request[:6000]}\nVisual brief: {plan.model_dump_json()}\nGenerated visual description: {visual.description}\nActual HTML/CSS/SVG to check:\n{visual.html}",
+                "text": f"Actual user request: {user_request[:6000]}\nVisual brief: {plan.model_dump_json()}\nGenerated visual description: {visual.description}\nActual HTML/CSS/SVG/JavaScript to check:\n{visual.html}",
             }
         ]
         for preview in previews:

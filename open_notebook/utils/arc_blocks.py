@@ -141,6 +141,48 @@ class CalloutBlock(_Block):
     text: str = Field(default="", max_length=1200)
 
 
+class Concept(BaseModel):
+    id: Annotated[str, Field(min_length=1, max_length=40)]
+    label: Annotated[str, Field(min_length=1, max_length=60)]
+    detail: str = Field(default="", max_length=300)
+    weight: int = Field(default=3, ge=1, le=5)
+    group: str = Field(default="", max_length=40)
+
+
+class Relation(BaseModel):
+    source: Annotated[str, Field(min_length=1, max_length=40)]
+    target: Annotated[str, Field(min_length=1, max_length=40)]
+    label: str = Field(default="", max_length=40)
+
+
+class ConceptMapBlock(_Block):
+    type: Literal["concept_map"]
+    nodes: list[Concept] = Field(min_length=3, max_length=30)
+    links: list[Relation] = Field(min_length=2, max_length=60)
+
+    @model_validator(mode="after")
+    def connected_ids(self) -> "ConceptMapBlock":
+        ids = [node.id for node in self.nodes]
+        if len(set(ids)) != len(ids):
+            raise ValueError("concept ids must be unique")
+        if len({node.group for node in self.nodes if node.group}) > 6:
+            raise ValueError("use at most 6 groups")
+        seen: set[tuple[str, str]] = set()
+        links = []
+        for link in self.links:
+            if link.source not in ids or link.target not in ids:
+                raise ValueError("every link must join two listed concepts")
+            pair = (link.source, link.target)
+            # Self-loops and repeated pairs add noise, not meaning: drop them.
+            if link.source != link.target and pair not in seen:
+                seen.add(pair)
+                links.append(link)
+        if len(links) < 2:
+            raise ValueError("a concept map needs at least two relations")
+        self.links = links
+        return self
+
+
 ArcBlock = Annotated[
     Union[
         LineBlock,
@@ -152,6 +194,7 @@ ArcBlock = Annotated[
         StepsBlock,
         AccordionBlock,
         CalloutBlock,
+        ConceptMapBlock,
     ],
     Field(discriminator="type"),
 ]
@@ -188,9 +231,18 @@ def arc_instructions() -> str:
         '{"type":"accordion","items":[{"title":"...","content":"..."}]}\n'
         '- callout (a warning, key takeaway or common mistake): {"type":"callout","tone":"info|success|'
         'warning|danger","title":"...","text":"..."}\n'
-        "Whenever you would otherwise write a Markdown table, a list of numbers to compare, or a numbered "
-        "procedure, use the matching arc block instead. Prefer arc blocks over generated HTML visuals for "
-        "these standard shapes: they render instantly."
+        "- concept_map (how the key ideas of a topic connect: overviews, reviews, relations between "
+        "concepts, causes and effects, mind or concept maps). 4-20 concepts; weight 1-5 marks relevance "
+        "(5 = the central idea, usually one or two); optional group (max 6) clusters related concepts; "
+        "every link has a short verb label read source→target and every concept joins at least one link; "
+        "detail is one sentence from the material: "
+        '{"type":"concept_map","title":"...","nodes":[{"id":"a","label":"...","detail":"...","weight":5,'
+        '"group":"..."}],"links":[{"source":"a","target":"b","label":"causa"}]}\n'
+        "Whenever you would otherwise write a Markdown table, a list of numbers to compare, a numbered "
+        "procedure, or a nested list of how ideas relate, use the matching arc block instead. Decide on "
+        "your own when a concept map helps: a topic overview or review with several interrelated ideas "
+        "usually does, a single fact or definition does not. Prefer arc blocks over generated HTML visuals "
+        "for these standard shapes: they render instantly."
     )
 
 

@@ -5,6 +5,8 @@
  */
 
 type Point = { label: string; value: number }
+export type Concept = { id: string; label: string; detail?: string; weight: number; group?: string }
+export type Relation = { source: string; target: string; label?: string }
 
 export type ArcSpec =
   | { type: 'line'; title?: string; unit?: string; x: string[]; series: { name: string; values: number[] }[] }
@@ -16,6 +18,7 @@ export type ArcSpec =
   | { type: 'steps'; title?: string; items: { label: string; description?: string }[] }
   | { type: 'accordion'; title?: string; items: { title: string; content: string }[] }
   | { type: 'callout'; title: string; tone?: 'info' | 'success' | 'warning' | 'danger'; text?: string }
+  | { type: 'concept_map'; title?: string; nodes: Concept[]; links: Relation[] }
 
 // Citations belong in the prose; drop any converted [n](#ref-…) link that slipped into a label.
 const text = (value: unknown) => (typeof value === 'string' ? value : value == null ? '' : String(value)).replace(/\s*\[\d+\]\(#ref-[^)]*\)/g, '')
@@ -73,6 +76,17 @@ export function parseArcBlock(source: string): ArcSpec | null {
       const tone = ['info', 'success', 'warning', 'danger'].includes(text(raw.tone)) ? raw.tone as 'info' : 'info'
       return title ? { type: 'callout', title, tone, text: text(raw.text) || undefined } : null
     }
+    case 'concept_map': {
+      const nodes = isList(raw.nodes) ? raw.nodes.map(item => {
+        const node = record(item)
+        const weight = Math.round(num(node.weight ?? 3))
+        return { id: text(node.id), label: text(node.label), detail: text(node.detail) || undefined, weight: Number.isFinite(weight) ? Math.min(Math.max(weight, 1), 5) : 3, group: text(node.group) || undefined }
+      }).filter(node => node.id && node.label) : []
+      const ids = new Set(nodes.map(node => node.id))
+      const links = isList(raw.links) ? raw.links.map(item => ({ source: text(record(item).source), target: text(record(item).target), label: text(record(item).label) || undefined }))
+        .filter(link => ids.has(link.source) && ids.has(link.target) && link.source !== link.target) : []
+      return nodes.length >= 2 && links.length && ids.size === nodes.length ? { type: 'concept_map', title, nodes, links } : null
+    }
     default:
       return null
   }
@@ -103,6 +117,14 @@ export function arcBlockToMarkdown(spec: ArcSpec): string {
       return heading + spec.items.map(item => `**${item.title}**\n\n${item.content}`).join('\n\n')
     case 'callout':
       return `> **${spec.title}**${spec.text ? `\n> ${spec.text}` : ''}`
+    case 'concept_map': {
+      // Most relevant concepts first, each with the relations that leave it.
+      const label = new Map(spec.nodes.map(node => [node.id, node.label]))
+      return heading + [...spec.nodes].sort((a, b) => b.weight - a.weight).map(node => [
+        `- **${node.label}**${node.detail ? `: ${node.detail}` : ''}`,
+        ...spec.links.filter(link => link.source === node.id).map(link => `  - ${link.label || '→'} ${label.get(link.target)}`),
+      ].join('\n')).join('\n')
+    }
   }
 }
 

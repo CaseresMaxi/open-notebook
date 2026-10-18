@@ -12,6 +12,7 @@ import { Stepper } from '@/components/arc/stepper/stepper'
 import { Accordion } from '@/components/arc/accordion/accordion'
 import { Alert } from '@/components/arc/alert/alert'
 import { MarkdownRenderer } from '@/components/ui/markdown-renderer'
+import { ConceptMap } from './ConceptMap'
 import { useTranslation } from '@/lib/hooks/use-translation'
 import { parseArcBlock, type ArcSpec } from '@/lib/utils/arc-blocks'
 
@@ -96,10 +97,12 @@ function ArcContent({ spec }: { spec: ArcSpec }) {
       return <Accordion defaultOpen={-1} items={spec.items.map(item => ({ title: item.title, content: <MarkdownRenderer>{item.content}</MarkdownRenderer> }))} />
     case 'callout':
       return <Alert tone={spec.tone} title={spec.title}>{spec.text || undefined}</Alert>
+    case 'concept_map':
+      return <ConceptMap spec={spec} />
   }
 }
 
-const TITLED = new Set<ArcSpec['type']>(['line', 'donut', 'waffle', 'steps', 'accordion', 'metrics'])
+const TITLED = new Set<ArcSpec['type']>(['line', 'donut', 'waffle', 'steps', 'accordion', 'metrics', 'concept_map'])
 
 /** One interactive component from a ```arc block in an answer. */
 export function ArcBlock({ source }: { source: string }) {

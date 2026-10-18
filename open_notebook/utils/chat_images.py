@@ -14,6 +14,7 @@ from pydantic import (
     Field,
     SerializerFunctionWrapHandler,
     TypeAdapter,
+    ValidationInfo,
     field_validator,
     model_serializer,
     model_validator,
@@ -92,6 +93,8 @@ class HtmlVisual(BaseModel):
 
     kind: Literal["html"] = "html"
     name: str = Field(min_length=1, max_length=255)
+    # Declared before html: the sanitizer keeps inline scripts only when set.
+    scripted: bool = False
     html: str = Field(min_length=1, max_length=100_000, repr=False)
     description: str = Field(min_length=1, max_length=4000)
     basis: Literal["adaptation", "conceptual", "illustrative", "unverified"] = (
@@ -102,12 +105,18 @@ class HtmlVisual(BaseModel):
 
     @field_validator("html")
     @classmethod
-    def require_markup(cls, value: str) -> str:
+    def require_markup(cls, value: str, info: ValidationInfo) -> str:
         if "<" not in value or ">" not in value:
             raise ValueError("A visual must contain HTML markup.")
-        from open_notebook.utils.html_visuals import sanitize_visual_html
+        from open_notebook.utils.html_visuals import (
+            sanitize_visual_html,
+            script_violations,
+        )
 
-        sanitized = sanitize_visual_html(value)
+        scripted = bool(info.data.get("scripted"))
+        if scripted and script_violations(value):
+            raise ValueError("Scripted visuals cannot reach outside their document.")
+        sanitized = sanitize_visual_html(value, allow_scripts=scripted)
         if not sanitized:
             raise ValueError("A visual must contain declarative HTML content.")
         return sanitized

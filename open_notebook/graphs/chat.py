@@ -20,6 +20,7 @@ from open_notebook.utils.arc_blocks import arc_instructions
 from open_notebook.utils.chat_focus import focus_instructions
 from open_notebook.utils.chat_followups import followup_context
 from open_notebook.utils.chat_images import chat_model_context, visual_history_context
+from open_notebook.utils.chat_mentions import mention_instructions
 from open_notebook.utils.chat_responses import (
     latest_request,
     quiz_instructions,
@@ -61,6 +62,7 @@ def call_model_with_messages(state: ThreadState, config: RunnableConfig) -> dict
         instructions = (
             system_prompt
             + focus_instructions(state.get("focus"))
+            + mention_instructions(latest_request(history))
             + quiz_instructions()
             + arc_instructions()
         )

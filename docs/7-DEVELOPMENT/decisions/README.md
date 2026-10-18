@@ -65,3 +65,5 @@ What this makes easier, what it makes harder, what to watch. (bullets)
 - [ADR-022: Focused study interaction](ADR-022-focused-study-interaction.md)
 
 - [ADR-023: Glass navigation and study controls](ADR-023-glass-navigation-and-study-controls.md)
+
+- [ADR-032: Concept maps, test intent, @mentions and scripted HTML visuals in chat](ADR-032-concept-maps-and-scripted-visuals.md)

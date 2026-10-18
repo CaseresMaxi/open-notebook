@@ -25,7 +25,7 @@ from open_notebook.exceptions import (
 from open_notebook.graphs.visual_review import review_html_visual
 from open_notebook.utils.chat_images import ChatImage, ChatVisual, HtmlVisual
 from open_notebook.utils.error_classifier import classify_error
-from open_notebook.utils.html_visuals import requires_visual_scripts
+from open_notebook.utils.html_visuals import requires_visual_scripts, script_violations
 from open_notebook.utils.source_images import (
     inspect_source,
     render_source_image,
@@ -72,7 +72,7 @@ class HtmlArgs(BaseModel):
     html: str = Field(
         min_length=1,
         max_length=100_000,
-        description="Self-contained HTML document with inline CSS, SVG and optional CSS/SVG animations. No external assets, links, forms, network access or libraries.",
+        description="Self-contained HTML document with inline CSS, SVG and optional inline vanilla JavaScript for interaction. No external assets, links, forms, network access, storage or libraries.",
     )
     caption: str = Field(min_length=1, max_length=255)
     description: str = Field(
@@ -150,13 +150,17 @@ async def invoke_visual_chat(
     *,
     for_exam: bool = False,
     visual_request: str | None = None,
+    wants_test: bool | None = None,
 ) -> Any:
     from open_notebook.utils.chat_responses import latest_request, requested_widgets
 
     user_request = (
         visual_request if visual_request is not None else latest_request(payload)
     )
-    for_exam = for_exam or requested_widgets(user_request)[1]
+    # A decided test intent replaces the keyword heuristic.
+    for_exam = for_exam or (
+        requested_widgets(user_request)[1] if wants_test is None else wants_test
+    )
     model = _prepare_tool_model(model)
     images: list[ChatVisual] = []
     previews: set[tuple[str, int]] = set()
@@ -325,12 +329,17 @@ async def invoke_visual_chat(
             raise InvalidInputError(
                 "Up to four visual attachments are supported per turn."
             )
-        if requires_visual_scripts(html):
+        scripted = requires_visual_scripts(html)
+        violations = script_violations(html) if scripted else []
+        if violations:
             raise InvalidInputError(
-                "Generated JavaScript and canvas are unavailable. Rewrite this visual using HTML/CSS/SVG only. Use checkbox/radio inputs with labels and CSS selectors for pause/resume, or details/summary for disclosure; ordinary buttons and event handlers will not work. Call render_html_visual again with the corrected complete code."
+                "The visual's JavaScript must stay inside its own document. Remove code that uses "
+                + ", ".join(violations)
+                + " (it is blocked by the sandbox anyway) and call render_html_visual again with the corrected complete code."
             )
         visual = HtmlVisual(
             name=caption,
+            scripted=scripted,
             html=html,
             description=description,
             basis=plan.basis if plan else "illustrative",
@@ -383,7 +392,7 @@ async def invoke_visual_chat(
         StructuredTool.from_function(
             coroutine=render_html_visual,
             name="render_html_visual",
-            description="Create an accurate chart, table, diagram, plot, infographic or animation using self-contained HTML/CSS/SVG. Preferred for all educational visuals, including requests worded as images. Supply the actual complete code, not a promise. Up to four attachments per turn.",
+            description="Create an accurate diagram, plot, infographic, simulation or animation using self-contained HTML/CSS/SVG with optional inline JavaScript for interaction. Preferred for all custom educational visuals, including requests worded as images. Supply the actual complete code, not a promise. Up to four attachments per turn.",
             args_schema=HtmlArgs,
         ),
         StructuredTool.from_function(
@@ -416,7 +425,8 @@ async def invoke_visual_chat(
         Prompter(prompt_template="visuals/source_fidelity").render() + "\n\n"
         "Visual responses are enabled. Use tools to illustrate your answer when relevant. "
         "Standard line, bar and share charts, tables, metrics, gauges and step lists need no tool: write them as inline arc blocks, which render instantly. For custom diagrams, decision trees, geometry, concept maps, educational figures, text-heavy visuals and animations, ALWAYS call render_html_visual rather than generate_image, even if the user calls it an image. For explicit visual requests you MUST produce an actual attachment; prose or a promise is insufficient. Choose HTML for educational illustrations by default. Reserve generate_image for explicitly photographic or artistic raster requests. "
-        "Write complete self-contained responsive HTML with inline CSS and SVG with optional CSS/SVG animations and declarative controls; accurate source-grounded labels, data, geometry and readable text in the user's language. No JavaScript, canvas, external assets, imports, fetches, links or libraries: network and navigation are blocked. No markdown fences in the HTML argument. Add an accessible legend, use a light neutral background, scalable SVG viewBox, avoid clipping, and keep essential facts visible without interaction. Labels must remain legible in a 350px chat panel: stack panels responsively or allow scrolling rather than shrinking a wide SVG to tiny text. Optional animation must respect prefers-reduced-motion and offer pause/replay controls using checkbox/radio inputs, labels and CSS selectors. Ordinary buttons and event handlers are unavailable; use details/summary or native popover controls for other interaction. Exam figures must never display solutions, correct options, reference answers or rubrics. "
+        "Write complete self-contained responsive HTML with inline CSS and SVG; accurate source-grounded labels, data, geometry and readable text in the user's language. Decide on your own when interaction teaches better than a static figure (exploring a simulation, dragging a parameter, stepping through an algorithm, highlighting related parts): then add inline vanilla JavaScript in <script> tags (buttons, sliders, event listeners and canvas work). The visual runs in a sandbox without network, navigation, storage or access to the page: no fetch, imports, external assets, links, location, cookies, localStorage, parent/top, eval or libraries; such code is rejected. Prefer CSS/SVG alone when interaction adds nothing. No markdown fences in the HTML argument. Add an accessible legend, use a light neutral background, scalable SVG viewBox, avoid clipping, and keep essential facts visible without interaction and before any script runs. Labels must remain legible in a 350px chat panel: stack panels responsively or allow scrolling rather than shrinking a wide SVG to tiny text. Animation must respect prefers-reduced-motion and offer pause/replay controls. Exam figures must never display solutions, correct options, reference answers or rubrics. "
+        "A concept map of how ideas relate is NOT an HTML visual: write a concept_map arc block in your answer instead. "
         "For source figures, inspect the PDF, preview the page, then crop the relevant region. "
         "Never invent source figures or crop coordinates without seeing the page. "
         "Tool errors mean no image was attached: explain the limitation honestly. "

@@ -18,6 +18,7 @@ import { getSession, useJupyterSessionStore } from '@/lib/stores/jupyter-session
 import { liveNotebook } from '@/lib/utils/chat-focus'
 import { useModalManager } from '@/lib/hooks/use-modal-manager'
 import type { ChatFocus } from '@/lib/types/api'
+import type { Mentionable } from '@/lib/utils/chat-mentions'
 
 const isJupyter = (source: SourceListResponse) => !!source.asset?.file_path?.toLowerCase().endsWith('.ipynb')
 
@@ -67,6 +68,10 @@ export function ChatColumn({ notebookId, contextSelections, sources, sourcesLoad
     return { source_ids: focused.map(source => source.id).slice(0, 50), notebooks }
   }, [focused])
   const focusedNotebook = focused.find(isJupyter)
+  const mentionables = useMemo<Mentionable[]>(() => [
+    ...sources.map(source => ({ id: source.id, title: source.title || t('sources.untitledSource'), kind: 'source' as const })),
+    ...notes.map(note => ({ id: note.id, title: note.title || t('sources.untitledNote'), kind: 'note' as const })),
+  ], [sources, notes, t])
   const codeNotebook = useMemo(() => focusedNotebook ? { id: focusedNotebook.id, title: focusedNotebook.title ?? '' } : null, [focusedNotebook])
 
   // Initialize notebook chat hook
@@ -185,6 +190,7 @@ export function ChatColumn({ notebookId, contextSelections, sources, sourcesLoad
       notebookContextStats={contextStats}
       notebookId={notebookId}
       composerTop={focusBar}
+      mentionables={mentionables}
       draft={draft}
       onDraftUsed={() => takeDraft(notebookId)}
       codeNotebook={codeNotebook}

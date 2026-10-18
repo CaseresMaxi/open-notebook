@@ -20,6 +20,14 @@ describe('HTML visual artifacts', () => {
     expect(screen.getByText('A=3 and B=2')).toBeInTheDocument()
   })
 
+  it('lets checked inline scripts run without the app origin, popups or network', () => {
+    render(<HtmlVisualFrame visual={{ ...visual, scripted: true, html: '<button>Next</button><script>document.querySelector("button")</script>' }} />)
+    const frame = screen.getByTitle('Count chart')
+    expect(frame).toHaveAttribute('sandbox', 'allow-scripts')
+    expect(frame.getAttribute('srcdoc')).toContain("script-src 'unsafe-inline'")
+    expect(frame.getAttribute('srcdoc')).toContain("connect-src 'none'")
+  })
+
   it('places the chart inside the explanation and supports enlargement', () => {
     render(<ChatResponseContent content={'Before\n\n[[image:1]]\n\nAfter'} images={[visual]} onReferenceClick={vi.fn()} />)
     const frame = screen.getByTitle('Count chart')

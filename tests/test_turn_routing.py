@@ -1,5 +1,6 @@
 import json
 from dataclasses import replace
+from typing import Any
 
 import pytest
 
@@ -133,8 +134,63 @@ def test_instructions_document_every_type():
         "steps",
         "accordion",
         "callout",
+        "concept_map",
     ):
         assert kind in text
+
+
+CONCEPT_MAP: dict[str, Any] = {
+    "type": "concept_map",
+    "title": "Fotosíntesis",
+    "nodes": [
+        {"id": "f", "label": "Fotosíntesis", "weight": 5, "group": "Proceso"},
+        {"id": "l", "label": "Luz", "detail": "Fuente de energía.", "weight": 3},
+        {"id": "g", "label": "Glucosa", "weight": 4, "group": "Producto"},
+    ],
+    "links": [
+        {"source": "l", "target": "f", "label": "impulsa"},
+        {"source": "f", "target": "g", "label": "produce"},
+        {"source": "f", "target": "g", "label": "repetido"},
+        {"source": "g", "target": "g", "label": "bucle"},
+    ],
+}
+
+
+def test_concept_map_keeps_concepts_and_drops_noisy_links():
+    result = materialize_arc_blocks(f"```arc\n{json.dumps(CONCEPT_MAP)}\n```")
+    block = json.loads(result.split("```arc\n")[1].split("\n```")[0])
+    assert block["type"] == "concept_map"
+    assert [node["id"] for node in block["nodes"]] == ["f", "l", "g"]
+    assert "weight" not in block["nodes"][1]  # the default relevance is implied
+    assert [(link["source"], link["target"]) for link in block["links"]] == [
+        ("l", "f"),
+        ("f", "g"),
+    ]
+
+
+@pytest.mark.parametrize(
+    "change",
+    [
+        {
+            "links": [
+                {"source": "f", "target": "missing"},
+                {"source": "l", "target": "f"},
+            ]
+        },
+        {"nodes": CONCEPT_MAP["nodes"] + [{"id": "f", "label": "Otra"}]},
+        {"nodes": CONCEPT_MAP["nodes"][:2]},
+        {"links": [{"source": "f", "target": "g"}, {"source": "f", "target": "g"}]},
+    ],
+)
+def test_broken_concept_maps_are_dropped(change):
+    raw = json.dumps(CONCEPT_MAP | change)
+    assert materialize_arc_blocks(f"Intro\n\n```arc\n{raw}\n```") == "Intro"
+
+
+def test_concept_map_decision_hints_the_block_without_tools():
+    turn = decision(presentation="concept_map", presentation_confidence=0.8)
+    assert "concept_map arc block" in turn.presentation_hint()
+    assert not use_visual_tools(turn, True, "Hazme un repaso del tema")
 
 
 class FakeModel:
@@ -142,6 +198,7 @@ class FakeModel:
         self.delay = delay
         self.calls = 0
         self.cancelled = False
+        self.reply = None
 
     async def ainvoke(self, payload):
         import asyncio
@@ -170,7 +227,7 @@ async def _run(monkeypatch, *, access, decision, toggle=True, delay=0.0):
 
     tool_payloads = []
 
-    async def fake_tools(model, payload, source_ids, model_id):
+    async def fake_tools(model, payload, source_ids, model_id, wants_test=None):
         tool_payloads.append(payload)
         return AIMessage(content="tool answer")
 
@@ -193,6 +250,7 @@ async def _run(monkeypatch, *, access, decision, toggle=True, delay=0.0):
         model_id=None,
         source_ids=sources,
     )
+    model.reply = reply
     return reply.content, model, tool_payloads
 
 
@@ -268,3 +326,50 @@ def test_step_labels_drop_their_own_numbering():
     raw = '{"type":"steps","items":[{"label":"1. Elegir K"},{"label":"2) Asignar"}]}'
     result = materialize_arc_blocks(f"```arc\n{raw}\n```")
     assert '"Elegir K"' in result and '"Asignar"' in result
+
+
+@pytest.mark.parametrize(
+    ("answer", "expected"),
+    [
+        ({"type": "predicate", "name": "practice_test", "probability": 0.9}, True),
+        ({"type": "predicate", "name": "practice_test", "probability": 0.1}, False),
+        ({"type": "refusal", "name": "practice_test"}, None),
+        (None, None),
+    ],
+)
+def test_practice_test_intent_is_decided(answer, expected):
+    assert parsed(ANSWERS + ([answer] if answer else [])).practice_test is expected
+
+
+@pytest.mark.asyncio
+async def test_decided_test_intent_reaches_the_response_and_is_never_saved(
+    monkeypatch,
+):
+    from open_notebook.utils.chat_routing import pop_practice_test
+
+    _, model, _ = await _run(
+        monkeypatch, access=("key", "url"), decision=decision(practice_test=False)
+    )
+    reply, wants_test = pop_practice_test(model.reply)
+    assert wants_test is False
+    assert "_turn_practice_test" not in reply.additional_kwargs
+    _, model, _ = await _run(monkeypatch, access=None, decision=None)
+    assert pop_practice_test(model.reply)[1] is None
+
+
+@pytest.mark.asyncio
+async def test_question_about_an_exam_is_answered_not_turned_into_buttons():
+    from langchain_core.messages import AIMessage
+
+    from open_notebook.utils.chat_responses import materialize_chat_response
+
+    request = "en este examen que porcentaje de todos los temas tratamos"
+    answer = AIMessage(content="El examen cubrió 9 de 13 temas, cerca del 70 %.")
+    reply = await materialize_chat_response(
+        answer, "chat_session:x", None, request, wants_test=False
+    )
+    assert reply.content == answer.content
+    assert reply.additional_kwargs["response_followups"] == []
+    # Without the Decisions API the keyword heuristic still asks for the format.
+    reply = await materialize_chat_response(answer, "chat_session:x", None, request)
+    assert reply.additional_kwargs["response_followups"] == [{"kind": "study"}]

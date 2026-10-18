@@ -17,6 +17,7 @@ import {
   ChatFocus
 } from '@/lib/types/api'
 import { ContextSelections } from '@/app/(dashboard)/notebooks/[id]/page'
+import { mentionedIds } from '@/lib/utils/chat-mentions'
 
 interface UseNotebookChatParams {
   notebookId: string
@@ -166,7 +167,9 @@ export function useNotebookChat({ notebookId, sources, notes, contextSelections,
   })
 
   // Build context from sources and notes based on user selections
-  const buildContext = useCallback(async () => {
+  // Mentioned sources and notes are always included in full for that turn,
+  // whatever the context selections or chat focus say.
+  const buildContext = useCallback(async (mentioned: string[] = []) => {
     // Build context_config mapping IDs to selection modes
     const context_config: { sources: Record<string, string>, notes: Record<string, string> } = {
       sources: {},
@@ -194,6 +197,11 @@ export function useNotebookChat({ notebookId, sources, notes, contextSelections,
         context_config.notes[note.id] = 'not in'
       }
     })
+
+    for (const id of mentioned) {
+      if (id.startsWith('source:')) context_config.sources[id] = 'full content'
+      else if (id.startsWith('note:')) context_config.notes[id] = 'full content'
+    }
 
     // Call API to build context with actual content
     const response = await chatApi.buildContext({
@@ -252,7 +260,7 @@ export function useNotebookChat({ notebookId, sources, notes, contextSelections,
 
     try {
       // Build context and send message
-      const context = await buildContext()
+      const context = await buildContext(mentionedIds(message))
       const response = await chatApi.sendMessage({
         session_id: sessionId,
         message,

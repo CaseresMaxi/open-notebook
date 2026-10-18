@@ -17,7 +17,7 @@ from loguru import logger
 
 DECISIONS_MODEL = "gpt-6-luna"
 TIMEOUT_SECONDS = 2.5
-PRESENTATIONS = ("prose", "chart", "table", "metrics", "steps", "mixed")
+PRESENTATIONS = ("prose", "chart", "table", "metrics", "steps", "concept_map", "mixed")
 EFFORTS = ("none", "low", "medium", "high")
 
 _QUESTIONS: list[dict] = [
@@ -27,9 +27,19 @@ _QUESTIONS: list[dict] = [
         "instructions": (
             "True only if a good answer needs visual tools: looking at or cropping a real "
             "figure, page, diagram or table image from the user's documents, generating an "
-            "illustration or photo, or drawing a custom diagram, geometry figure, concept map "
+            "illustration or photo, or drawing a custom diagram, geometry figure, simulation "
             "or animation. Standard data charts (line, bar, share of a whole), tables, "
-            "metrics, progress and step lists do NOT need visual tools."
+            "metrics, progress, step lists and concept maps do NOT need visual tools."
+        ),
+    },
+    {
+        "name": "practice_test",
+        "type": "predicate",
+        "instructions": (
+            "True only if the student asks to be given a new exam, test, quiz or practice "
+            "questions to answer now, or replies choosing how to take one. False for "
+            "questions ABOUT an exam or test (its coverage, results, answers, topics, a "
+            "past exam in the material), explanations, summaries and anything else."
         ),
     },
     {
@@ -56,6 +66,10 @@ _QUESTIONS: list[dict] = [
             {
                 "value": "steps",
                 "description": "An ordered process, procedure, chronology or method.",
+            },
+            {
+                "value": "concept_map",
+                "description": "How several ideas of a topic relate: an overview, review or map of key concepts and their connections, causes and effects, or a mind map.",
             },
             {
                 "value": "mixed",
@@ -92,6 +106,7 @@ class TurnDecision:
     presentation_confidence: float
     effort: str
     latency_ms: int
+    practice_test: bool | None = None
 
     def presentation_hint(self) -> str:
         """Nudge the main model toward an inline component, never force one."""
@@ -102,6 +117,7 @@ class TurnDecision:
             "table": "a table: write it as a table arc block, not a Markdown table",
             "metrics": "metrics or gauge arc blocks for the key figures",
             "steps": "a steps arc block instead of a numbered list",
+            "concept_map": "a concept_map arc block: the key concepts weighted by relevance and joined by labelled links",
             "mixed": "one or two arc blocks (table, chart or steps) where they clarify the material",
         }
         return (
@@ -125,6 +141,7 @@ def parse_answers(answers: list[dict], latency_ms: int) -> TurnDecision | None:
     visual = by_name.get("visual_tools", {})
     presentation = by_name.get("presentation", {})
     effort = by_name.get("effort", {})
+    practice = by_name.get("practice_test", {})
     if any(item.get("type") in (None, "refusal") for item in (visual, effort)):
         return None
     choice = presentation.get("choice")
@@ -147,6 +164,10 @@ def parse_answers(answers: list[dict], latency_ms: int) -> TurnDecision | None:
         presentation_confidence=confidence,
         effort=_effort(float(effort.get("score") or 0.0)),
         latency_ms=latency_ms,
+        # A refused or missing answer leaves the keyword heuristic in charge.
+        practice_test=None
+        if practice.get("type") in (None, "refusal")
+        else float(practice.get("probability") or 0.0) >= 0.5,
     )
 
 
@@ -176,7 +197,9 @@ async def decisions_access() -> tuple[str, str] | None:
 def decision_input(
     request: str, previous_answer: str = "", has_sources: bool = False
 ) -> str:
-    parts = [f"Latest student message:\n{request.strip()[:2000]}"]
+    from open_notebook.utils.chat_mentions import plain_mentions
+
+    parts = [f"Latest student message:\n{plain_mentions(request).strip()[:2000]}"]
     if previous_answer.strip():
         parts.append(
             f"Previous assistant answer (excerpt):\n{previous_answer.strip()[:600]}"
@@ -226,7 +249,8 @@ async def decide_turn(
     if decision:
         logger.info(
             f"Turn decision in {latency_ms} ms: visual_tools={decision.visual_tools} "
-            f"presentation={decision.presentation} effort={decision.effort}"
+            f"presentation={decision.presentation} effort={decision.effort} "
+            f"practice_test={decision.practice_test}"
         )
     return decision
 

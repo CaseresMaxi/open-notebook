@@ -15,6 +15,7 @@ from open_notebook.utils.chat_images import (
 from open_notebook.utils.chat_responses import requested_widgets
 from open_notebook.utils.chat_visuals import invoke_visual_chat
 from open_notebook.utils.exam_answers import OpenAnswer
+from open_notebook.utils.html_visuals import script_violations
 
 HTML = '<style>@keyframes reveal{from{opacity:0}to{opacity:1}}svg{animation:reveal 2s}</style><svg viewBox="0 0 300 120"><text x="10" y="20">Clase A: 3</text><rect x="10" y="30" width="90" height="20"/><text x="10" y="80">Clase B: 2</text><rect x="10" y="90" width="60" height="20"/></svg>'
 
@@ -163,8 +164,54 @@ async def test_exam_generation_and_grading_receive_actual_html_not_image_urls(
     assert "Clase B: 2" in model.ainvoke.call_args.args[0][-1].content[0]["text"]
 
 
+SCRIPTED = (
+    '<button id="next">Siguiente</button><script>'
+    "const node = {parent: {x: 1}};"
+    "document.getElementById('next').addEventListener('click', () => node.parent.x++);"
+    "</script>" + HTML
+)
+
+
+def test_scripted_visual_keeps_inline_code_but_never_external_scripts():
+    artifact = HtmlVisual(
+        name="Steps",
+        description="Two classes",
+        scripted=True,
+        html=SCRIPTED
+        + '<script src="https://bad.test/x.js"></script><a href="https://bad.test">x</a>',
+    )
+    assert "addEventListener" in artifact.html
+    assert "bad.test" not in artifact.html
+    declarative = HtmlVisual(name="Steps", description="Two classes", html=SCRIPTED)
+    assert "<script" not in declarative.html
+
+
+@pytest.mark.parametrize(
+    "code",
+    [
+        "fetch('https://bad.test')",
+        "location = 'https://bad.test'",
+        "window.location.href = 'x'",
+        "localStorage.setItem('a', 1)",
+        "parent.document.body.remove()",
+        "eval('1')",
+        "a.setAttribute('href', 'https://bad.test')",
+    ],
+)
+def test_scripted_visuals_reject_code_that_leaves_the_document(code):
+    assert script_violations(f"<script>{code}</script>")
+    with pytest.raises(ValidationError):
+        HtmlVisual(
+            name="X", description="X", scripted=True, html=f"<script>{code}</script>"
+        )
+
+
+def test_tree_code_with_parent_properties_is_allowed():
+    assert script_violations(SCRIPTED) == []
+
+
 @pytest.mark.asyncio
-async def test_tool_requests_css_repair_instead_of_silently_breaking_script_controls():
+async def test_tool_attaches_scripted_visuals_and_asks_to_repair_escaping_code():
     model = AsyncMock()
     model.bind_tools = lambda tools: model
     model.ainvoke.side_effect = [
@@ -174,8 +221,7 @@ async def test_tool_requests_css_repair_instead_of_silently_breaking_script_cont
                 {
                     "name": "render_html_visual",
                     "args": {
-                        "html": '<button onclick="pause()">Pause</button><script>function pause(){}</script>'
-                        + HTML,
+                        "html": "<script>fetch('https://bad.test')</script>" + HTML,
                         "caption": "Counts",
                         "description": "A=3, B=2",
                     },
@@ -189,8 +235,7 @@ async def test_tool_requests_css_repair_instead_of_silently_breaking_script_cont
                 {
                     "name": "render_html_visual",
                     "args": {
-                        "html": '<input id="pause" type="checkbox"><label for="pause">Pause</label><style>#pause:checked~svg{animation-play-state:paused}</style>'
-                        + HTML,
+                        "html": SCRIPTED,
                         "caption": "Counts",
                         "description": "A=3, B=2",
                     },
@@ -206,9 +251,10 @@ async def test_tool_requests_css_repair_instead_of_silently_breaking_script_cont
         for message in model.ainvoke.call_args.args[0]
         if getattr(message, "tool_call_id", None) == "bad"
     )
-    assert "checkbox/radio" in error
     assert "Tool error" in error
+    assert "network requests" in error
     artifacts = message_images(reply)
     assert len(artifacts) == 1
     assert isinstance(artifacts[0], HtmlVisual)
-    assert "animation-play-state:paused" in artifacts[0].html
+    assert artifacts[0].scripted
+    assert "addEventListener" in artifacts[0].html

@@ -172,6 +172,8 @@ export interface HtmlVisual {
   references?: { source_id: string; source_title: string; page?: number | null; quote?: string; observation: string }[]
   fidelity_notes?: string[]
   name: string
+  /** Inline scripts were kept: render with scripts allowed in the sandbox. */
+  scripted?: boolean
   html: string
   description: string
 }

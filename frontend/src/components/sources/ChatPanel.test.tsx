@@ -57,6 +57,30 @@ describe('ChatPanel composer', () => {
     expect(textarea.value).toBe('')
   })
 
+  it('mentions a note with @, the keyboard and sends it as a reference', async () => {
+    const onSendMessage = vi.fn()
+    render(
+      <ChatPanel messages={[]} isStreaming={false} contextIndicators={null} onSendMessage={onSendMessage}
+        mentionables={[{ id: 'source:a', title: 'Resumen.pdf', kind: 'source' }, { id: 'note:b', title: 'Auditoría ISO', kind: 'note' }]} />
+    )
+    const textarea = screen.getByRole('combobox') as HTMLTextAreaElement
+    fireEvent.change(textarea, { target: { value: 'Explicá @audi', selectionStart: 13 } })
+    const options = screen.getAllByRole('option')
+    expect(options).toHaveLength(1)
+    expect(options[0]).toHaveTextContent('Auditoría ISO')
+    fireEvent.keyDown(textarea, { key: 'Enter' })
+    expect(textarea.value).toBe('Explicá @Auditoría ISO ')
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
+    fireEvent.change(textarea, { target: { value: 'Explicá @Auditoría ISO por favor', selectionStart: 32 } })
+    fireEvent.click(screen.getByRole('button', { name: 'chat.sendMessage' }))
+    expect(onSendMessage).toHaveBeenCalledWith('Explicá @[Auditoría ISO](note:b) por favor', undefined, [], true)
+  })
+
+  it('shows sent mentions as chips', () => {
+    render(<ChatPanel messages={[{ id: 'h', type: 'human', content: 'Resumí @[Resumen.pdf](source:a)' }]} isStreaming={false} contextIndicators={null} onSendMessage={vi.fn()} />)
+    expect(screen.getByText('@Resumen.pdf')).toHaveClass('chat-mention-chip')
+  })
+
   it('sends on Cmd+Enter on macOS', () => {
     const uaSpy = vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue(
       'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)'

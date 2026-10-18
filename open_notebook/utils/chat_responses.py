@@ -75,6 +75,33 @@ def latest_request(messages: list[Any]) -> str:
     return ""
 
 
+def _edit_distance(a: str, b: str) -> int:
+    """Optimal string alignment distance: a swapped pair of letters costs one."""
+    rows = [list(range(len(b) + 1))]
+    for i in range(1, len(a) + 1):
+        row = [i] + [0] * len(b)
+        for j in range(1, len(b) + 1):
+            row[j] = min(
+                rows[i - 1][j] + 1,
+                row[j - 1] + 1,
+                rows[i - 1][j - 1] + (a[i - 1] != b[j - 1]),
+            )
+            if i > 1 and j > 1 and a[i - 1] == b[j - 2] and a[i - 2] == b[j - 1]:
+                row[j] = min(row[j], rows[i - 2][j - 2] + 1)
+        rows.append(row)
+    return rows[-1][-1]
+
+
+def _misspelled_exam(text: str) -> bool:
+    # Typed fast, "exmane" or "examne" still asks for an exam.
+    return any(
+        _edit_distance(word, target) <= (2 if len(word) >= 6 else 1)
+        for word in re.findall(r"\b[a-z]{5,9}\b", text)
+        if word.startswith("ex")
+        for target in ("examen", "examenes")
+    )
+
+
 def requested_widgets(request: str) -> tuple[bool, bool]:
     """Detect explicit requests in the current turn, never in old conversation text."""
     text = "".join(
@@ -93,7 +120,7 @@ def requested_widgets(request: str) -> tuple[bool, bool]:
             r"\b(examen(?:es)?|examnes|tests?|quiz(?:zes)?|cuestionarios?|autoevaluacion|practice questions)\b",
             text,
         )
-    )
+    ) or _misspelled_exam(text)
     if re.search(
         r"\b(no|sin|without|don't|do not)\s+(?:\w+\s+){0,2}(?:imagenes|imagen|images|illustrations|figuras)\b",
         text,
@@ -138,11 +165,17 @@ async def materialize_chat_response(
     model_id: str | None,
     request: str = "",
     context: str = "",
+    wants_test: bool | None = None,
 ) -> Any:
     reply = reply.model_copy(
         update={"content": materialize_arc_blocks(extract_text_content(reply.content))}
     )
-    reply = materialize_followups(reply, request, requested_widgets(request)[1])
+    # The Decisions API judges intent ("what did this exam cover?" is not a
+    # request for one); the keyword heuristic only applies without it.
+    prose_fallback = wants_test is not False
+    if wants_test is None:
+        wants_test = requested_widgets(request)[1]
+    reply = materialize_followups(reply, request, wants_test, prose_fallback)
     if reply.additional_kwargs.get("response_followups"):
         # A clarification is a complete turn: wait for the user before generating.
         safe = QUIZ_BLOCK.sub("", reply.content)
@@ -154,7 +187,7 @@ async def materialize_chat_response(
     remainder = QUIZ_BLOCK.sub("", content)
     incomplete = QUIZ_START.search(remainder)
     if not matches and not incomplete:
-        if not requested_widgets(request)[1]:
+        if not wants_test:
             return reply.model_copy(update={"content": content})
         # Ordinary Markdown exams are not an interactive response. Convert the
         # requested test before exposing prose that might contain its answer key.
@@ -255,10 +288,15 @@ def run_chat_response(
     context: str = "",
 ) -> Any:
     """Bridge only the two legacy synchronous SQLite chat nodes."""
+    from open_notebook.utils.chat_routing import pop_practice_test
+
+    reply, wants_test = pop_practice_test(reply)
 
     def run():
         return asyncio.run(
-            materialize_chat_response(reply, session_id, model_id, request, context)
+            materialize_chat_response(
+                reply, session_id, model_id, request, context, wants_test
+            )
         )
 
     try:

@@ -48,6 +48,23 @@ def study_mode(request: str) -> str | None:
     )
 
 
+def asks_study_format(content: str) -> bool:
+    """A short reply that asks, in prose, between an in-chat test and a separate exam."""
+    if len(content) > 700 or "?" not in content or "```" in content:
+        return False
+    text = "".join(
+        c
+        for c in unicodedata.normalize("NFKD", content.lower())
+        if not unicodedata.combining(c)
+    )
+    return bool(
+        re.search(
+            r"\b(interactiv\w*|en el chat|aqui en el chat|in (?:the )?chat)\b", text
+        )
+        and re.search(r"\b(independiente|separad[oa]|standalone|separate)\b", text)
+    )
+
+
 def followup_instructions() -> str:
     return (
         "\nCONTINUATION QUESTIONS:\n"
@@ -62,9 +79,13 @@ def followup_instructions() -> str:
     )
 
 
-def materialize_followups(reply: Any, request: str, needs_study_choice: bool) -> Any:
+def materialize_followups(
+    reply: Any, request: str, needs_study_choice: bool, prose_fallback: bool = True
+) -> Any:
     content = re.sub(r"\[\[followup:\d+\]\]", "", reply.content)
-    if needs_study_choice and study_mode(request) != "chat":
+    if (needs_study_choice and study_mode(request) != "chat") or (
+        not needs_study_choice and prose_fallback and asks_study_format(content)
+    ):
         # Never expose questions/answer keys generated before the format was chosen.
         figures = "\n\n".join(re.findall(r"\[\[image:\d+\]\]", content))
         return reply.model_copy(

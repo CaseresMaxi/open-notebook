@@ -14,6 +14,7 @@ describe('arc blocks', () => {
       { type: 'steps', items: [{ label: 'Uno' }, { label: 'Dos' }] },
       { type: 'accordion', items: [{ title: 'T', content: 'C' }] },
       { type: 'callout', title: 'Ojo', tone: 'warning' },
+      { type: 'concept_map', nodes: [{ id: 'a', label: 'A' }, { id: 'b', label: 'B' }], links: [{ source: 'a', target: 'b' }] },
     ]
     for (const spec of specs) expect(parseArcBlock(JSON.stringify(spec))?.type).toBe(spec.type)
   })
@@ -34,5 +35,13 @@ describe('arc blocks', () => {
     const content = 'Intro\n\n```arc\n{"type":"table","title":"Modelos","columns":["Modelo","Niveles"],"rows":[["CMMI",5]]}\n```\n\nFin'
     expect(replaceArcBlocksWithMarkdown(content)).toBe('Intro\n\n**Modelos**\n\n| Modelo | Niveles |\n| --- | --- |\n| CMMI | 5 |\n\nFin')
     expect(arcBlockToMarkdown({ type: 'steps', items: [{ label: 'Plan', description: 'Definir' }, { label: 'Hacer' }] })).toBe('1. Plan: Definir\n2. Hacer')
+  })
+
+  it('keeps concept map relations between listed concepts only', () => {
+    const spec = parseArcBlock(JSON.stringify({ type: 'concept_map', nodes: [{ id: 'a', label: 'Célula', weight: 9 }, { id: 'b', label: 'Núcleo', weight: 4 }], links: [{ source: 'a', target: 'b', label: 'contiene' }, { source: 'a', target: 'x' }, { source: 'b', target: 'b' }] }))
+    expect(spec?.type === 'concept_map' && spec.links).toEqual([{ source: 'a', target: 'b', label: 'contiene' }])
+    expect(spec?.type === 'concept_map' && spec.nodes[0].weight).toBe(5)
+    expect(parseArcBlock('{"type":"concept_map","nodes":[{"id":"a","label":"A"},{"id":"b","label":"B"}],"links":[{"source":"a","target":"z"}]}')).toBeNull()
+    expect(arcBlockToMarkdown(spec!)).toBe('- **Célula**\n  - contiene Núcleo\n- **Núcleo**')
   })
 })

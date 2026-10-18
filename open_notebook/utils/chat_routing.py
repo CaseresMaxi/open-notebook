@@ -46,6 +46,32 @@ def use_visual_tools(decision: TurnDecision | None, toggle: bool, request: str) 
     return decision.visual_tools and (toggle or explicit)
 
 
+# Carries the decided test intent from the turn to the response
+# materialization; popped before the message is saved.
+PRACTICE_TEST_KEY = "_turn_practice_test"
+
+
+def pop_practice_test(message: Any) -> tuple[Any, bool | None]:
+    kwargs = dict(getattr(message, "additional_kwargs", {}) or {})
+    if PRACTICE_TEST_KEY not in kwargs:
+        return message, None
+    wants = kwargs.pop(PRACTICE_TEST_KEY)
+    return message.model_copy(update={"additional_kwargs": kwargs}), wants
+
+
+def _with_practice_test(message: Any, decision: TurnDecision | None) -> Any:
+    if decision is None or decision.practice_test is None:
+        return message
+    return message.model_copy(
+        update={
+            "additional_kwargs": {
+                **message.additional_kwargs,
+                PRACTICE_TEST_KEY: decision.practice_test,
+            }
+        }
+    )
+
+
 async def _cancel(task: asyncio.Task) -> None:
     task.cancel()
     try:
@@ -69,8 +95,16 @@ async def run_turn(
     model = await provision
     payload = [SystemMessage(content=instructions), *history]
 
-    async def with_tools(model: Any, payload: list) -> Any:
-        return await invoke_visual_chat(model, payload, await source_ids(), model_id)
+    async def with_tools(
+        model: Any, payload: list, decision: TurnDecision | None = None
+    ) -> Any:
+        return await invoke_visual_chat(
+            model,
+            payload,
+            await source_ids(),
+            model_id,
+            wants_test=decision.practice_test if decision else None,
+        )
 
     access = await access_task
     if access is None:
@@ -98,11 +132,12 @@ async def run_turn(
     ]
     if use_visual_tools(decision, toggle, request):
         await _cancel(speculative)
-        return await with_tools(apply_effort(model, decision.effort), hinted)
+        reply = await with_tools(apply_effort(model, decision.effort), hinted, decision)
+        return _with_practice_test(reply, decision)
     if decision.presentation_hint() and not speculative.done():
         # Models rarely reach for inline components unprompted; a turn that
         # reads best as a chart, table, metrics or steps restarts with the hint.
         await _cancel(speculative)
         logger.info(f"Restarting the answer as {decision.presentation} components")
-        return await model.ainvoke(hinted)
-    return await speculative
+        return _with_practice_test(await model.ainvoke(hinted), decision)
+    return _with_practice_test(await speculative, decision)

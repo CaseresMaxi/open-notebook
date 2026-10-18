@@ -10,7 +10,7 @@ import { ChatCodeRunner, RUNNABLE_LANGUAGES, type CodeNotebook } from '@/compone
 import { CodeBlockExtrasContext, type CodeBlockExtras } from '@/components/ui/markdown-renderer'
 import { Drawer, DrawerContent, DrawerTrigger } from '@/components/arc/drawer/drawer'
 import { useDevelopmentTools } from '@/lib/hooks/use-development-tools'
-import { Bot, User, Send, Loader2, Clock, ImagePlus } from 'lucide-react'
+import { Bot, User, Send, Loader2, Clock, ImagePlus, FileText, StickyNote } from 'lucide-react'
 import {
   SourceChatMessage,
   SourceChatContextIndicator,
@@ -28,6 +28,7 @@ import { ChatImages } from './ChatImages'
 import { ChatResponseContent } from './ChatResponseContent'
 import { replaceArcBlocksWithMarkdown } from '@/lib/utils/arc-blocks'
 import { readChatImages, CHAT_IMAGE_TYPES } from '@/lib/utils/chat-images'
+import { activeMention, encodeMentions, filterMentionables, mentionLabel, splitMentions, type Mentionable } from '@/lib/utils/chat-mentions'
 import { ChatSkeleton } from '@/components/common/LoadingSkeletons'
 
 type SendChatMessage = (message: string, modelOverride?: string, images?: ChatImage[], visualTools?: boolean, options?: { hidden?: boolean }) => void | boolean | Promise<void | boolean>
@@ -67,6 +68,8 @@ interface ChatPanelProps {
   notebookId?: string
   // Shown just above the composer (e.g. the sources the chat is focused on)
   composerTop?: ReactNode
+  // Sources and notes the composer can @mention
+  mentionables?: Mentionable[]
   // Text to place in the composer once (e.g. a question about a notebook cell)
   draft?: { text: string; at: number } | null
   onDraftUsed?: () => void
@@ -93,6 +96,7 @@ export function ChatPanel({
   contextType = 'source',
   notebookId,
   composerTop,
+  mentionables,
   draft,
   onDraftUsed,
   codeNotebook
@@ -246,6 +250,7 @@ export function ChatPanel({
           top={composerTop}
           draft={draft}
           onDraftUsed={onDraftUsed}
+          mentionables={mentionables}
         />
       </CardContent>
     </Card>
@@ -264,6 +269,7 @@ interface ChatComposerProps {
   top?: ReactNode
   draft?: { text: string; at: number } | null
   onDraftUsed?: () => void
+  mentionables?: Mentionable[]
 }
 
 function ChatComposer({
@@ -273,7 +279,8 @@ function ChatComposer({
   onModelChange,
   top,
   draft,
-  onDraftUsed
+  onDraftUsed,
+  mentionables
 }: ChatComposerProps) {
   const { t } = useTranslation()
   const developerTools = useDevelopmentTools()
@@ -284,6 +291,12 @@ function ChatComposer({
   const [visualTools, setVisualTools] = useState(true)
   const [readingImages, setReadingImages] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [mentions, setMentions] = useState<Mentionable[]>([])
+  const [mentionQuery, setMentionQuery] = useState<{ query: string; start: number } | null>(null)
+  const [mentionIndex, setMentionIndex] = useState(0)
+  const mentionListId = useId()
+  const mentionOptions = mentionQuery && mentionables?.length ? filterMentionables(mentionables, mentionQuery.query) : []
+  const mentionOpen = mentionOptions.length > 0
   const fileInputRef = useRef<HTMLInputElement>(null)
   const composerRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
@@ -326,15 +339,35 @@ function ChatComposer({
     }
   }
 
+  const updateMention = (field: HTMLTextAreaElement) => {
+    setMentionQuery(mentionables?.length ? activeMention(field.value, field.selectionStart ?? field.value.length) : null)
+    setMentionIndex(0)
+  }
+
+  const chooseMention = (item: Mentionable) => {
+    const field = document.getElementById(chatInputId) as HTMLTextAreaElement | null
+    if (!mentionQuery || !field) return
+    const caret = field.selectionStart ?? input.length
+    const inserted = `@${mentionLabel(item.title)} `
+    const next = input.slice(0, mentionQuery.start) + inserted + input.slice(caret)
+    setInput(next)
+    setMentions(previous => (previous.some(mention => mention.id === item.id) ? previous : [...previous, item]))
+    setMentionQuery(null)
+    const position = mentionQuery.start + inserted.length
+    requestAnimationFrame(() => { field.focus(); field.setSelectionRange(position, position) })
+  }
+
   const handleSend = () => {
     if ((!input.trim() && !images.length) || busy || readingRef.current) return
     const clearDraft = (success: void | boolean) => {
       if (success !== false) {
         setInput('')
         setImages([])
+        setMentions([])
+        setMentionQuery(null)
       }
     }
-    const result = onSendMessage(input.trim(), modelOverride, images, visualTools)
+    const result = onSendMessage(encodeMentions(input.trim(), mentions), modelOverride, images, visualTools)
     if (result instanceof Promise) {
       setSubmitting(true)
       result.then(clearDraft).catch(() => {
@@ -346,6 +379,24 @@ function ChatComposer({
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (mentionOpen) {
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault()
+        const step = e.key === 'ArrowDown' ? 1 : -1
+        setMentionIndex(index => (index + step + mentionOptions.length) % mentionOptions.length)
+        return
+      }
+      if ((e.key === 'Enter' && !e.ctrlKey && !e.metaKey) || e.key === 'Tab') {
+        e.preventDefault()
+        chooseMention(mentionOptions[Math.min(mentionIndex, mentionOptions.length - 1)])
+        return
+      }
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        setMentionQuery(null)
+        return
+      }
+    }
     // Detect platform for correct modifier key
     const isMac = typeof navigator !== 'undefined' && navigator.userAgent.toUpperCase().indexOf('MAC') >= 0
     const isModifierPressed = isMac ? e.metaKey : e.ctrlKey
@@ -387,6 +438,14 @@ function ChatComposer({
       </label>
       {visualTools && <p className="text-xs text-muted-foreground mt-2">{t('chat.visualResponsesHint')}</p>}
       </DrawerContent></Drawer>}
+      {mentionOpen && <ul id={mentionListId} role="listbox" aria-label={t('chat.mentionList')} className="chat-mention-menu">
+        {mentionOptions.map((item, index) => <li key={item.id} id={`${mentionListId}-${index}`} role="option" aria-selected={index === mentionIndex}
+          className="chat-mention-option" onMouseDown={event => { event.preventDefault(); chooseMention(item) }} onMouseEnter={() => setMentionIndex(index)}>
+          {item.kind === 'note' ? <StickyNote className="h-4 w-4 flex-shrink-0" aria-hidden="true" /> : <FileText className="h-4 w-4 flex-shrink-0" aria-hidden="true" />}
+          <span className="chat-mention-title">{item.title}</span>
+          <span className="chat-mention-kind">{t(item.kind === 'note' ? 'chat.mentionNote' : 'chat.mentionSource')}</span>
+        </li>)}
+      </ul>}
       {images.length > 0 && <ChatImages images={images} disabled={busy}
         onRemove={index => setImages(previous => previous.filter((_, position) => position !== index))} />}
       <input ref={fileInputRef} type="file" accept={CHAT_IMAGE_TYPES.join(',')} multiple
@@ -406,8 +465,16 @@ function ChatComposer({
           name="chat-message"
           autoComplete="off"
           value={input}
-          onChange={(e) => setInput(e.target.value)}
+          onChange={(e) => { setInput(e.target.value); updateMention(e.target) }}
           onKeyDown={handleKeyDown}
+          onKeyUp={event => { if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') updateMention(event.currentTarget) }}
+          onClick={event => updateMention(event.currentTarget)}
+          onBlur={() => setMentionQuery(null)}
+          role={mentionables?.length ? 'combobox' : undefined}
+          aria-autocomplete={mentionables?.length ? 'list' : undefined}
+          aria-expanded={mentionables?.length ? mentionOpen : undefined}
+          aria-controls={mentionOpen ? mentionListId : undefined}
+          aria-activedescendant={mentionOpen ? `${mentionListId}-${mentionIndex}` : undefined}
           onPaste={event => {
             const files = Array.from(event.clipboardData.files)
             if (files.length) {
@@ -415,7 +482,7 @@ function ChatComposer({
               void addImages(files)
             }
           }}
-          placeholder={t('chat.messagePlaceholder')}
+          placeholder={t(mentionables?.length ? 'chat.messagePlaceholderMentions' : 'chat.messagePlaceholder')}
           aria-label={t('chat.sendPlaceholder')}
           disabled={busy}
           className="flex-1 min-h-[40px] max-h-[100px] resize-none py-2 px-3 min-w-0"
@@ -492,7 +559,11 @@ const ChatMessage = memo(function ChatMessage({
           ) : (
             <div className="space-y-2">
               {!!message.images?.length && <ChatImages images={message.images} />}
-              {message.content && <p className="text-sm break-all">{message.content}</p>}
+              {message.content && <p className="text-sm break-all">{splitMentions(message.content).map((segment, index) => 'mention' in segment
+                ? <span key={index} className="chat-mention-chip" title={segment.mention.id}>
+                  {segment.mention.id.startsWith('note:') ? <StickyNote className="h-3 w-3" aria-hidden="true" /> : <FileText className="h-3 w-3" aria-hidden="true" />}@{segment.mention.title}
+                </span>
+                : segment.text)}</p>}
             </div>
           )}
         </div>

@@ -292,6 +292,14 @@ async def test_repair_uses_selected_model_and_structured_output(monkeypatch):
         ("Un cuestionario con imágenes", (True, True)),
         ("Explicame KNN sin imágenes ni test", (False, False)),
         ("Explicame KNN", (False, False)),
+        (
+            "quiero un exmane completo de todos los temas haciendo enfacis en las defincioens",
+            (False, True),
+        ),
+        ("Haceme un examne de calidad", (False, True)),
+        ("Explicame el examen físico y los exámenes", (False, True)),
+        ("Dame un ejemplo de la expansión", (False, False)),
+        ("Explicame la excepción", (False, False)),
     ],
 )
 def test_explicit_widget_requests(prompt_text, expected):
@@ -320,3 +328,23 @@ async def test_plain_exam_becomes_interactive_without_exposing_answers(monkeypat
     assert result.additional_kwargs["response_quizzes"] == ["chat_quiz:requested"]
     assert "Even numbers divide by 2" in repair.call_args.args[0]
     assert "Correct answer" not in result.content
+
+
+def test_prose_format_question_becomes_the_study_buttons():
+    from langchain_core.messages import AIMessage
+
+    from open_notebook.utils.chat_followups import materialize_followups
+
+    reply = AIMessage(
+        content="¿Preferís que el examen sea **interactivo aquí en el chat** o un "
+        "**examen independiente**? Lo prepararé completo, con énfasis en definiciones."
+    )
+    result = materialize_followups(reply, "hazlo con todo el temario", False)
+    assert result.content == "[[followup:1]]"
+    assert result.additional_kwargs["response_followups"] == [{"kind": "study"}]
+    explanation = AIMessage(
+        content="La calidad es independiente del precio. ¿Seguimos?"
+    )
+    assert materialize_followups(explanation, "explicame", False).content == (
+        explanation.content
+    )
