@@ -1,10 +1,13 @@
 'use client'
 
 import { useCallback, useMemo } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { Crosshair, X } from 'lucide-react'
 import { useNotebookChat } from '@/lib/hooks/use-notebook-chat'
 import { useNotes } from '@/lib/hooks/use-notes'
-import { ChatPanel } from '@/components/sources/ChatPanel'
+import { ChatPanel, type ChatDocumentHandlers } from '@/components/sources/ChatPanel'
+import { sourcesApi } from '@/lib/api/sources'
+import { QUERY_KEYS } from '@/lib/api/query-client'
 import { Card, CardContent } from '@/components/ui/card'
 import { AlertCircle } from 'lucide-react'
 import { ContextSelections } from '../[id]/page'
@@ -72,6 +75,25 @@ export function ChatColumn({ notebookId, contextSelections, sources, sourcesLoad
     ...sources.map(source => ({ id: source.id, title: source.title || t('sources.untitledSource'), kind: 'source' as const })),
     ...notes.map(note => ({ id: note.id, title: note.title || t('sources.untitledNote'), kind: 'note' as const })),
   ], [sources, notes, t])
+  const queryClient = useQueryClient()
+  // Files attached in the chat join the notebook as sources.
+  const documents = useMemo<ChatDocumentHandlers>(() => {
+    const refresh = () => {
+      void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.sources(notebookId) })
+      void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.sourcesInfinite(notebookId), refetchType: 'active' })
+    }
+    return {
+      attach: async file => {
+        const source = await sourcesApi.upload(file, notebookId)
+        refresh()
+        return { id: source.id }
+      },
+      detach: async id => {
+        await sourcesApi.delete(id)
+        refresh()
+      },
+    }
+  }, [notebookId, queryClient])
   const codeNotebook = useMemo(() => focusedNotebook ? { id: focusedNotebook.id, title: focusedNotebook.title ?? '' } : null, [focusedNotebook])
 
   // Initialize notebook chat hook
@@ -191,6 +213,7 @@ export function ChatColumn({ notebookId, contextSelections, sources, sourcesLoad
       notebookId={notebookId}
       composerTop={focusBar}
       mentionables={mentionables}
+      documents={documents}
       draft={draft}
       onDraftUsed={() => takeDraft(notebookId)}
       codeNotebook={codeNotebook}

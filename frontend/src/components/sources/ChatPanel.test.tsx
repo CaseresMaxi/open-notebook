@@ -1,7 +1,9 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { ChatPanel } from './ChatPanel'
+import { sourcesApi } from '@/lib/api/sources'
 
+vi.mock('@/lib/api/sources', () => ({ sourcesApi: { status: vi.fn() } }))
 vi.mock('@/lib/hooks/use-development-tools', () => ({ useDevelopmentTools: () => true }))
 
 // useTranslation is mocked globally in setup.ts (t returns the key string)
@@ -74,6 +76,35 @@ describe('ChatPanel composer', () => {
     fireEvent.change(textarea, { target: { value: 'Explicá @Auditoría ISO por favor', selectionStart: 32 } })
     fireEvent.click(screen.getByRole('button', { name: 'chat.sendMessage' }))
     expect(onSendMessage).toHaveBeenCalledWith('Explicá @[Auditoría ISO](note:b) por favor', undefined, [], true)
+  })
+
+  it('uploads attached documents and sends them as mentions once processed', async () => {
+    const status = vi.mocked(sourcesApi.status)
+    status.mockResolvedValueOnce({ status: 'running', message: '' }).mockResolvedValue({ status: 'completed', message: '' })
+    const onSendMessage = vi.fn()
+    const attach = vi.fn().mockResolvedValue({ id: 'source:pdf' })
+    render(<ChatPanel messages={[]} isStreaming={false} contextIndicators={null} onSendMessage={onSendMessage}
+      documents={{ attach, detach: vi.fn() }} />)
+    const file = new File(['%PDF'], 'Parcial.pdf', { type: 'application/pdf' })
+    fireEvent.change(screen.getByLabelText('chat.attachFiles', { selector: 'input' }), { target: { files: [file] } })
+    expect(attach).toHaveBeenCalledWith(file)
+    fireEvent.change(getTextarea(), { target: { value: 'Extrae las preguntas' } })
+    // Sending while processing queues the message until the file is ready.
+    fireEvent.click(screen.getByRole('button', { name: 'chat.sendMessage' }))
+    expect(await screen.findByText('chat.sendWhenReady')).toBeInTheDocument()
+    await waitFor(() => expect(onSendMessage).toHaveBeenCalledWith('Extrae las preguntas\n\n@[Parcial.pdf](source:pdf)', undefined, [], true), { timeout: 4000 })
+  })
+
+  it('removes an attached document from the notebook when detached', async () => {
+    vi.mocked(sourcesApi.status).mockResolvedValue({ status: 'completed', message: '' })
+    const detach = vi.fn()
+    render(<ChatPanel messages={[]} isStreaming={false} contextIndicators={null} onSendMessage={vi.fn()}
+      documents={{ attach: vi.fn().mockResolvedValue({ id: 'source:pdf' }), detach }} />)
+    fireEvent.change(screen.getByLabelText('chat.attachFiles', { selector: 'input' }), { target: { files: [new File(['x'], 'a.pdf', { type: 'application/pdf' })] } })
+    expect(await screen.findByText('chat.document_ready')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'chat.removeFile' }))
+    expect(detach).toHaveBeenCalledWith('source:pdf')
+    expect(screen.queryByText('a.pdf')).not.toBeInTheDocument()
   })
 
   it('shows sent mentions as chips', () => {

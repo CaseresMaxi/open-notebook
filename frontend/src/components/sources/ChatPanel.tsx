@@ -10,7 +10,7 @@ import { ChatCodeRunner, RUNNABLE_LANGUAGES, type CodeNotebook } from '@/compone
 import { CodeBlockExtrasContext, type CodeBlockExtras } from '@/components/ui/markdown-renderer'
 import { Drawer, DrawerContent, DrawerTrigger } from '@/components/arc/drawer/drawer'
 import { useDevelopmentTools } from '@/lib/hooks/use-development-tools'
-import { Bot, User, Send, Loader2, Clock, ImagePlus, FileText, StickyNote } from 'lucide-react'
+import { Bot, User, Send, Loader2, Clock, ImagePlus, Paperclip, FileText, StickyNote, X, AlertCircle } from 'lucide-react'
 import {
   SourceChatMessage,
   SourceChatContextIndicator,
@@ -29,9 +29,22 @@ import { ChatResponseContent } from './ChatResponseContent'
 import { replaceArcBlocksWithMarkdown } from '@/lib/utils/arc-blocks'
 import { readChatImages, CHAT_IMAGE_TYPES } from '@/lib/utils/chat-images'
 import { activeMention, encodeMentions, filterMentionables, mentionLabel, splitMentions, type Mentionable } from '@/lib/utils/chat-mentions'
+import { documentPending, isChatImage, waitForSource, withDocumentMentions, type ChatDocument } from '@/lib/utils/chat-attachments'
+import { getApiErrorMessage } from '@/lib/utils/error-handler'
 import { ChatSkeleton } from '@/components/common/LoadingSkeletons'
 
 type SendChatMessage = (message: string, modelOverride?: string, images?: ChatImage[], visualTools?: boolean, options?: { hidden?: boolean }) => void | boolean | Promise<void | boolean>
+const DOCUMENT_STATUS = {
+  uploading: 'chat.document_uploading',
+  processing: 'chat.document_processing',
+  ready: 'chat.document_ready',
+  failed: 'chat.document_failed',
+} as const
+// Turns a file attached in the composer into a notebook source; detaching removes it again.
+export type ChatDocumentHandlers = {
+  attach: (file: File) => Promise<{ id: string }>
+  detach: (id: string) => void | Promise<void>
+}
 
 interface NotebookContextStats {
   sourcesInsights: number
@@ -70,6 +83,7 @@ interface ChatPanelProps {
   composerTop?: ReactNode
   // Sources and notes the composer can @mention
   mentionables?: Mentionable[]
+  documents?: ChatDocumentHandlers
   // Text to place in the composer once (e.g. a question about a notebook cell)
   draft?: { text: string; at: number } | null
   onDraftUsed?: () => void
@@ -97,6 +111,7 @@ export function ChatPanel({
   notebookId,
   composerTop,
   mentionables,
+  documents,
   draft,
   onDraftUsed,
   codeNotebook
@@ -251,6 +266,7 @@ export function ChatPanel({
           draft={draft}
           onDraftUsed={onDraftUsed}
           mentionables={mentionables}
+          documentHandlers={documents}
         />
       </CardContent>
     </Card>
@@ -270,6 +286,7 @@ interface ChatComposerProps {
   draft?: { text: string; at: number } | null
   onDraftUsed?: () => void
   mentionables?: Mentionable[]
+  documentHandlers?: ChatDocumentHandlers
 }
 
 function ChatComposer({
@@ -280,7 +297,8 @@ function ChatComposer({
   top,
   draft,
   onDraftUsed,
-  mentionables
+  mentionables,
+  documentHandlers
 }: ChatComposerProps) {
   const { t } = useTranslation()
   const developerTools = useDevelopmentTools()
@@ -294,6 +312,12 @@ function ChatComposer({
   const [mentions, setMentions] = useState<Mentionable[]>([])
   const [mentionQuery, setMentionQuery] = useState<{ query: string; start: number } | null>(null)
   const [mentionIndex, setMentionIndex] = useState(0)
+  const [documents, setDocuments] = useState<ChatDocument[]>([])
+  // Sending while a document is still processing queues the message until it is ready.
+  const [queued, setQueued] = useState(false)
+  const documentsPending = documents.some(documentPending)
+  const abortRef = useRef<AbortController | null>(null)
+  useEffect(() => () => abortRef.current?.abort(), [])
   const mentionListId = useId()
   const mentionOptions = mentionQuery && mentionables?.length ? filterMentionables(mentionables, mentionQuery.query) : []
   const mentionOpen = mentionOptions.length > 0
@@ -311,7 +335,7 @@ function ChatComposer({
     return () => observer.disconnect()
   }, [])
   const readingRef = useRef(false)
-  const busy = isStreaming || readingImages || submitting
+  const busy = isStreaming || readingImages || submitting || queued
   useEffect(() => {
     if (!draft) return
     setInput(previous => (previous.trim() ? `${previous.trimEnd()}\n${draft.text}` : draft.text))
@@ -339,6 +363,41 @@ function ChatComposer({
     }
   }
 
+  const updateDocument = (key: string, change: Partial<ChatDocument>) =>
+    setDocuments(previous => previous.map(document => (document.key === key ? { ...document, ...change } : document)))
+
+  const attachDocument = async (file: File) => {
+    if (!documentHandlers) return
+    abortRef.current ??= new AbortController()
+    const signal = abortRef.current.signal
+    const key = `${Date.now()}-${Math.random().toString(36).slice(2)}`
+    setDocuments(previous => [...previous, { key, name: file.name, status: 'uploading' }])
+    try {
+      const { id } = await documentHandlers.attach(file)
+      updateDocument(key, { sourceId: id, status: 'processing' })
+      await waitForSource(id, { signal })
+      updateDocument(key, { status: 'ready' })
+    } catch (error) {
+      if (signal.aborted) return
+      updateDocument(key, { status: 'failed' })
+      const message = error instanceof Error && error.message.startsWith('chat.') ? t(error.message) : getApiErrorMessage(error, code => t(code), t('chat.documentFailed'))
+      toast.error(`${file.name}: ${message}`)
+    }
+  }
+
+  const removeDocument = (document: ChatDocument) => {
+    setDocuments(previous => previous.filter(item => item.key !== document.key))
+    // The file was uploaded only for this message; unsent, it leaves the notebook too.
+    if (document.sourceId) void Promise.resolve(documentHandlers?.detach(document.sourceId)).catch(() => undefined)
+  }
+
+  const addFiles = (files: File[]) => {
+    if (busy || !files.length) return
+    const images = documentHandlers ? files.filter(isChatImage) : files
+    if (images.length) void addImages(images)
+    if (documentHandlers) for (const file of files.filter(file => !isChatImage(file))) void attachDocument(file)
+  }
+
   const updateMention = (field: HTMLTextAreaElement) => {
     setMentionQuery(mentionables?.length ? activeMention(field.value, field.selectionStart ?? field.value.length) : null)
     setMentionIndex(0)
@@ -357,17 +416,27 @@ function ChatComposer({
     requestAnimationFrame(() => { field.focus(); field.setSelectionRange(position, position) })
   }
 
+  const readyDocuments = documents.filter(document => document.status === 'ready')
+  const canSend = !!input.trim() || images.length > 0 || documents.some(document => document.status !== 'failed')
+
   const handleSend = () => {
-    if ((!input.trim() && !images.length) || busy || readingRef.current) return
+    if (!canSend || busy || readingRef.current) return
+    if (documentsPending) {
+      setQueued(true)
+      return
+    }
+    if (!input.trim() && !images.length && !readyDocuments.length) return
     const clearDraft = (success: void | boolean) => {
       if (success !== false) {
         setInput('')
         setImages([])
+        setDocuments([])
         setMentions([])
         setMentionQuery(null)
       }
     }
-    const result = onSendMessage(encodeMentions(input.trim(), mentions), modelOverride, images, visualTools)
+    const message = withDocumentMentions(encodeMentions(input.trim(), mentions), readyDocuments)
+    const result = onSendMessage(message, modelOverride, images, visualTools)
     if (result instanceof Promise) {
       setSubmitting(true)
       result.then(clearDraft).catch(() => {
@@ -377,6 +446,15 @@ function ChatComposer({
       clearDraft(result)
     }
   }
+
+  const sendRef = useRef(handleSend)
+  sendRef.current = handleSend
+  useEffect(() => {
+    if (!queued || documentsPending) return
+    setQueued(false)
+    // The queued send runs with the documents' final state.
+    requestAnimationFrame(() => sendRef.current())
+  }, [queued, documentsPending])
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (mentionOpen) {
@@ -414,7 +492,7 @@ function ChatComposer({
       onDragOver={event => event.preventDefault()}
       onDrop={event => {
         event.preventDefault()
-        void addImages(Array.from(event.dataTransfer.files))
+        addFiles(Array.from(event.dataTransfer.files))
       }}>
       {top}
       {developerTools && <Drawer open={optionsOpen} onOpenChange={setOptionsOpen}>
@@ -448,17 +526,29 @@ function ChatComposer({
       </ul>}
       {images.length > 0 && <ChatImages images={images} disabled={busy}
         onRemove={index => setImages(previous => previous.filter((_, position) => position !== index))} />}
-      <input ref={fileInputRef} type="file" accept={CHAT_IMAGE_TYPES.join(',')} multiple
-        aria-label={t('chat.attachImages')} className="hidden" disabled={busy}
+      {documents.length > 0 && <ul className="chat-documents" aria-label={t('chat.attachedFiles')}>
+        {documents.map(document => <li key={document.key} className="chat-document" data-status={document.status}>
+          {documentPending(document) ? <Loader2 className="h-4 w-4 animate-spin flex-shrink-0" aria-hidden="true" />
+            : document.status === 'failed' ? <AlertCircle className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
+            : <FileText className="h-4 w-4 flex-shrink-0" aria-hidden="true" />}
+          <span className="chat-document-name" title={document.name}>{document.name}</span>
+          <span className="chat-document-status">{t(DOCUMENT_STATUS[document.status])}</span>
+          <button type="button" className="chat-document-remove" aria-label={t('chat.removeFile', { name: document.name })}
+            disabled={queued} onClick={() => removeDocument(document)}><X className="h-3 w-3" aria-hidden="true" /></button>
+        </li>)}
+      </ul>}
+      {queued && <p className="text-xs text-muted-foreground" role="status">{t('chat.sendWhenReady')}</p>}
+      <input ref={fileInputRef} type="file" accept={documentHandlers ? undefined : CHAT_IMAGE_TYPES.join(',')} multiple
+        aria-label={t(documentHandlers ? 'chat.attachFiles' : 'chat.attachImages')} className="hidden" disabled={busy}
         onChange={event => {
-          void addImages(Array.from(event.target.files || []))
+          addFiles(Array.from(event.target.files || []))
           event.target.value = ''
         }} />
       <LiquidSurface className="chat-composer-glass" radius={24}><div className="chat-composer-controls flex gap-2 items-end min-w-0">
         <Button type="button" variant="outline" size="icon" className="h-[40px] w-[40px] flex-shrink-0"
-          aria-label={t('chat.attachImages')} title={t('chat.attachImages')} disabled={busy}
+          aria-label={t(documentHandlers ? 'chat.attachFiles' : 'chat.attachImages')} title={t(documentHandlers ? 'chat.attachFilesHint' : 'chat.attachImages')} disabled={busy}
           onClick={() => fileInputRef.current?.click()}>
-          {readingImages ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImagePlus className="h-4 w-4" />}
+          {readingImages ? <Loader2 className="h-4 w-4 animate-spin" /> : documentHandlers ? <Paperclip className="h-4 w-4" /> : <ImagePlus className="h-4 w-4" />}
         </Button>
         <Textarea
           id={chatInputId}
@@ -479,7 +569,7 @@ function ChatComposer({
             const files = Array.from(event.clipboardData.files)
             if (files.length) {
               event.preventDefault()
-              void addImages(files)
+              addFiles(files)
             }
           }}
           placeholder={t(mentionables?.length ? 'chat.messagePlaceholderMentions' : 'chat.messagePlaceholder')}
@@ -490,7 +580,7 @@ function ChatComposer({
         />
         <Button
           onClick={handleSend}
-          disabled={(!input.trim() && !images.length) || busy}
+          disabled={!canSend || busy}
           aria-label={t('chat.sendMessage')}
           size="icon"
           className="h-[40px] w-[40px] flex-shrink-0"

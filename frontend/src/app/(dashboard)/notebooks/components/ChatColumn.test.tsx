@@ -11,6 +11,7 @@ import { fireEvent } from '@testing-library/react'
 // Mock the hooks
 vi.mock('@/lib/hooks/use-notes')
 vi.mock('@/lib/hooks/use-notebook-chat')
+vi.mock('@tanstack/react-query', async importOriginal => ({ ...await importOriginal<typeof import('@tanstack/react-query')>(), useQueryClient: () => ({ invalidateQueries: vi.fn() }) }))
 vi.mock('@/components/sources/ChatPanel', () => ({
   ChatPanel: ({ composerTop }: { composerTop?: React.ReactNode }) => <div data-testid="chat-panel">{composerTop}</div>
 }))

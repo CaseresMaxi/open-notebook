@@ -33,5 +33,8 @@ def mention_instructions(text: str) -> str:
         "as @[Title](id):\n"
         f"{listed}\n"
         'Their full content is in the CONTEXT. Treat the reference as "this document": base '
-        "the answer on them first, cite them by id, and say so if they do not cover the question."
+        "the answer on them first, cite them by id, and say so if they do not cover the question. "
+        "When asked to take questions or exercises from them (for example to build a practice "
+        "test), reuse the document's own items faithfully, keeping their wording and options, "
+        "and only add new ones if the student asks for more."
     )

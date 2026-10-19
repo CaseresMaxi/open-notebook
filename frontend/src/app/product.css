@@ -835,6 +835,16 @@
 .chat-mention-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--text-sm); color: var(--foreground); }
 .chat-mention-kind { flex: none; font-size: var(--text-xs); }
 .chat-mention-chip { display: inline-flex; align-items: center; gap: 4px; margin: 0 1px; padding: 0 8px; border-radius: 999px; background: color-mix(in oklab, var(--teal, var(--foreground)) 14%, transparent); font-weight: 500; white-space: nowrap; vertical-align: baseline; }
+/* Files attached in the composer: uploaded as notebook sources, mentioned once processed. */
+.chat-documents { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.chat-document { display: inline-flex; align-items: center; gap: 8px; max-width: 100%; min-width: 0; min-height: 36px; padding-left: 12px; border-radius: 999px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--nn-edge); color: var(--muted-foreground); font-size: var(--text-sm); }
+.chat-document[data-status="ready"] { color: var(--teal); }
+.chat-document[data-status="failed"] { color: var(--destructive); box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--destructive) 40%, transparent); }
+.chat-document-name { max-width: min(280px, 50vw); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--foreground); }
+.chat-document-status { flex: none; font-size: var(--text-xs); }
+.chat-document-remove { display: inline-grid; place-items: center; width: 36px; height: 36px; border-radius: 999px; color: var(--muted-foreground); }
+.chat-document-remove:hover { color: var(--foreground); }
+.chat-document-remove:focus-visible { outline: 2px solid var(--ring); outline-offset: 1px; }
 .chat-focus-clear { min-height: 36px; margin-left: auto; padding-inline: 10px; font-size: var(--text-xs); color: var(--muted-foreground); }
 .chat-focus-hint { flex-basis: 100%; margin: 0; padding-inline: 4px; font-size: var(--text-xs); color: var(--muted-foreground); }
 @media (max-width: 640px) {

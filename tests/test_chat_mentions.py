@@ -23,6 +23,7 @@ def test_model_is_told_which_documents_were_referenced():
     text = mention_instructions(MESSAGE)
     assert "[source:abc123] Resumen.pdf" in text
     assert "[note:n_1] Mis apuntes" in text
+    assert "reuse the document's own items faithfully" in text
     assert mention_instructions("sin menciones") == ""
 
 
