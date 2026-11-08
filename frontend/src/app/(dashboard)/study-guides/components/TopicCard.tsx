@@ -7,13 +7,15 @@ import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { useTranslation } from '@/lib/hooks/use-translation'
 import { cn } from '@/lib/utils'
-import type { StudyTopic, TopicStats } from '@/lib/types/study-guides'
-import { calibration } from '@/lib/utils/study-guide'
-import { QuestionList } from './ActivityMaterial'
+import type { StudyGuide, StudyTopic, TopicStats } from '@/lib/types/study-guides'
+import { calibration, responseKeys } from '@/lib/utils/study-guide'
+import { AnsweredQuestions, ElaborationQuestions, Section, SourceLinks } from './ActivityMaterial'
+import { AnswerBox } from './AnswerBox'
 import { ConfidenceRating } from './SessionView'
 import { CALIBRATION_LABELS, DIFFICULTY_LABELS } from '@/lib/utils/study-guide-labels'
 
 interface TopicCardProps {
+  guide: StudyGuide
   topic: StudyTopic
   index: number
   stats?: TopicStats
@@ -40,6 +42,7 @@ function List({ title, items }: { title: string; items: string[] }) {
 }
 
 export function TopicCard({
+  guide,
   topic,
   index,
   stats,
@@ -87,27 +90,42 @@ export function TopicCard({
               {t('studyGuides.requires', { topics: prerequisites.map((p) => p.title).join(', ') })}
             </p>
           )}
+          <SourceLinks topic={topic} sourceTitles={sourceTitles} />
           <List title={t('studyGuides.keyIdeas')} items={topic.key_ideas} />
-          <List title={t('studyGuides.elaborationQuestions')} items={topic.elaboration_questions} />
-          {topic.self_explanation_prompt && (
-            <List title={t('studyGuides.selfExplanation')} items={[topic.self_explanation_prompt]} />
+          {topic.elaboration_questions.length > 0 && (
+            <Section title={t('studyGuides.elaborationQuestions')}>
+              <ElaborationQuestions guide={guide} topic={topic} context="topic" />
+            </Section>
           )}
+          <Section title={t('studyGuides.selfExplanation')}>
+            {topic.self_explanation_prompt && <p className="text-sm">{topic.self_explanation_prompt}</p>}
+            <AnswerBox
+              guide={guide}
+              responseKey={responseKeys.selfExplain(topic.id)}
+              context="topic"
+              reference={topic.key_ideas.join('\n')}
+            />
+          </Section>
           <List title={t('studyGuides.examples')} items={topic.concrete_examples} />
-          {topic.dual_coding_task && <List title={t('studyGuides.dualCoding')} items={[topic.dual_coding_task]} />}
+          <Section title={t('studyGuides.ownExample')}>
+            <AnswerBox guide={guide} responseKey={responseKeys.example(topic.id)} context="topic" />
+          </Section>
+          {topic.dual_coding_task && (
+            <Section title={t('studyGuides.dualCoding')}>
+              <p className="text-sm">{topic.dual_coding_task}</p>
+              <p className="text-xs text-muted-foreground">{t('studyGuides.dualCodingHint')}</p>
+              <AnswerBox guide={guide} responseKey={responseKeys.dualCoding(topic.id)} context="topic" />
+            </Section>
+          )}
           <List title={t('studyGuides.misconceptions')} items={topic.misconceptions} />
           {topic.practice_questions.length > 0 && (
-            <section className="space-y-1.5">
-              <h4 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                {t('studyGuides.practiceQuestions')}
-              </h4>
-              <QuestionList questions={topic.practice_questions} />
-            </section>
-          )}
-          {topic.source_ids.length > 0 && (
-            <List
-              title={t('studyGuides.sourcesForTopic')}
-              items={topic.source_ids.map((id) => sourceTitles[id] ?? id)}
-            />
+            <Section title={t('studyGuides.practiceQuestions')}>
+              <AnsweredQuestions
+                guide={guide}
+                context="topic"
+                questions={topic.practice_questions.map((q, index) => ({ ...q, topicId: topic.id, index }))}
+              />
+            </Section>
           )}
           {stats && stats.cards > 0 && (
             <section className="space-y-1.5">

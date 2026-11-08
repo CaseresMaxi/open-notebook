@@ -52,6 +52,15 @@ Rereading, highlighting and summarizing are deliberately left out: they were rat
 - A mock exam closes the plan (the day before the exam, which is never a study day) and another one runs every week.
 - If the time is too short for all topics, the guide warns you and some sessions run longer.
 
+## Your Answers Stay in the App
+
+Every question of the guide has its own answer box: pretest and practice questions, why/how questions, the self-explanation, free recall, your own example and the visual (attach a photo of your drawing or describe it). Flashcards accept an optional typed answer before you reveal the back.
+
+- **Nothing is lost:** an answer you are typing is kept as a draft in the browser until you save it; saved answers are stored in the guide, and every attempt stays in its history (the pretest attempt, later reviews, flashcard answers), so you can see how you improved.
+- **Check yourself:** for questions with a reference answer, saving reveals it and asks whether you were right, partly right or wrong.
+- **AI analysis:** open answers (why/how, self-explanation, free recall, your own example, the visual) are analyzed by the AI right after saving, against the topic's key ideas: you get a score, a grade and feedback on what was right, missing or wrong, stored with the answer. Short answers and flashcards are analyzed only when you press **Analyze with AI**.
+- You can delete an answer from its history.
+
 ## Flashcards
 
 Cards appear once you have studied their topic (or its study day has passed). After revealing the answer, rate your recall:
@@ -75,4 +84,4 @@ After a session you rate how well you could explain each topic without notes (1-
 
 ## API
 
-Everything is available through the REST API (`/api/study-guides`): create, list, get, delete, `POST /{id}/progress`, `PUT /{id}/topics/{topic_id}/confidence`, `POST /{id}/cards/{card_id}/review` and `POST /{id}/reschedule`. Pass the learner's local date as `today` so due cards and missed sessions follow their time zone.
+Everything is available through the REST API (`/api/study-guides`): create, list, get, delete, `POST /{id}/progress`, `PUT /{id}/topics/{topic_id}/confidence`, `POST /{id}/cards/{card_id}/review` and `POST /{id}/reschedule`, `POST /{id}/responses` (save an answer), `PATCH /{id}/responses/{response_id}` (self-check), `POST /{id}/responses/{response_id}/analyze` (AI feedback) and `DELETE /{id}/responses/{response_id}`. Pass the learner's local date as `today` so due cards and missed sessions follow their time zone.

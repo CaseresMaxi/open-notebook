@@ -4,9 +4,11 @@ import { QUERY_KEYS } from '@/lib/api/query-client'
 import { useToast } from '@/lib/hooks/use-toast'
 import { useTranslation } from '@/lib/hooks/use-translation'
 import { getApiErrorMessage } from '@/lib/utils/error-handler'
+import type { ExamAnswer } from '@/lib/types/exams'
 import {
   CardRating,
   CreateStudyGuideRequest,
+  ResponseGrade,
   RescheduleRequest,
   StudyGuide,
 } from '@/lib/types/study-guides'
@@ -97,9 +99,31 @@ export function useSetTopicConfidence(id: string) {
 }
 
 export function useReviewCard(id: string) {
-  return useGuideUpdate(id, ({ cardId, rating }: { cardId: string; rating: CardRating }) =>
-    studyGuidesApi.reviewCard(id, cardId, rating)
+  return useGuideUpdate(
+    id,
+    ({ cardId, rating, answer }: { cardId: string; rating: CardRating; answer?: string }) =>
+      studyGuidesApi.reviewCard(id, cardId, rating, answer)
   )
+}
+
+export function useSaveResponse(id: string) {
+  return useGuideUpdate(id, ({ key, answer, context }: { key: string; answer: ExamAnswer; context: string }) =>
+    studyGuidesApi.saveResponse(id, key, answer, context)
+  )
+}
+
+export function useGradeResponse(id: string) {
+  return useGuideUpdate(id, ({ responseId, grade }: { responseId: string; grade: ResponseGrade | null }) =>
+    studyGuidesApi.gradeResponse(id, responseId, grade)
+  )
+}
+
+export function useAnalyzeResponse(id: string) {
+  return useGuideUpdate(id, (responseId: string) => studyGuidesApi.analyzeResponse(id, responseId))
+}
+
+export function useDeleteResponse(id: string) {
+  return useGuideUpdate(id, (responseId: string) => studyGuidesApi.deleteResponse(id, responseId))
 }
 
 export function useRescheduleStudyGuide(id: string) {

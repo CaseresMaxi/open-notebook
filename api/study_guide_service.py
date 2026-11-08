@@ -1,11 +1,15 @@
 """Study guides: generate a personalized plan and track study progress."""
 
-from datetime import date, timedelta
-from typing import Dict, List, Optional
+import asyncio
+import re
+import uuid
+from datetime import date, datetime, timedelta, timezone
+from typing import Any, Dict, List, Optional
 
 from api.exam_service import build_study_material
+from open_notebook.domain.exam import ExamQuestion
 from open_notebook.domain.notebook import Notebook
-from open_notebook.domain.study_guide import StudyGuide
+from open_notebook.domain.study_guide import Grade, StudyGuide, StudyResponse
 from open_notebook.exceptions import InvalidInputError, NotFoundError
 from open_notebook.graphs.study_guide import generate_study_guide_content
 from open_notebook.study_planning import (
@@ -22,6 +26,17 @@ from open_notebook.study_planning import (
 )
 
 DEFAULT_DURATION_DAYS = 14
+# Answer history kept per question; older attempts beyond this are dropped.
+MAX_RESPONSES_PER_KEY = 100
+_TOPIC_KEY = re.compile(
+    r"^(t\d+):(practice|elaboration):(\d+)$|^(t\d+):(self_explain|dual_coding|recall|example)$"
+)
+RATING_GRADE: Dict[str, Grade] = {
+    "again": "incorrect",
+    "hard": "partial",
+    "good": "correct",
+    "easy": "correct",
+}
 MAX_DURATION_DAYS = 180
 MAX_FOCUS_TOPICS = 20
 
@@ -233,11 +248,231 @@ async def set_topic_confidence(
     await guide.save()
 
 
+def validate_response_key(guide: StudyGuide, key: str) -> None:
+    """Keys name a question of this guide:
+
+    - ``t1:practice:0`` / ``t1:elaboration:0``: a practice or why/how question
+    - ``t1:self_explain``, ``t1:dual_coding``, ``t1:recall``, ``t1:example``:
+      the topic's self-explanation, visual, free recall and own example
+    - ``card:c1``: a flashcard
+    """
+    if key.startswith("card:"):
+        if key[5:] not in {c.id for c in guide.get_cards()}:
+            raise NotFoundError("Flashcard not found in this study guide.")
+        return
+    match = _TOPIC_KEY.match(key)
+    if not match:
+        raise InvalidInputError(f"Unknown question key: {key}")
+    topics = {t.id: t for t in guide.get_topics()}
+    topic = topics.get(match.group(1) or match.group(4) or "")
+    if topic is None:
+        raise NotFoundError("Topic not found in this study guide.")
+    if match.group(2):
+        items = (
+            topic.practice_questions
+            if match.group(2) == "practice"
+            else topic.elaboration_questions
+        )
+        if int(match.group(3)) >= len(items):
+            raise NotFoundError("Question not found in this study guide.")
+
+
+def _append_response(guide: StudyGuide, key: str, response: StudyResponse) -> None:
+    history = [*guide.responses.get(key, []), response.model_dump()]
+    guide.responses = {**guide.responses, key: history[-MAX_RESPONSES_PER_KEY:]}
+
+
+async def save_response(
+    guide: StudyGuide,
+    key: str,
+    answer: Any,
+    context: str,
+    grade: Optional[Grade] = None,
+) -> StudyResponse:
+    """Store the learner's answer to a question; earlier answers are kept."""
+    from open_notebook.storage import retain_images
+    from open_notebook.utils.exam_answers import open_answer
+
+    validate_response_key(guide, key)
+    opened = open_answer(answer)
+    if not opened.text.strip() and not opened.images:
+        raise InvalidInputError("Write an answer or attach an image first.")
+    await asyncio.to_thread(retain_images, opened.images)
+    response = StudyResponse(
+        id=uuid.uuid4().hex[:12],
+        text=opened.text,
+        images=opened.images,
+        context=(context or "topic")[:200],
+        grade=grade,
+        created=datetime.now(timezone.utc).isoformat(timespec="seconds"),
+    )
+    _append_response(guide, key, response)
+    await guide.save()
+    return response
+
+
+def _find_response(guide: StudyGuide, response_id: str) -> tuple[str, int]:
+    for key, history in guide.responses.items():
+        for index, item in enumerate(history):
+            if item.get("id") == response_id:
+                return key, index
+    raise NotFoundError("Answer not found in this study guide.")
+
+
+async def grade_response(
+    guide: StudyGuide, response_id: str, grade: Optional[Grade]
+) -> None:
+    """The learner's own check after comparing with the reference answer."""
+    key, index = _find_response(guide, response_id)
+    history = list(guide.responses[key])
+    history[index] = {**history[index], "grade": grade, "graded_by": "self"}
+    guide.responses = {**guide.responses, key: history}
+    await guide.save()
+
+
+# Open answers the learner cannot check against a short key: analyzed by the
+# AI right after saving. Short answers (practice questions, flashcards) are
+# self-checked against the key and analyzed only on request.
+AUTO_ANALYZE_KINDS = {"elaboration", "self_explain", "recall", "example", "dual_coding"}
+
+
+def response_kind(key: str) -> str:
+    return "card" if key.startswith("card:") else key.split(":")[1]
+
+
+def question_for_key(guide: StudyGuide, key: str) -> ExamQuestion:
+    """The question, reference and rubric an answer is analyzed against."""
+    validate_response_key(guide, key)
+    if key.startswith("card:"):
+        card = next(c for c in guide.get_cards() if c.id == key[5:])
+        prompt, reference = card.front, card.back
+        rubric = "Short recall answer: accept equivalent wording; check the key fact."
+    else:
+        topic = next(t for t in guide.get_topics() if t.id == key.split(":")[0])
+        ideas = "\n".join(f"- {idea}" for idea in topic.key_ideas) or topic.summary
+        kind = response_kind(key)
+        if kind == "practice":
+            q = topic.practice_questions[int(key.split(":")[2])]
+            prompt, reference = q.question, q.answer
+            rubric = "Accept equivalent wording; check the key facts and reasoning."
+        elif kind == "elaboration":
+            prompt = topic.elaboration_questions[int(key.split(":")[2])]
+            reference = f"{topic.summary}\nKey ideas of the topic:\n{ideas}"
+            rubric = (
+                "A why/how question: a good answer explains causes or mechanisms and "
+                "connects ideas correctly. There is no model answer; judge correctness "
+                "and depth against the key ideas and point out wrong or missing links."
+            )
+        elif kind == "self_explain":
+            prompt = topic.self_explanation_prompt or f"Explain {topic.title}."
+            reference = ideas
+            rubric = (
+                "Self-explanation without notes: credit each key idea explained "
+                "correctly in the learner's own words. List the key ideas missing."
+            )
+        elif kind == "recall":
+            prompt = f"Write from memory everything you remember about: {topic.title}"
+            reference = ideas
+            rubric = (
+                "Free recall: score the share of key ideas recalled correctly; flag "
+                "errors and name the key ideas that were not recalled."
+            )
+        elif kind == "example":
+            prompt = f"Give your own concrete example of: {topic.title}"
+            reference = "Examples from the material:\n" + "\n".join(
+                f"- {e}" for e in topic.concrete_examples
+            )
+            reference += f"\nKey ideas:\n{ideas}"
+            rubric = (
+                "The example must be a correct, specific application of the key ideas. "
+                "It may differ from the material's examples; do not reward copying them."
+            )
+        else:
+            prompt = topic.dual_coding_task or f"Draw a diagram of {topic.title}."
+            reference = ideas
+            rubric = (
+                "A visual (diagram, map, timeline, table), usually an image: check it "
+                "contains the parts the task asks for and that relations are correct."
+            )
+    return ExamQuestion(
+        id=key,
+        type="open",
+        prompt=prompt,
+        points=1.0,
+        reference_answer=reference,
+        rubric=rubric,
+    )
+
+
+def grade_from_score(score: float) -> Grade:
+    return "correct" if score >= 0.85 else "partial" if score >= 0.4 else "incorrect"
+
+
+async def analyze_response(guide: StudyGuide, response_id: str) -> Dict[str, Any]:
+    """Ask the model for feedback on a stored answer and keep it with it."""
+    from open_notebook.graphs.exam import grade_with_ai
+    from open_notebook.utils.exam_answers import open_answer
+
+    key, index = _find_response(guide, response_id)
+    question = question_for_key(guide, key)
+    stored = guide.responses[key][index]
+    answer = open_answer(
+        {"text": stored.get("text", ""), "images": stored.get("images", [])}
+    )
+    score, feedback = await grade_with_ai(
+        question,
+        answer.text,
+        language=guide.language,
+        model_id=guide.model_id,
+        answer_images=answer.images or None,
+    )
+    history = list(guide.responses[key])
+    history[index] = {
+        **history[index],
+        "score": round(score, 2),
+        "feedback": feedback,
+        "grade": grade_from_score(score),
+        "graded_by": "ai",
+    }
+    guide.responses = {**guide.responses, key: history}
+    await guide.save()
+    return history[index]
+
+
+async def delete_response(guide: StudyGuide, response_id: str) -> None:
+    key, index = _find_response(guide, response_id)
+    history = [r for i, r in enumerate(guide.responses[key]) if i != index]
+    responses = dict(guide.responses)
+    if history:
+        responses[key] = history
+    else:
+        responses.pop(key)
+    guide.responses = responses
+    await guide.save()
+
+
 async def review_flashcard(
-    guide: StudyGuide, card_id: str, rating: Rating, today: date
+    guide: StudyGuide,
+    card_id: str,
+    rating: Rating,
+    today: date,
+    answer: Optional[str] = None,
 ) -> CardState:
     if card_id not in {c.id for c in guide.get_cards()}:
         raise NotFoundError("Flashcard not found in this study guide.")
+    if answer and answer.strip():
+        # Kept like any other answer; graded by the learner's own rating.
+        _append_response(
+            guide,
+            f"card:{card_id}",
+            StudyResponse(
+                id=uuid.uuid4().hex[:12],
+                text=answer.strip()[:50_000],
+                context="flashcards",
+                grade=RATING_GRADE[rating],
+                created=datetime.now(timezone.utc).isoformat(timespec="seconds"),
+            ),
+        )
     current = CardState(**guide.card_states.get(card_id, {}))
     exam = _parse_date(guide.exam_date, "exam date")
     updated = review_card(current, rating, today, exam)

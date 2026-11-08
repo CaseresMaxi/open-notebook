@@ -2,10 +2,12 @@ import apiClient from './client'
 import {
   CardRating,
   CreateStudyGuideRequest,
+  ResponseGrade,
   RescheduleRequest,
   StudyGuide,
 } from '@/lib/types/study-guides'
 import { localToday } from '@/lib/utils/study-guide'
+import type { ExamAnswer } from '@/lib/types/exams'
 
 const path = (id: string) => `/study-guides/${encodeURIComponent(id)}`
 
@@ -53,10 +55,45 @@ export const studyGuidesApi = {
     return response.data
   },
 
-  reviewCard: async (id: string, cardId: string, rating: CardRating) => {
+  reviewCard: async (id: string, cardId: string, rating: CardRating, answer?: string) => {
     const response = await apiClient.post<StudyGuide>(
       `${path(id)}/cards/${encodeURIComponent(cardId)}/review`,
-      { rating, today: localToday() }
+      { rating, today: localToday(), answer: answer?.trim() || undefined }
+    )
+    return response.data
+  },
+
+  saveResponse: async (id: string, key: string, answer: ExamAnswer, context: string) => {
+    const response = await apiClient.post<StudyGuide>(
+      `${path(id)}/responses`,
+      { key, answer, context },
+      { params: { today: localToday() } }
+    )
+    return response.data
+  },
+
+  gradeResponse: async (id: string, responseId: string, grade: ResponseGrade | null) => {
+    const response = await apiClient.patch<StudyGuide>(
+      `${path(id)}/responses/${encodeURIComponent(responseId)}`,
+      { grade },
+      { params: { today: localToday() } }
+    )
+    return response.data
+  },
+
+  analyzeResponse: async (id: string, responseId: string) => {
+    const response = await apiClient.post<StudyGuide>(
+      `${path(id)}/responses/${encodeURIComponent(responseId)}/analyze`,
+      undefined,
+      { params: { today: localToday() } }
+    )
+    return response.data
+  },
+
+  deleteResponse: async (id: string, responseId: string) => {
+    const response = await apiClient.delete<StudyGuide>(
+      `${path(id)}/responses/${encodeURIComponent(responseId)}`,
+      { params: { today: localToday() } }
     )
     return response.data
   },

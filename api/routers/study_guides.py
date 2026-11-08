@@ -61,6 +61,26 @@ class TopicConfidenceRequest(BaseModel):
 class CardReviewRequest(BaseModel):
     rating: Literal["again", "hard", "good", "easy"]
     today: Optional[str] = Field(None, description="Learner's local date, YYYY-MM-DD")
+    answer: Optional[str] = Field(
+        None, max_length=50_000, description="What the learner typed before revealing"
+    )
+
+
+class ResponseCreateRequest(BaseModel):
+    key: str = Field(
+        ...,
+        max_length=100,
+        description="Question key: t1:practice:0, t1:elaboration:0, t1:self_explain, t1:dual_coding, t1:recall, t1:example or card:c1",
+    )
+    answer: Any = Field(
+        ..., description="Text, or {text, images} with up to four images"
+    )
+    context: str = Field("topic", max_length=200, description="Activity id or 'topic'")
+    grade: Optional[Literal["correct", "partial", "incorrect"]] = None
+
+
+class ResponseGradeRequest(BaseModel):
+    grade: Optional[Literal["correct", "partial", "incorrect"]] = None
 
 
 class RescheduleRequest(BaseModel):
@@ -113,6 +133,8 @@ class StudyGuideResponse(BaseModel):
     completed_activities: Optional[List[str]] = None
     topic_confidence: Optional[Dict[str, int]] = None
     topic_stats: Optional[Dict[str, Dict[str, Optional[float]]]] = None
+    responses: Optional[Dict[str, List[Dict[str, Any]]]] = None
+    response_count: int = 0
     created: str
     updated: str
 
@@ -165,6 +187,7 @@ def _response(
         completed_count=len(completed),
         due_card_count=len(due),
         next_session_date=min(upcoming) if upcoming else None,
+        response_count=sum(len(h) for h in guide.responses.values()),
         created=str(guide.created),
         updated=str(guide.updated),
     )
@@ -190,6 +213,7 @@ def _response(
         response.completed_activities = completed
         response.topic_confidence = guide.topic_confidence
         response.topic_stats = service.topic_stats(guide)
+        response.responses = guide.responses
     return response
 
 
@@ -258,8 +282,63 @@ async def review_flashcard(guide_id: str, card_id: str, request: CardReviewReque
     """Grade recall of a flashcard; schedules its next review."""
     guide = await StudyGuide.get(guide_id)
     today = _today(request.today)
-    await service.review_flashcard(guide, card_id, request.rating, today)
+    await service.review_flashcard(
+        guide, card_id, request.rating, today, answer=request.answer
+    )
     return _response(guide, today, include_details=True)
+
+
+@router.post("/study-guides/{guide_id}/responses", response_model=StudyGuideResponse)
+async def save_study_response(
+    guide_id: str, request: ResponseCreateRequest, today: Optional[str] = Query(None)
+):
+    """Store an answer to a question of the guide; earlier answers are kept."""
+    guide = await StudyGuide.get(guide_id)
+    await service.save_response(
+        guide, request.key, request.answer, request.context, request.grade
+    )
+    return _response(guide, _today(today), include_details=True)
+
+
+@router.patch(
+    "/study-guides/{guide_id}/responses/{response_id}",
+    response_model=StudyGuideResponse,
+)
+async def grade_study_response(
+    guide_id: str,
+    response_id: str,
+    request: ResponseGradeRequest,
+    today: Optional[str] = Query(None),
+):
+    """Record the learner's own check of an answer against the reference."""
+    guide = await StudyGuide.get(guide_id)
+    await service.grade_response(guide, response_id, request.grade)
+    return _response(guide, _today(today), include_details=True)
+
+
+@router.post(
+    "/study-guides/{guide_id}/responses/{response_id}/analyze",
+    response_model=StudyGuideResponse,
+)
+async def analyze_study_response(
+    guide_id: str, response_id: str, today: Optional[str] = Query(None)
+):
+    """AI feedback on a stored answer, kept with it (score 0-1, grade, feedback)."""
+    guide = await StudyGuide.get(guide_id)
+    await service.analyze_response(guide, response_id)
+    return _response(guide, _today(today), include_details=True)
+
+
+@router.delete(
+    "/study-guides/{guide_id}/responses/{response_id}",
+    response_model=StudyGuideResponse,
+)
+async def delete_study_response(
+    guide_id: str, response_id: str, today: Optional[str] = Query(None)
+):
+    guide = await StudyGuide.get(guide_id)
+    await service.delete_response(guide, response_id)
+    return _response(guide, _today(today), include_details=True)
 
 
 @router.post("/study-guides/{guide_id}/reschedule", response_model=StudyGuideResponse)

@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field
 from open_notebook.database.repository import ensure_record_id, repo_query
 from open_notebook.domain.base import ObjectModel
 from open_notebook.exceptions import DatabaseOperationError
+from open_notebook.utils.chat_images import ChatImage
 
 StudyGoal = Literal["understand", "memorize", "exam", "apply"]
 StudyLevel = Literal["beginner", "intermediate", "advanced"]
@@ -45,6 +46,29 @@ class Flashcard(BaseModel):
     back: str
 
 
+Grade = Literal["correct", "partial", "incorrect"]
+
+
+class StudyResponse(BaseModel):
+    """One answer the learner wrote (or attached) for a question of the guide.
+
+    Answers are kept as a history per question: a pretest attempt, later
+    retrieval attempts and flashcard answers all stay, so progress is visible.
+    """
+
+    id: str
+    text: str = ""
+    images: List[ChatImage] = Field(default_factory=list)
+    # Where it was answered: an activity id, "topic" or "flashcards".
+    context: str = "topic"
+    grade: Optional[Grade] = None
+    # AI analysis of the answer (on request, or automatically for open answers).
+    feedback: Optional[str] = None
+    score: Optional[float] = None
+    graded_by: Optional[Literal["self", "ai"]] = None
+    created: str
+
+
 class StudyGuide(ObjectModel):
     table_name: ClassVar[str] = "study_guide"
     nullable_fields: ClassVar[set[str]] = {
@@ -79,6 +103,8 @@ class StudyGuide(ObjectModel):
     sessions: List[Dict[str, Any]] = Field(default_factory=list)
     completed_activities: List[str] = Field(default_factory=list)
     topic_confidence: Dict[str, int] = Field(default_factory=dict)
+    # Question key -> answer history (see `api.study_guide_service.response_keys`).
+    responses: Dict[str, List[Dict[str, Any]]] = Field(default_factory=dict)
     model_id: Optional[str] = None
 
     def _prepare_save_data(self) -> Dict[str, Any]:

@@ -106,6 +106,7 @@ export default function StudyGuidePage() {
   const sessionProps = {
     guide,
     topicsById,
+    sourceTitles,
     busy,
     onToggle: (activityId: string, done: boolean) => toggle.mutate({ activityId, done }),
     onConfidence: (topicId: string, value: number) => confidence.mutate({ topicId, confidence: value }),
@@ -280,6 +281,7 @@ export default function StudyGuidePage() {
                   key={topic.id}
                   topic={topic}
                   index={index}
+                  guide={guide}
                   stats={guide.topic_stats?.[topic.id]}
                   confidence={guide.topic_confidence?.[topic.id]}
                   prerequisites={topic.prerequisites.map((p) => topicsById[p]).filter(Boolean)}

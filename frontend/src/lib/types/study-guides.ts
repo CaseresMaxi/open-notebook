@@ -1,6 +1,22 @@
 export type StudyGoal = 'understand' | 'memorize' | 'exam' | 'apply'
 export type StudyLevel = 'beginner' | 'intermediate' | 'advanced'
+import type { ChatImage } from './api'
+
 export type CardRating = 'again' | 'hard' | 'good' | 'easy'
+export type ResponseGrade = 'correct' | 'partial' | 'incorrect'
+
+/** One stored answer of the learner to a question of the guide. */
+export interface StudyResponse {
+  id: string
+  text: string
+  images: ChatImage[]
+  context: string
+  grade?: ResponseGrade | null
+  feedback?: string | null
+  score?: number | null
+  graded_by?: 'self' | 'ai' | null
+  created: string
+}
 export type StudyActivityType =
   | 'pretest'
   | 'learn'
@@ -108,6 +124,8 @@ export interface StudyGuide {
   completed_activities?: string[] | null
   topic_confidence?: Record<string, number> | null
   topic_stats?: Record<string, TopicStats> | null
+  responses?: Record<string, StudyResponse[]> | null
+  response_count?: number
   created: string
   updated: string
 }

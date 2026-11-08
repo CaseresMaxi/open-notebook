@@ -4,6 +4,7 @@
  */
 import type {
   CardRating,
+  ResponseGrade,
   StudyActivityType,
   StudyGoal,
   StudyLevel,
@@ -173,4 +174,10 @@ export const ACTIVITY_STRATEGY: Record<StudyActivityType, StrategyKey> = {
   interleaved_practice: 'interleaving',
   flashcards: 'spacing',
   practice_exam: 'retrieval',
+}
+
+export const GRADE_LABELS: Record<ResponseGrade, string> = {
+  correct: 'studyGuides.grades.correct',
+  partial: 'studyGuides.grades.partial',
+  incorrect: 'studyGuides.grades.incorrect',
 }

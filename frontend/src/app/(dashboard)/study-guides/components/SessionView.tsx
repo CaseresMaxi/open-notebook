@@ -55,6 +55,7 @@ interface SessionViewProps {
   guide: StudyGuide
   session: StudySession
   topicsById: Record<string, StudyTopic>
+  sourceTitles: Record<string, string>
   busy: boolean
   onToggle: (activityId: string, done: boolean) => void
   onConfidence: (topicId: string, value: number) => void
@@ -67,6 +68,7 @@ export function SessionView({
   guide,
   session,
   topicsById,
+  sourceTitles,
   busy,
   onToggle,
   onConfidence,
@@ -142,9 +144,10 @@ export function SessionView({
               {expanded && (
                 <div id={panelId} className="border-t px-4 py-3">
                   <ActivityMaterial
+                    guide={guide}
                     activity={activity}
                     topics={topics}
-                    dueCardCount={guide.due_card_count}
+                    sourceTitles={sourceTitles}
                     onOpenFlashcards={onOpenFlashcards}
                     onPracticeExam={onPracticeExam}
                   />

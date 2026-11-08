@@ -50,3 +50,22 @@ describe('study guide utils', () => {
     expect(calibration(5, 0.3, 2)).toBeNull()
   })
 })
+
+describe('stored answers', () => {
+  it('builds question keys and analyzes only open answers automatically', async () => {
+    const { responseKeys, autoAnalyze } = await import('./study-guide')
+    expect(responseKeys.practice('t1', 2)).toBe('t1:practice:2')
+    expect(autoAnalyze(responseKeys.selfExplain('t1'))).toBe(true)
+    expect(autoAnalyze(responseKeys.recall('t2'))).toBe(true)
+    expect(autoAnalyze(responseKeys.practice('t1', 0))).toBe(false)
+    expect(autoAnalyze(responseKeys.card('c1'))).toBe(false)
+  })
+
+  it('keeps unsaved drafts until they are cleared', async () => {
+    const { loadAnswerDraft, saveAnswerDraft } = await import('./study-guide')
+    saveAnswerDraft('g1', 't1:recall', 'a1', 'half an answer')
+    expect(loadAnswerDraft('g1', 't1:recall', 'a1')).toBe('half an answer')
+    saveAnswerDraft('g1', 't1:recall', 'a1', { text: ' ', images: [] })
+    expect(loadAnswerDraft('g1', 't1:recall', 'a1')).toBeUndefined()
+  })
+})

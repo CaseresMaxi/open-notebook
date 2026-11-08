@@ -410,3 +410,89 @@ def test_review_endpoint_updates_card_and_returns_details():
     assert set(card["next_intervals"]) == {"again", "hard", "good", "easy"}
     assert body["topic_stats"]["t1"]["reviews"] == 1
     assert missing.status_code == 404
+
+
+def _guide_with_questions() -> StudyGuide:
+    guide = _guide()
+    guide.topics = [
+        {
+            "id": "t1",
+            "title": "One",
+            "practice_questions": [{"question": "Q?", "answer": "A"}],
+            "elaboration_questions": ["Why?"],
+        },
+        {"id": "t2", "title": "Two"},
+    ]
+    return guide
+
+
+@pytest.mark.asyncio
+async def test_responses_keep_every_attempt_per_question():
+    guide = _guide_with_questions()
+    with patch.object(StudyGuide, "save", new_callable=AsyncMock):
+        first = await service.save_response(guide, "t1:practice:0", "First try", "a1")
+        await service.save_response(
+            guide, "t1:practice:0", {"text": "Second try", "images": []}, "topic"
+        )
+        await service.save_response(guide, "t2:self_explain", "My explanation", "x")
+        await service.grade_response(guide, first.id, "partial")
+
+    history = guide.responses["t1:practice:0"]
+    assert [r["text"] for r in history] == ["First try", "Second try"]
+    assert history[0]["grade"] == "partial" and history[0]["context"] == "a1"
+    assert guide.responses["t2:self_explain"][0]["text"] == "My explanation"
+
+
+@pytest.mark.asyncio
+async def test_response_keys_must_name_a_question_of_the_guide():
+    guide = _guide_with_questions()
+    with patch.object(StudyGuide, "save", new_callable=AsyncMock):
+        for key, error in [
+            ("t1:practice:5", "not found"),
+            ("t9:recall", "not found"),
+            ("card:c9", "not found"),
+            ("t1:anything", "Unknown"),
+        ]:
+            with pytest.raises(Exception, match=error):
+                await service.save_response(guide, key, "text", "topic")
+        with pytest.raises(InvalidInputError):
+            await service.save_response(guide, "t1:recall", "   ", "topic")
+
+
+@pytest.mark.asyncio
+async def test_delete_response_and_flashcard_answers_are_stored():
+    guide = _guide_with_questions()
+    with patch.object(StudyGuide, "save", new_callable=AsyncMock):
+        saved = await service.save_response(guide, "t1:elaboration:0", "Because", "t")
+        await service.delete_response(guide, saved.id)
+        assert "t1:elaboration:0" not in guide.responses
+        await service.review_flashcard(guide, "c1", "again", MONDAY, answer="A guess")
+        await service.review_flashcard(guide, "c1", "good", MONDAY, answer=" ")
+    answers = guide.responses["card:c1"]
+    assert len(answers) == 1
+    assert answers[0]["text"] == "A guess" and answers[0]["grade"] == "incorrect"
+
+
+@pytest.mark.asyncio
+async def test_analyze_response_stores_ai_feedback_against_topic_reference():
+    guide = _guide_with_questions()
+    guide.topics[0]["key_ideas"] = ["Idea A", "Idea B"]
+    grade = AsyncMock(return_value=(0.5, "You missed idea B."))
+    with (
+        patch.object(StudyGuide, "save", new_callable=AsyncMock),
+        patch("open_notebook.graphs.exam.grade_with_ai", grade),
+    ):
+        saved = await service.save_response(guide, "t1:recall", "Idea A", "x")
+        result = await service.analyze_response(guide, saved.id)
+
+    assert grade.await_args is not None
+    question = grade.await_args.args[0]
+    assert "Idea B" in question.reference_answer and question.points == 1.0
+    assert result["feedback"] == "You missed idea B."
+    assert (result["grade"], result["graded_by"], result["score"]) == (
+        "partial",
+        "ai",
+        0.5,
+    )
+    assert service.response_kind("t1:recall") in service.AUTO_ANALYZE_KINDS
+    assert service.response_kind("card:c1") not in service.AUTO_ANALYZE_KINDS

@@ -4,6 +4,8 @@ import { useMemo, useState } from 'react'
 import { CheckCircle2, Layers, RotateCcw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
+import { Textarea } from '@/components/ui/textarea'
+import { responseKeys } from '@/lib/utils/study-guide'
 import { EmptyState } from '@/components/common/EmptyState'
 import { useReviewCard } from '@/lib/hooks/use-study-guides'
 import { useTranslation } from '@/lib/hooks/use-translation'
@@ -27,6 +29,7 @@ export function FlashcardReview({ guide }: { guide: StudyGuide }) {
   const [total, setTotal] = useState(0)
   const [revealed, setRevealed] = useState(false)
   const [reviewed, setReviewed] = useState(0)
+  const [typed, setTyped] = useState('')
 
   const start = (ids: string[]) => {
     setQueue(ids)
@@ -76,11 +79,12 @@ export function FlashcardReview({ guide }: { guide: StudyGuide }) {
 
   const rate = (rating: CardRating) => {
     review.mutate(
-      { cardId: card.id, rating },
+      { cardId: card.id, rating, answer: typed },
       {
         onSuccess: () => {
           setReviewed((n) => n + 1)
           setRevealed(false)
+          setTyped('')
           setQueue((q) => nextQueue(q ?? [], rating))
         },
       }
@@ -88,6 +92,7 @@ export function FlashcardReview({ guide }: { guide: StudyGuide }) {
   }
 
   const remaining = queue.length
+  const previous = guide.responses?.[responseKeys.card(card.id)]?.at(-1)
   return (
     <div className="mx-auto max-w-2xl space-y-4">
       <div className="flex items-center gap-3 text-sm text-muted-foreground">
@@ -97,10 +102,23 @@ export function FlashcardReview({ guide }: { guide: StudyGuide }) {
       <div className="rounded-2xl border bg-card p-6 space-y-4" aria-live="polite">
         <p className="text-xs uppercase tracking-wide text-muted-foreground">{topics[card.topic_id]?.title}</p>
         <p className="text-lg font-medium whitespace-pre-wrap">{card.front}</p>
+        <Textarea
+          rows={2}
+          value={typed}
+          readOnly={revealed}
+          aria-label={t('studyGuides.typeYourAnswer')}
+          placeholder={t('studyGuides.typeYourAnswer')}
+          onChange={(event) => setTyped(event.target.value)}
+        />
         {revealed ? (
           <p className="rounded-lg bg-teal-tint p-3 whitespace-pre-wrap">{card.back}</p>
         ) : (
           <p className="text-sm text-muted-foreground">{t('studyGuides.recallFirst')}</p>
+        )}
+        {previous && (
+          <p className="text-xs text-muted-foreground">
+            {t('studyGuides.lastCardAnswer', { answer: previous.text })}
+          </p>
         )}
       </div>
       {revealed ? (

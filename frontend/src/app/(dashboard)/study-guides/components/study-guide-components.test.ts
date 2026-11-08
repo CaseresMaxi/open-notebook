@@ -30,5 +30,7 @@ describe('study guide review helpers', () => {
   it('alternates questions between topics', () => {
     const mixed = interleave([topic('a', ['a1', 'a2', 'a3']), topic('b', ['b1'])])
     expect(mixed.map((q) => q.question)).toEqual(['a1', 'b1', 'a2', 'a3'])
+    // Each question keeps its topic and index, so its stored answers are found.
+    expect(mixed.map((q) => `${q.topicId}:${q.index}`)).toEqual(['a:0', 'b:0', 'a:1', 'a:2'])
   })
 })

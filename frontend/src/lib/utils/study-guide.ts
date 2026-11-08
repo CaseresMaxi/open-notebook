@@ -74,3 +74,48 @@ export function calibration(confidence: number | undefined, recallRate: number |
 }
 
 export const WEEKDAY_ORDER = [0, 1, 2, 3, 4, 5, 6] as const
+
+/** Keys of the questions whose answers are stored (mirror of the API). */
+export const responseKeys = {
+  practice: (topicId: string, index: number) => `${topicId}:practice:${index}`,
+  elaboration: (topicId: string, index: number) => `${topicId}:elaboration:${index}`,
+  selfExplain: (topicId: string) => `${topicId}:self_explain`,
+  dualCoding: (topicId: string) => `${topicId}:dual_coding`,
+  recall: (topicId: string) => `${topicId}:recall`,
+  example: (topicId: string) => `${topicId}:example`,
+  card: (cardId: string) => `card:${cardId}`,
+}
+
+/** Open answers without a short key are analyzed by the AI right after saving. */
+const AUTO_ANALYZE = new Set(['elaboration', 'self_explain', 'recall', 'example', 'dual_coding'])
+
+export function autoAnalyze(key: string): boolean {
+  return !key.startsWith('card:') && AUTO_ANALYZE.has(key.split(':')[1])
+}
+
+// Unsaved answers survive reloads and closing the tab.
+const draftKey = (guideId: string, key: string, context: string) => `study-answer:${guideId}:${key}:${context}`
+
+export function loadAnswerDraft<T>(guideId: string, key: string, context: string): T | undefined {
+  try {
+    const raw = localStorage.getItem(draftKey(guideId, key, context))
+    return raw ? (JSON.parse(raw) as T) : undefined
+  } catch {
+    return undefined
+  }
+}
+
+export function saveAnswerDraft(guideId: string, key: string, context: string, value: unknown): void {
+  try {
+    const empty =
+      value == null ||
+      (typeof value === 'string' && !value.trim()) ||
+      (typeof value === 'object' &&
+        !(value as { text?: string }).text?.trim() &&
+        !((value as { images?: unknown[] }).images?.length))
+    if (empty) localStorage.removeItem(draftKey(guideId, key, context))
+    else localStorage.setItem(draftKey(guideId, key, context), JSON.stringify(value))
+  } catch {
+    // Storage can be unavailable or full (large images); the draft is a convenience.
+  }
+}

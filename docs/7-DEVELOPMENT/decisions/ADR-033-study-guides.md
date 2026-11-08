@@ -23,6 +23,8 @@ A study guide is a `study_guide` record (migration 29) owned by a notebook. Gene
 
 Progress is stored on the record (completed activity IDs, card states, topic confidence). Rescheduling keeps completed past work, drops missed activities, rebuilds learned topics' history from completed activities and replans from the learner's local date (`today` is sent by the client). Mock exams reuse the existing practice-exam generator with instructions naming the guide's topics. Deleting a notebook deletes its guides.
 
+All study happens in the app: every question has an answer stored on the guide (`responses`, keyed by question: `t1:practice:0`, `t1:elaboration:0`, `t1:self_explain`, `t1:dual_coding`, `t1:recall`, `t1:example`, `card:c1`), as an append-only history per question with the activity it was answered in, text and images, a self-check grade and optional AI feedback. Unsaved drafts live in localStorage. AI analysis reuses the exam grader (`grade_with_ai`) with a question built from the guide: the reference answer for practice questions and flashcards, the topic's key ideas and examples with a strategy-specific rubric otherwise. Open answers are analyzed right after saving because they have no short key to self-check against; short answers are analyzed on request, to keep model calls proportional.
+
 Generation runs in the request, like practice exams, behind the frontend's long API timeout.
 
 ## Alternatives considered
