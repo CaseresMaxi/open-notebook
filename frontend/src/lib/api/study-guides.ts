@@ -90,6 +90,15 @@ export const studyGuidesApi = {
     return response.data
   },
 
+  generateDiagram: async (id: string, topicId: string, regenerate = false) => {
+    const response = await apiClient.post<StudyGuide>(
+      `${path(id)}/topics/${encodeURIComponent(topicId)}/diagram`,
+      undefined,
+      { params: { today: localToday(), regenerate } }
+    )
+    return response.data
+  },
+
   deleteResponse: async (id: string, responseId: string) => {
     const response = await apiClient.delete<StudyGuide>(
       `${path(id)}/responses/${encodeURIComponent(responseId)}`,

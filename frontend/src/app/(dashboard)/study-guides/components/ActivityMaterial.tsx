@@ -8,6 +8,7 @@ import type { PracticeQuestion, StudyActivity, StudyGuide, StudyTopic } from '@/
 import { responseKeys } from '@/lib/utils/study-guide'
 import { ACTIVITY_LABELS } from '@/lib/utils/study-guide-labels'
 import { AnswerBox } from './AnswerBox'
+import { DualCodingSection } from './DualCodingSection'
 
 export function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -174,13 +175,7 @@ export function ActivityMaterial({
           <Section title={t('studyGuides.ownExample')}>
             <AnswerBox guide={guide} responseKey={responseKeys.example(topic.id)} context={context} />
           </Section>
-          {topic.dual_coding_task && (
-            <Section title={t('studyGuides.dualCoding')}>
-              <p className="text-sm">{topic.dual_coding_task}</p>
-              <p className="text-xs text-muted-foreground">{t('studyGuides.dualCodingHint')}</p>
-              <AnswerBox guide={guide} responseKey={responseKeys.dualCoding(topic.id)} context={context} />
-            </Section>
-          )}
+          {topic.dual_coding_task && <DualCodingSection guide={guide} topic={topic} context={context} />}
           {topic.misconceptions.length > 0 && (
             <Section title={t('studyGuides.misconceptions')}>
               <Bullets items={topic.misconceptions} />

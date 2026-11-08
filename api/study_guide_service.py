@@ -390,6 +390,12 @@ def question_for_key(guide: StudyGuide, key: str) -> ExamQuestion:
         else:
             prompt = topic.dual_coding_task or f"Draw a diagram of {topic.title}."
             reference = ideas
+            diagram = guide.diagram_references.get(topic.id)
+            if diagram:
+                # The reference diagram as text (arc JSON / HTML description).
+                reference += "\nReference diagram:\n" + diagram.get("markdown", "")
+                if diagram.get("visual"):
+                    reference += "\n" + diagram["visual"].get("description", "")
             rubric = (
                 "A visual (diagram, map, timeline, table), usually an image: check it "
                 "contains the parts the task asks for and that relations are correct."
@@ -437,6 +443,26 @@ async def analyze_response(guide: StudyGuide, response_id: str) -> Dict[str, Any
     guide.responses = {**guide.responses, key: history}
     await guide.save()
     return history[index]
+
+
+async def ensure_reference_diagram(
+    guide: StudyGuide, topic_id: str, regenerate: bool = False
+) -> Dict[str, Any]:
+    """Generate (once) the reference diagram of a topic's dual-coding task."""
+    from open_notebook.graphs.study_guide import generate_reference_diagram
+
+    topic = next((t for t in guide.get_topics() if t.id == topic_id), None)
+    if topic is None:
+        raise NotFoundError("Topic not found in this study guide.")
+    if topic_id in guide.diagram_references and not regenerate:
+        return guide.diagram_references[topic_id]
+    diagram = await generate_reference_diagram(
+        topic, language=guide.language, model_id=guide.model_id
+    )
+    diagram["created"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    guide.diagram_references = {**guide.diagram_references, topic_id: diagram}
+    await guide.save()
+    return diagram
 
 
 async def delete_response(guide: StudyGuide, response_id: str) -> None:

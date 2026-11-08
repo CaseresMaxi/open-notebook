@@ -105,6 +105,9 @@ class StudyGuide(ObjectModel):
     topic_confidence: Dict[str, int] = Field(default_factory=dict)
     # Question key -> answer history (see `api.study_guide_service.response_keys`).
     responses: Dict[str, List[Dict[str, Any]]] = Field(default_factory=dict)
+    # Topic id -> AI reference visual for its dual-coding task:
+    # {"markdown": str (may hold an ```arc block), "visual": HtmlVisual | None}.
+    diagram_references: Dict[str, Dict[str, Any]] = Field(default_factory=dict)
     model_id: Optional[str] = None
 
     def _prepare_save_data(self) -> Dict[str, Any]:

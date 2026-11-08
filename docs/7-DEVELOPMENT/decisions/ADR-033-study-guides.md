@@ -25,6 +25,8 @@ Progress is stored on the record (completed activity IDs, card states, topic con
 
 All study happens in the app: every question has an answer stored on the guide (`responses`, keyed by question: `t1:practice:0`, `t1:elaboration:0`, `t1:self_explain`, `t1:dual_coding`, `t1:recall`, `t1:example`, `card:c1`), as an append-only history per question with the activity it was answered in, text and images, a self-check grade and optional AI feedback. Unsaved drafts live in localStorage. AI analysis reuses the exam grader (`grade_with_ai`) with a question built from the guide: the reference answer for practice questions and flashcards, the topic's key ideas and examples with a strategy-specific rubric otherwise. Open answers are analyzed right after saving because they have no short key to self-check against; short answers are analyzed on request, to keep model calls proportional.
 
+Visual tasks get an AI reference diagram, generated on demand once per topic (`prompts/study/diagram.jinja`) and stored in `diagram_references`: Markdown with one validated ```arc block (concept map, steps or table, rendered by the chat's interactive components) or, for shapes those cannot express, a declarative HTML/SVG fragment validated as an `HtmlVisual` (sanitized, no scripts, rendered in the existing isolated frame). It also becomes part of the reference when the learner's own diagram is analyzed.
+
 Generation runs in the request, like practice exams, behind the frontend's long API timeout.
 
 ## Alternatives considered

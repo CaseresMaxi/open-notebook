@@ -36,6 +36,8 @@ interface AnswerBoxProps {
   context: string
   /** Shown after answering (or on request) so the learner can check. */
   reference?: string
+  /** Runs after saving, before the automatic AI analysis (e.g. build a reference). */
+  onSaved?: () => Promise<unknown> | void
 }
 
 function ResponseItem({
@@ -137,7 +139,7 @@ function ResponseItem({
  * saved answer stays in the guide's history, and open answers are analyzed
  * by the AI after saving (short ones on request).
  */
-export function AnswerBox({ guide, responseKey, context, reference }: AnswerBoxProps) {
+export function AnswerBox({ guide, responseKey, context, reference, onSaved }: AnswerBoxProps) {
   const { t } = useTranslation()
   const save = useSaveResponse(guide.id)
   const analyze = useAnalyzeResponse(guide.id)
@@ -161,10 +163,12 @@ export function AnswerBox({ guide, responseKey, context, reference }: AnswerBoxP
     save.mutate(
       { key: responseKey, answer: draft, context },
       {
-        onSuccess: (updated) => {
+        onSuccess: async (updated) => {
           change('')
           setRevealed(true)
           const saved = updated.responses?.[responseKey]?.at(-1)
+          // A failed reference (already reported) must not block the analysis.
+          await Promise.resolve(onSaved?.()).catch(() => undefined)
           if (saved && autoAnalyze(responseKey)) analyze.mutate(saved.id)
         },
       }

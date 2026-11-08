@@ -202,3 +202,76 @@ async def generate_study_guide_content(
         topics,
         cards,
     )
+
+
+DIAGRAM_MAX_TOKENS = 12000
+
+
+class GeneratedDiagram(BaseModel):
+    markdown: str = Field(
+        description="How to read it, plus one ```arc block when it fits"
+    )
+    html: Optional[str] = Field(
+        None, description="Self-contained HTML/SVG, only when arc cannot express it"
+    )
+    html_description: Optional[str] = None
+
+
+async def generate_reference_diagram(
+    topic: StudyTopic,
+    *,
+    language: Optional[str],
+    model_id: Optional[str],
+) -> Dict[str, Any]:
+    """A reference visual for a topic's dual-coding task: Markdown with an
+    interactive arc block (concept map, steps, table) or a sanitized HTML/SVG
+    diagram when those shapes do not fit."""
+    from open_notebook.utils.arc_blocks import arc_instructions, materialize_arc_blocks
+    from open_notebook.utils.chat_images import HtmlVisual
+
+    try:
+        parser: PydanticOutputParser[GeneratedDiagram] = PydanticOutputParser(
+            pydantic_object=GeneratedDiagram
+        )
+        prompt = Prompter(prompt_template="study/diagram", parser=parser).render(  # type: ignore[arg-type]
+            data=dict(
+                task=topic.dual_coding_task or f"Draw a concept map of {topic.title}.",
+                title=topic.title,
+                summary=topic.summary,
+                key_ideas=topic.key_ideas,
+                examples=topic.concrete_examples,
+                language=language,
+                arc_formats=arc_instructions(),
+            )
+        )
+        model = await provision_langchain_model(
+            prompt,
+            model_id,
+            "transformation",
+            max_tokens=DIAGRAM_MAX_TOKENS,
+            structured=dict(type="json"),
+        )
+        diagram = await _invoke_structured(model, prompt, parser)
+    except OpenNotebookError:
+        raise
+    except Exception as e:
+        error_class, user_message = classify_error(e)
+        raise error_class(user_message) from e
+
+    markdown = materialize_arc_blocks(diagram.markdown or "")
+    visual: Optional[Dict[str, Any]] = None
+    if diagram.html and diagram.html.strip():
+        try:
+            visual = HtmlVisual(
+                name=f"{topic.id}-diagram",
+                html=diagram.html,
+                description=(diagram.html_description or topic.title)[:4000],
+                basis="conceptual",
+            ).model_dump()
+        except ValueError:
+            visual = None  # unsafe or malformed markup is dropped, never shown
+    if "```arc" not in markdown and visual is None:
+        raise ExternalServiceError(
+            "The model did not return a usable diagram. Try again or pick a different model."
+        )
+    return {"markdown": markdown, "visual": visual}

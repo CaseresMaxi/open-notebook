@@ -11,6 +11,7 @@ import type { StudyGuide, StudyTopic, TopicStats } from '@/lib/types/study-guide
 import { calibration, responseKeys } from '@/lib/utils/study-guide'
 import { AnsweredQuestions, ElaborationQuestions, Section, SourceLinks } from './ActivityMaterial'
 import { AnswerBox } from './AnswerBox'
+import { DualCodingSection } from './DualCodingSection'
 import { ConfidenceRating } from './SessionView'
 import { CALIBRATION_LABELS, DIFFICULTY_LABELS } from '@/lib/utils/study-guide-labels'
 
@@ -110,13 +111,7 @@ export function TopicCard({
           <Section title={t('studyGuides.ownExample')}>
             <AnswerBox guide={guide} responseKey={responseKeys.example(topic.id)} context="topic" />
           </Section>
-          {topic.dual_coding_task && (
-            <Section title={t('studyGuides.dualCoding')}>
-              <p className="text-sm">{topic.dual_coding_task}</p>
-              <p className="text-xs text-muted-foreground">{t('studyGuides.dualCodingHint')}</p>
-              <AnswerBox guide={guide} responseKey={responseKeys.dualCoding(topic.id)} context="topic" />
-            </Section>
-          )}
+          {topic.dual_coding_task && <DualCodingSection guide={guide} topic={topic} context="topic" />}
           <List title={t('studyGuides.misconceptions')} items={topic.misconceptions} />
           {topic.practice_questions.length > 0 && (
             <Section title={t('studyGuides.practiceQuestions')}>

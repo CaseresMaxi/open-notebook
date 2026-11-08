@@ -141,3 +141,9 @@ export function useRescheduleStudyGuide(id: string) {
       }),
   }
 }
+
+export function useGenerateDiagram(id: string) {
+  return useGuideUpdate(id, ({ topicId, regenerate = false }: { topicId: string; regenerate?: boolean }) =>
+    studyGuidesApi.generateDiagram(id, topicId, regenerate)
+  )
+}

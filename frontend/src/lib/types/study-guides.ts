@@ -1,9 +1,17 @@
 export type StudyGoal = 'understand' | 'memorize' | 'exam' | 'apply'
 export type StudyLevel = 'beginner' | 'intermediate' | 'advanced'
-import type { ChatImage } from './api'
+import type { ChatImage, ChatVisual } from './api'
 
 export type CardRating = 'again' | 'hard' | 'good' | 'easy'
 export type ResponseGrade = 'correct' | 'partial' | 'incorrect'
+
+/** AI reference visual for a topic's diagram task: Markdown (may hold an
+ * interactive ```arc block such as a concept map) and/or a sanitized HTML visual. */
+export interface ReferenceDiagram {
+  markdown: string
+  visual?: ChatVisual | null
+  created?: string
+}
 
 /** One stored answer of the learner to a question of the guide. */
 export interface StudyResponse {
@@ -125,6 +133,7 @@ export interface StudyGuide {
   topic_confidence?: Record<string, number> | null
   topic_stats?: Record<string, TopicStats> | null
   responses?: Record<string, StudyResponse[]> | null
+  diagram_references?: Record<string, ReferenceDiagram> | null
   response_count?: number
   created: string
   updated: string

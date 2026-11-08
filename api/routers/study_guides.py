@@ -134,6 +134,7 @@ class StudyGuideResponse(BaseModel):
     topic_confidence: Optional[Dict[str, int]] = None
     topic_stats: Optional[Dict[str, Dict[str, Optional[float]]]] = None
     responses: Optional[Dict[str, List[Dict[str, Any]]]] = None
+    diagram_references: Optional[Dict[str, Dict[str, Any]]] = None
     response_count: int = 0
     created: str
     updated: str
@@ -214,6 +215,7 @@ def _response(
         response.topic_confidence = guide.topic_confidence
         response.topic_stats = service.topic_stats(guide)
         response.responses = guide.responses
+        response.diagram_references = guide.diagram_references
     return response
 
 
@@ -326,6 +328,22 @@ async def analyze_study_response(
     """AI feedback on a stored answer, kept with it (score 0-1, grade, feedback)."""
     guide = await StudyGuide.get(guide_id)
     await service.analyze_response(guide, response_id)
+    return _response(guide, _today(today), include_details=True)
+
+
+@router.post(
+    "/study-guides/{guide_id}/topics/{topic_id}/diagram",
+    response_model=StudyGuideResponse,
+)
+async def generate_topic_diagram(
+    guide_id: str,
+    topic_id: str,
+    regenerate: bool = Query(False),
+    today: Optional[str] = Query(None),
+):
+    """Reference diagram for a topic's visual task (generated once, then reused)."""
+    guide = await StudyGuide.get(guide_id)
+    await service.ensure_reference_diagram(guide, topic_id, regenerate)
     return _response(guide, _today(today), include_details=True)
 
 

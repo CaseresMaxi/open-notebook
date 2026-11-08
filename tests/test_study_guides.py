@@ -496,3 +496,67 @@ async def test_analyze_response_stores_ai_feedback_against_topic_reference():
     )
     assert service.response_kind("t1:recall") in service.AUTO_ANALYZE_KINDS
     assert service.response_kind("card:c1") not in service.AUTO_ANALYZE_KINDS
+
+
+CONCEPT_MAP = (
+    '```arc\n{"type":"concept_map","title":"Mapa","nodes":['
+    '{"id":"a","label":"Membrana","weight":5},{"id":"b","label":"Lípidos"},'
+    '{"id":"c","label":"Proteínas"}],"links":[{"source":"a","target":"b","label":"tiene"},'
+    '{"source":"a","target":"c","label":"tiene"}]}\n```'
+)
+
+
+async def _diagram(generated):
+    from open_notebook.domain.study_guide import StudyTopic
+    from open_notebook.graphs import study_guide as graph
+
+    topic = StudyTopic(
+        id="t1", title="Membrana", key_ideas=["Bicapa"], dual_coding_task="Mapa"
+    )
+    with (
+        patch.object(graph, "provision_langchain_model", AsyncMock()),
+        patch.object(graph, "_invoke_structured", AsyncMock(return_value=generated)),
+    ):
+        return await graph.generate_reference_diagram(
+            topic, language=None, model_id=None
+        )
+
+
+@pytest.mark.asyncio
+async def test_reference_diagram_keeps_valid_arc_block_and_sanitized_html():
+    from open_notebook.exceptions import ExternalServiceError
+    from open_notebook.graphs.study_guide import GeneratedDiagram
+
+    arc = await _diagram(GeneratedDiagram(markdown=f"Leelo así.\n\n{CONCEPT_MAP}"))
+    assert '"type": "concept_map"' in arc["markdown"] and arc["visual"] is None
+
+    html = await _diagram(
+        GeneratedDiagram(
+            markdown="Ciclo.",
+            html='<svg viewBox="0 0 10 10"><circle r="4"/></svg><script>alert(1)</script>',
+            html_description="Un ciclo",
+        )
+    )
+    assert html["visual"]["kind"] == "html"
+    assert "<script" not in html["visual"]["html"] and "<svg" in html["visual"]["html"]
+
+    with pytest.raises(ExternalServiceError):
+        await _diagram(GeneratedDiagram(markdown="```arc\n{broken\n```"))
+
+
+@pytest.mark.asyncio
+async def test_reference_diagram_is_generated_once_and_feeds_the_analysis():
+    guide = _guide_with_questions()
+    guide.topics[0]["dual_coding_task"] = "Dibujá un mapa"
+    generate = AsyncMock(return_value={"markdown": CONCEPT_MAP, "visual": None})
+    with (
+        patch.object(StudyGuide, "save", new_callable=AsyncMock),
+        patch("open_notebook.graphs.study_guide.generate_reference_diagram", generate),
+    ):
+        await service.ensure_reference_diagram(guide, "t1")
+        await service.ensure_reference_diagram(guide, "t1")
+        assert generate.await_count == 1
+        await service.ensure_reference_diagram(guide, "t1", regenerate=True)
+        assert generate.await_count == 2
+    question = service.question_for_key(guide, "t1:dual_coding")
+    assert "concept_map" in (question.reference_answer or "")
