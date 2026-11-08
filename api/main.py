@@ -48,6 +48,7 @@ from api.routers import (
     sources,
     speaker_profiles,
     speech,
+    study_guides,
     study_summaries,
     transformations,
 )
@@ -421,6 +422,7 @@ app.include_router(chat_quizzes.router, prefix="/api", tags=["chat-quizzes"])
 app.include_router(speech.router, prefix="/api", tags=["speech"])
 app.include_router(jupyter.router, prefix="/api", tags=["jupyter"])
 app.include_router(study_summaries.router, prefix="/api", tags=["study-summaries"])
+app.include_router(study_guides.router, prefix="/api", tags=["study-guides"])
 
 
 @app.get("/")

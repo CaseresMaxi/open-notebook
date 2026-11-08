@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { GraduationCap } from 'lucide-react'
+import { GraduationCap, Route } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { NotesColumn } from '@/app/(dashboard)/notebooks/components/NotesColumn'
 import { SummaryLibrary } from './SummaryLibrary'
@@ -55,13 +55,22 @@ export function StudyTools({
           <SummaryLibrary notebookId={notebookId} />
         </TabsContent>
       </Tabs>
-      <Link
-        href={`/exams?notebook=${encodeURIComponent(notebookId)}`}
-        className="product-link px-3"
-      >
-        <GraduationCap className="size-4" />
-        {t('exams.title')}
-      </Link>
+      <div className="flex flex-wrap gap-x-4">
+        <Link
+          href={`/exams?notebook=${encodeURIComponent(notebookId)}`}
+          className="product-link px-3"
+        >
+          <GraduationCap className="size-4" />
+          {t('exams.title')}
+        </Link>
+        <Link
+          href={`/study-guides?notebook=${encodeURIComponent(notebookId)}`}
+          className="product-link px-3"
+        >
+          <Route className="size-4" />
+          {t('studyGuides.title')}
+        </Link>
+      </div>
     </div>
   )
 }

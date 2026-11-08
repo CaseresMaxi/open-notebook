@@ -42,4 +42,6 @@ export const QUERY_KEYS = {
   exams: (notebookId?: string) => ['exams', 'list', notebookId] as const,
   exam: (id: string, includeAnswers: boolean) => ['exams', id, { includeAnswers }] as const,
   examAttempts: (examId: string) => ['exam-attempts', examId] as const,
+  studyGuides: (notebookId?: string) => ['study-guides', 'list', notebookId] as const,
+  studyGuide: (id: string) => ['study-guides', id] as const,
 }

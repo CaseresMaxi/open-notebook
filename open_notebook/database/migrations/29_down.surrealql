@@ -1,0 +1,2 @@
+-- Migration 29 rollback: drop study guides.
+REMOVE TABLE IF EXISTS study_guide;

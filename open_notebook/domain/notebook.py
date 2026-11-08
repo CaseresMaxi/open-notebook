@@ -245,6 +245,11 @@ class Notebook(ObjectModel):
                 "DELETE artifact WHERE out = $notebook_id",
                 {"notebook_id": notebook_id},
             )
+            # Study guides only make sense with their notebook.
+            await repo_query(
+                "DELETE study_guide WHERE notebook_id = $notebook_id",
+                {"notebook_id": notebook_id},
+            )
 
             # 2. Handle sources
             if delete_exclusive_sources:

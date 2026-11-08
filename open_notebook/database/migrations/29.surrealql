@@ -1,0 +1,9 @@
+-- Migration 29: personalized study guides (topics, spaced sessions, flashcards).
+DEFINE TABLE IF NOT EXISTS study_guide SCHEMALESS;
+DEFINE FIELD IF NOT EXISTS notebook_id ON TABLE study_guide TYPE record<notebook>;
+DEFINE FIELD IF NOT EXISTS title ON TABLE study_guide TYPE string;
+DEFINE FIELD IF NOT EXISTS topics ON TABLE study_guide FLEXIBLE TYPE array<object>;
+DEFINE FIELD IF NOT EXISTS sessions ON TABLE study_guide FLEXIBLE TYPE array<object>;
+DEFINE FIELD IF NOT EXISTS cards ON TABLE study_guide FLEXIBLE TYPE array<object>;
+DEFINE FIELD IF NOT EXISTS card_states ON TABLE study_guide FLEXIBLE TYPE object;
+DEFINE INDEX IF NOT EXISTS idx_study_guide_notebook ON TABLE study_guide COLUMNS notebook_id;

@@ -67,3 +67,5 @@ What this makes easier, what it makes harder, what to watch. (bullets)
 - [ADR-023: Glass navigation and study controls](ADR-023-glass-navigation-and-study-controls.md)
 
 - [ADR-032: Concept maps, test intent, @mentions and scripted HTML visuals in chat](ADR-032-concept-maps-and-scripted-visuals.md)
+
+- [ADR-033: Study guides — model writes the content, rules write the calendar](ADR-033-study-guides.md)

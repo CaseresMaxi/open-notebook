@@ -38,6 +38,7 @@ What each feature needs:
 | [Creating Podcasts](creating-podcasts.md) | Generating episodes, episode and speaker profiles |
 | [Personal Study Product](personal-study-product.md) | Personal fork navigation, saved summaries, profile and billing preview |
 | [Practice Exams](practice-exams.md) | Generate quizzes from notebook sources, take them, and get graded |
+| [Study Guides](study-guides.md) | Personalized study plans with spaced reviews, retrieval practice and flashcards |
 
 ---
 
@@ -62,6 +63,7 @@ What each feature needs:
 | Get the same summary or extraction for each source | [Transformations](transformations.md) |
 | Listen to your research | [Podcasts](creating-podcasts.md) |
 | Practice what you studied | [Practice Exams](practice-exams.md) |
+| Plan how to study a subject | [Study Guides](study-guides.md) |
 
 ---
 
