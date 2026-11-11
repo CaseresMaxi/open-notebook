@@ -22,6 +22,8 @@ Higher values process bulk uploads faster but send more parallel requests to you
 
 The value is read when the worker starts. In Docker, recreate the container (`docker compose up -d`). From source, `export` it in your shell before `make worker-start`.
 
+`OPEN_NOTEBOOK_MAX_CONCURRENT_EXTRACTIONS` (default `2`) caps how many of those jobs extract a document at the same time. Docling with OCR, formulas or image descriptions is CPU- and memory-heavy and loads its models once per document, so a bulk PDF upload runs two conversions at a time while the other jobs keep running.
+
 ### Model call timeout
 
 `ESPERANTO_LLM_TIMEOUT` (default `180` seconds) limits each language-model call and applies to every provider, Ollama included. When a call runs out of time, the user sees an error and the job or chat message fails.

@@ -75,6 +75,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Mentioning an exam no longer triggers the "interactive test or separate exam" buttons: with the Decisions API, `gpt-6-luna` decides whether the student is asking to take a test, so questions about an exam ("what share of the topics did this exam cover?") get an answer. Without it, the keyword check now tolerates typos ("exmane"), and a reply that asks the format question in plain text is turned into the buttons.
+- Docling no longer freezes the worker while it converts a document: extraction runs off the event loop, so other queued sources, embeddings and podcasts keep moving. At most `OPEN_NOTEBOOK_MAX_CONCURRENT_EXTRACTIONS` (default `2`) documents are extracted at once.
 - Uploaded Jupyter notebooks were rejected with "Unsupported file type: application/json", and their title kept the stored file's random prefix.
 - Uploaded PDFs no longer stay processing forever when Docling vision is on: the Docker image downloads Docling models over plain HTTP (`HF_HUB_DISABLE_XET=1`), which times out and resumes, instead of the Xet client, which stalled on the 8 GB chart model and blocked the worker.
 - Every uploaded file (PDFs, documents, audio…), not only Jupyter notebooks, is titled with its original name instead of the stored file's random 32-character prefix.
