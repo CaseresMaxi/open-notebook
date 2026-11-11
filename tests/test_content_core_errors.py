@@ -164,3 +164,33 @@ def test_value_error_is_permanent_for_process_source():
     command = registry.get_command("open_notebook", "process_source")
     assert command is not None
     assert ValueError in command.retry_config.stop_on
+
+
+@pytest.mark.asyncio
+async def test_blocking_extraction_does_not_freeze_the_event_loop():
+    """Docling's converter is synchronous: the worker must keep serving other jobs."""
+    import asyncio
+    import time
+
+    from content_core.common import ExtractionOutput
+
+    async def blocking_extract(**_):
+        time.sleep(0.5)
+        return ExtractionOutput(content="text", source_type="text")
+
+    ticks = 0
+
+    async def ticker():
+        nonlocal ticks
+        while True:
+            await asyncio.sleep(0.05)
+            ticks += 1
+
+    task = asyncio.create_task(ticker())
+    try:
+        result = await _run({"content": "x"}, blocking_extract)
+    finally:
+        task.cancel()
+
+    assert result["extraction"].content == "text"
+    assert ticks >= 5

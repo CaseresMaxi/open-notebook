@@ -2,6 +2,7 @@ import asyncio
 import operator
 import os
 import re
+import threading
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 from urllib.parse import urlparse
@@ -32,6 +33,21 @@ from open_notebook.utils.runtime_capabilities import engine_runtime_missing
 # Both the API and the worker import this module before extracting anything,
 # so re-enable it here to keep extraction logs in their output.
 logger.enable("content_core")
+
+# content-core runs some engines synchronously inside its async API (Docling's
+# converter.convert() is CPU-bound and can take minutes per PDF), which would
+# block the worker's event loop and serialize every queued job behind it. Each
+# extraction therefore runs in its own thread and event loop. Every Docling
+# extraction loads its own models, so cap how many run at once.
+_EXTRACTION_SLOTS = threading.BoundedSemaphore(
+    max(1, int(os.environ.get("OPEN_NOTEBOOK_MAX_CONCURRENT_EXTRACTIONS", "2")))
+)
+
+
+def _extract_in_thread(**kwargs: Any) -> ExtractionOutput:
+    with _EXTRACTION_SLOTS:
+        return asyncio.run(extract_content(**kwargs))
+
 
 # Default preferred languages for YouTube transcript selection, used when
 # ContentSettings.youtube_preferred_languages is unset. content-core's own
@@ -271,7 +287,8 @@ async def content_process(state: SourceState) -> dict:
         )
     else:
         try:
-            processed = await extract_content(
+            processed = await asyncio.to_thread(
+                _extract_in_thread,
                 url=content_state.get("url"),
                 file_path=content_state.get("file_path"),
                 content=content_state.get("content"),
