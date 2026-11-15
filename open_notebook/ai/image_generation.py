@@ -14,6 +14,11 @@ from open_notebook.domain.credential import Credential
 from open_notebook.exceptions import ConfigurationError, ExternalServiceError
 from open_notebook.utils.chat_images import ChatImage
 
+# gpt-image-1.5 shuts down on 2026-12-01. Sunburst is OpenAI's model "for
+# detailed visual work" (Flare is the fast-iteration variant at the same
+# price); both accept the low-quality 1024x1024 PNG request below.
+DEFAULT_IMAGE_MODEL = "gpt-image-2.6-sunburst"
+
 
 @platform_models
 async def generate_chat_image(
@@ -56,11 +61,10 @@ async def generate_chat_image(
     ) as client:
         from open_notebook.usage import ametered
 
-        async with ametered(
-            os.environ.get("OPEN_NOTEBOOK_IMAGE_MODEL", "gpt-image-1.5"), 8192, "image"
-        ):
+        image_model = os.environ.get("OPEN_NOTEBOOK_IMAGE_MODEL", DEFAULT_IMAGE_MODEL)
+        async with ametered(image_model, 8192, "image"):
             response = await client.images.generate(
-                model=os.environ.get("OPEN_NOTEBOOK_IMAGE_MODEL", "gpt-image-1.5"),
+                model=image_model,
                 prompt=prompt,
                 size="1024x1024",
                 quality="low",

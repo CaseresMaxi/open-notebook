@@ -470,3 +470,38 @@ class TestNewEsperantoProviders:
             ("command-a-03-2025", "language"),
             ("embed-v4.0", "embedding"),
         }
+
+
+@pytest.mark.asyncio
+async def test_openai_discovery_skips_unusable_models(monkeypatch):
+    ids = [
+        "gpt-6.1-sol",
+        "gpt-image-2.6-sunburst",
+        "chatgpt-image-latest",
+        "gpt-realtime-2.1",
+        "gpt-live-1",
+        "gpt-live-transcribe",
+        "gpt-audio-mini",
+        "omni-moderation-latest",
+        "gpt-transcribe",
+        "gpt-4o-mini-transcribe",
+        "whisper-1",
+        "gpt-4o-mini-tts",
+        "text-embedding-3-large",
+    ]
+
+    def handler(url, headers, params, timeout):
+        return json_response(url, {"data": [{"id": i} for i in ids]})
+
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-test")
+    monkeypatch.setattr(model_discovery.httpx, "AsyncClient", make_fake_client(handler))
+
+    models = await discover_openai_compatible_provider("openai")
+    assert [(m.name, m.model_type) for m in models] == [
+        ("gpt-6.1-sol", "language"),
+        ("gpt-transcribe", "speech_to_text"),
+        ("gpt-4o-mini-transcribe", "speech_to_text"),
+        ("whisper-1", "speech_to_text"),
+        ("gpt-4o-mini-tts", "text_to_speech"),
+        ("text-embedding-3-large", "embedding"),
+    ]

@@ -15,6 +15,8 @@ from dataclasses import dataclass
 import httpx
 from loguru import logger
 
+from open_notebook.ai.openai_models import effort_for_model, is_reasoning_model
+
 DECISIONS_MODEL = "gpt-6-luna"
 TIMEOUT_SECONDS = 2.5
 PRESENTATIONS = ("prose", "chart", "table", "metrics", "steps", "concept_map", "mixed")
@@ -256,10 +258,11 @@ async def decide_turn(
 
 
 def apply_effort(model, effort: str):
-    """Set reasoning effort per turn on OpenAI GPT-6 chat models only.
+    """Set reasoning effort per turn on OpenAI reasoning chat models.
 
-    GPT-6 accepts none/low/medium/high (verified); other families accept
-    different sets, so they keep their configured effort.
+    Every reasoning model accepts low/medium/high; ``"none"`` becomes
+    ``"low"`` on the models that reject it (gpt-6.1-sol, gpt-6-astra,
+    o-series). Non-reasoning models keep their configured behaviour.
     """
     try:
         from langchain_openai import ChatOpenAI
@@ -267,6 +270,7 @@ def apply_effort(model, effort: str):
         return model
     if effort not in EFFORTS or not isinstance(model, ChatOpenAI):
         return model
-    if not str(model.model_name).startswith("gpt-6"):
+    name = str(model.model_name)
+    if not is_reasoning_model(name):
         return model
-    return model.model_copy(update={"reasoning_effort": effort})
+    return model.model_copy(update={"reasoning_effort": effort_for_model(name, effort)})

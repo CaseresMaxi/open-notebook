@@ -127,7 +127,7 @@ The assistant can attach up to four images and generate one new image per turn.
 Image generation uses the selected OpenAI-compatible chat model's credential,
 or `OPENAI_API_KEY`/`OPENAI_BASE_URL` when no linked account is available. Operators
 can choose a separate saved OpenAI-compatible credential with
-`OPEN_NOTEBOOK_IMAGE_CREDENTIAL_ID`. The default image model is `gpt-image-1.5`;
+`OPEN_NOTEBOOK_IMAGE_CREDENTIAL_ID`. The default image model is `gpt-image-2.6-sunburst` (`gpt-image-2.6-flare` is the faster variant);
 set `OPEN_NOTEBOOK_IMAGE_MODEL` to use another GPT Image model supported by the
 provider. Requests use the [OpenAI Images API](https://developers.openai.com/api/reference/python/resources/images/methods/generate).
 An account must support image generation; chat access alone does not guarantee it.

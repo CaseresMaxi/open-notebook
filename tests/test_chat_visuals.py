@@ -253,7 +253,7 @@ async def test_image_adapter_uses_linked_credentials(image_source, monkeypatch):
     result = await adapter.generate_chat_image("An image", "Caption", "model:one")
     assert result.kind == "generated"
     sdk.images.generate.assert_awaited_once_with(
-        model="gpt-image-1.5",
+        model=adapter.DEFAULT_IMAGE_MODEL,
         prompt="An image",
         size="1024x1024",
         quality="low",
@@ -311,8 +311,10 @@ def test_nonexistent_attachment_links_removed_without_changing_real_citations(
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("name", ["gpt-6-luna", "gpt-6-sol", "gpt-6.1-sol"])
-async def test_gpt6_tools_use_responses_and_preserve_reasoning(name):
+@pytest.mark.parametrize(
+    "name", ["gpt-5.5", "gpt-5.6-sol", "gpt-6-luna", "gpt-6.1-sol", "gpt-7", "o3"]
+)
+async def test_reasoning_tools_use_responses_and_preserve_reasoning(name):
     import json
 
     import httpx

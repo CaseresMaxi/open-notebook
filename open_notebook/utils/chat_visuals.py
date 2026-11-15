@@ -16,6 +16,7 @@ from loguru import logger
 from pydantic import BaseModel, Field
 
 from open_notebook.ai.image_generation import generate_chat_image
+from open_notebook.ai.openai_models import tools_need_responses_api
 from open_notebook.domain.notebook import Source
 from open_notebook.exceptions import (
     ConfigurationError,
@@ -122,10 +123,12 @@ def _visual_reply(reply: Any, images: list[ChatVisual]) -> Any:
 
 
 def _prepare_tool_model(model: Any) -> Any:
-    """GPT-6 tool calling needs Responses to preserve configured reasoning."""
-    if isinstance(model, ChatOpenAI) and re.match(
-        r"^gpt-6(?:$|[-.])", model.model_name
-    ):
+    """Reasoning-model tool calling goes through Responses.
+
+    From gpt-5.6 on, Chat Completions rejects function tools while reasoning
+    is on; Responses accepts them and keeps the configured reasoning.
+    """
+    if isinstance(model, ChatOpenAI) and tools_need_responses_api(model.model_name):
         return model.model_copy(
             update={
                 "use_responses_api": True,

@@ -69,3 +69,5 @@ What this makes easier, what it makes harder, what to watch. (bullets)
 - [ADR-032: Concept maps, test intent, @mentions and scripted HTML visuals in chat](ADR-032-concept-maps-and-scripted-visuals.md)
 
 - [ADR-033: Study guides — model writes the content, rules write the calendar](ADR-033-study-guides.md)
+
+- [ADR-034: OpenAI request rules by model family, not by model id](ADR-034-openai-model-family-rules.md)

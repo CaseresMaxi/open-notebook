@@ -57,9 +57,33 @@ OPENAI_MODEL_TYPES = {
         "ada",
     ],
     "embedding": ["text-embedding", "embedding"],
-    "speech_to_text": ["whisper"],
+    "speech_to_text": ["whisper", "transcribe"],
     "text_to_speech": ["tts"],
 }
+
+# OpenAI ids served by endpoints Open Notebook can't use as a language,
+# embedding, STT or TTS model (image generation, realtime/live sessions,
+# audio-output chat, moderation, video). Listing them as "language" lets a
+# user pick e.g. gpt-image-2.6-flare as the chat model and break every chat.
+_OPENAI_UNUSABLE = (
+    "image",
+    "realtime",
+    "gpt-live",
+    "gpt-audio",
+    "moderation",
+    "sora",
+    "dall-e",
+    "computer-use",
+)
+
+
+def _classify_openai(model: dict) -> Optional[str]:
+    """OpenAI type, or None for ids no Open Notebook model slot can use."""
+    name = model.get("id", "").lower()
+    if any(part in name for part in _OPENAI_UNUSABLE):
+        return None
+    return classify_model_type(name, "openai")
+
 
 # Fallback list used only when Anthropic's model listing API
 # (GET https://api.anthropic.com/v1/models) is unreachable or errors.
@@ -269,7 +293,8 @@ class ProviderDiscoverySpec:
     env_var: str
     # Optional quirk hooks; defaults are classify_model_type(id, provider)
     # and no description.
-    classify: Optional[Callable[[dict], str]] = None
+    # A classify hook may return None to skip a model the app can't use.
+    classify: Optional[Callable[[dict], Optional[str]]] = None
     description: Optional[Callable[[dict], Optional[str]]] = None
     # Env var with an endpoint override (regional base URL); when set, models
     # are listed at <base_url>/models instead of `url`.
@@ -277,7 +302,8 @@ class ProviderDiscoverySpec:
 
 
 # Per-provider quirk hooks that can't live in the (pure data) registry.
-_COMPAT_CLASSIFY: Dict[str, Callable[[dict], str]] = {
+_COMPAT_CLASSIFY: Dict[str, Callable[[dict], Optional[str]]] = {
+    "openai": _classify_openai,
     "mistral": _classify_mistral,
     # OpenRouter models are typically language models
     "openrouter": lambda model: "language",
@@ -339,10 +365,13 @@ async def discover_openai_compatible_provider(provider: str) -> List[DiscoveredM
                 model_id = model.get("id", "")
                 if not model_id:
                     continue
+                model_type: Optional[str]
                 if spec.classify is not None:
                     model_type = spec.classify(model)
                 else:
                     model_type = classify_model_type(model_id, provider)
+                if model_type is None:
+                    continue
                 description = (
                     spec.description(model) if spec.description is not None else None
                 )

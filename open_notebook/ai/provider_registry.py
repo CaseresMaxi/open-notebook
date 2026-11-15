@@ -84,7 +84,7 @@ _PROVIDER_SPECS: Tuple[ProviderSpec, ...] = (
         display_name="OpenAI",
         modalities=_ALL_MODALITIES,
         required_env=("OPENAI_API_KEY",),
-        test_model="gpt-3.5-turbo",
+        test_model="gpt-6-luna",
         docs_url="https://platform.openai.com/api-keys",
         openai_compat_discovery_url="https://api.openai.com/v1/models",
     ),

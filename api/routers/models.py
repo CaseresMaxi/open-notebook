@@ -106,7 +106,14 @@ PROVIDER_PRIORITY = [
 
 # Model preference patterns (preferred models within each provider)
 MODEL_PREFERENCES = {
-    "openai": ["gpt-4o", "gpt-4", "gpt-3.5-turbo"],
+    "openai": [
+        "gpt-6.1-sol",
+        "gpt-6-sol",
+        "gpt-6.1-terra",
+        "gpt-6-luna",
+        "gpt-5.5",
+        "gpt-4.1",
+    ],
     "anthropic": ["claude-3-5-sonnet", "claude-3-opus", "claude-3-sonnet"],
     "google": ["gemini-3.5-flash", "gemini-2.5-flash", "gemini-2.5-pro"],
     "mistral": ["mistral-large", "mixtral"],
