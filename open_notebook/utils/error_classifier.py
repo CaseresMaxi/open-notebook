@@ -38,6 +38,21 @@ _CLASSIFICATION_RULES: list[tuple[list[str], type[OpenNotebookError], str | None
         AuthenticationError,
         "Authentication failed. Please check your API key in Manage -> Models.",
     ),
+    # Exhausted credits or billing quota. Providers send these as HTTP 429
+    # (OpenAI: insufficient_quota / credit_balance_exhausted), so this rule
+    # must precede the rate-limit one: waiting never helps, and as a
+    # ConfigurationError background jobs fail at once instead of retrying.
+    (
+        [
+            "insufficient_quota",
+            "credit_balance_exhausted",
+            "no credits remaining",
+            "exceeded your current quota",
+            "credit balance is too low",
+        ],
+        ConfigurationError,
+        "Your AI provider account has run out of credits. Add credits in the provider's billing settings, or choose a model from another provider in Manage -> Models.",
+    ),
     # Rate limit errors
     (
         ["rate limit", "rate_limit", "429", "too many requests", "quota exceeded"],

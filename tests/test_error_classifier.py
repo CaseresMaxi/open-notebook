@@ -58,3 +58,31 @@ def test_missing_default_model_passes_through():
     exc_class, message = classify_error(ValueError(raw))
     assert exc_class is ConfigurationError
     assert message == raw
+
+
+def test_exhausted_openai_credits_are_not_a_rate_limit():
+    # Verbatim OpenAI body (HTTP 429) for an account with no credits left.
+    raw = (
+        "Error code: 429 - {'error': {'message': 'You have no credits remaining. "
+        "Add credits to continue using the API at "
+        "https://platform.openai.com/settings/organization/billing/.', "
+        "'type': 'insufficient_quota', 'param': None, "
+        "'code': 'credit_balance_exhausted'}}"
+    )
+
+    class RateLimitError(Exception):
+        pass
+
+    exc_class, message = classify_error(RateLimitError(raw))
+    assert exc_class is ConfigurationError
+    assert "run out of credits" in message
+
+
+def test_real_rate_limit_still_says_wait():
+    from open_notebook.exceptions import RateLimitError
+
+    exc_class, message = classify_error(
+        Exception("Error code: 429 - rate_limit_exceeded: Rate limit reached for TPM")
+    )
+    assert exc_class is RateLimitError
+    assert "wait" in message

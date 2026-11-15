@@ -76,6 +76,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Development:** `architecture.md`, `testing.md`, `api-reference.md` and `code-standards.md` are rewritten from the code. A new playbook covers adding an AI provider. Dev setup lives on one page. The AGENTS files agree with the docs. Contributor conventions (Conventional Commits, CHANGELOG sections, pre-PR checks that match CI) are documented
 
 ### Fixed
+- An AI provider account with no credits left (OpenAI `insufficient_quota`, sent as HTTP 429) no longer shows "Rate limit exceeded, please wait": the error says the account ran out of credits, and background jobs (sources, embeddings) fail at once instead of retrying.
 - Choosing the newest OpenAI models no longer breaks chat. With `gpt-6.1-sol` or `gpt-6-astra`, a turn routed to no reasoning failed with a 400; it now uses the lowest supported level. From `gpt-5.6` on, tool calls (figures, images, exams) go through the Responses API, because Chat Completions refuses them while the model reasons. The rules follow the model family, so new releases (gpt-6.2, gpt-7, o5…) work without an update.
 - OpenAI model discovery no longer offers image, realtime, audio-output or moderation models as chat models, and lists `gpt-transcribe` as a speech-to-text model.
 - The OpenAI connection test uses `gpt-6-luna` instead of the retired `gpt-3.5-turbo`.
